@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.44.5"
+
+jobs:
+  package:
+    name: Package · analyze & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: |
+          files=$(git ls-files '*.dart' | grep -v '\.g\.dart$')
+          dart format --output=none --set-exit-if-changed $files
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+  example:
+    name: Example · generate, analyze, test & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Generate routes
+        working-directory: example
+        run: dart run build_runner build
+
+      - name: Analyze
+        working-directory: example
+        run: flutter analyze
+
+      - name: Run tests
+        working-directory: example
+        run: flutter test
+
+      - name: Build web
+        working-directory: example
+        run: flutter build web --no-web-resources-cdn
