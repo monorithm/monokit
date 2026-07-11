@@ -1,0 +1,561 @@
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
+import '../primitives/mono_pressable.dart';
+import '../states/mono_state.dart';
+import '../states/mono_states_controller.dart';
+import '../theme/monokit_theme.dart';
+import '../theme/monokit_theme_data.dart';
+
+/// Logical edge from which a [MonoDrawer] is revealed.
+enum MonoDrawerSide { start, end }
+
+/// Makes drawer open/close actions available to descendants.
+class MonoDrawerScope extends InheritedWidget {
+  const MonoDrawerScope({
+    super.key,
+    required this.isOpen,
+    required this.open,
+    required this.close,
+    required this.toggle,
+    required super.child,
+  });
+
+  final bool isOpen;
+  final VoidCallback open;
+  final VoidCallback close;
+  final VoidCallback toggle;
+
+  static MonoDrawerScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MonoDrawerScope>();
+  }
+
+  static MonoDrawerScope of(BuildContext context) {
+    final MonoDrawerScope? scope = maybeOf(context);
+    assert(scope != null, 'No MonoDrawer found in context.');
+    return scope!;
+  }
+
+  @override
+  bool updateShouldNotify(MonoDrawerScope oldWidget) {
+    return isOpen != oldWidget.isOpen ||
+        open != oldWidget.open ||
+        close != oldWidget.close ||
+        toggle != oldWidget.toggle;
+  }
+}
+
+/// Keyboard-accessible trigger for the nearest [MonoDrawer].
+class MonoDrawerTrigger extends StatelessWidget {
+  const MonoDrawerTrigger({
+    super.key,
+    required this.child,
+    this.enabled = true,
+    this.semanticLabel = 'Open drawer',
+  });
+
+  final Widget child;
+  final bool enabled;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonoDrawerScope? scope = MonoDrawerScope.maybeOf(context);
+    return MonoPressable(
+      semanticLabel: semanticLabel,
+      enabled: enabled && scope != null,
+      onPressed: scope?.toggle,
+      child: (BuildContext context, Set<MonoState> states) =>
+          Semantics(expanded: scope?.isOpen ?? false, child: child),
+    );
+  }
+}
+
+/// Keyboard-accessible close action for drawer content.
+class MonoDrawerClose extends StatelessWidget {
+  const MonoDrawerClose({
+    super.key,
+    required this.child,
+    this.semanticLabel = 'Close drawer',
+  });
+
+  final Widget child;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonoDrawerScope? scope = MonoDrawerScope.maybeOf(context);
+    return MonoPressable(
+      semanticLabel: semanticLabel,
+      enabled: scope != null,
+      onPressed: scope?.close,
+      child: (BuildContext context, Set<MonoState> states) => child,
+    );
+  }
+}
+
+/// Padded drawer content slot.
+class MonoDrawerContent extends StatelessWidget {
+  const MonoDrawerContent({super.key, required this.child, this.padding});
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonokitThemeData theme = MonokitTheme.of(context);
+    return Padding(
+      padding: padding ?? EdgeInsets.all(theme.spacing.lg),
+      child: DefaultTextStyle.merge(
+        style: theme.typography.bodyMedium.copyWith(
+          color: theme.colors.popoverForeground,
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// Standard title/description slot for a [MonoDrawer].
+class MonoDrawerHeader extends StatelessWidget {
+  const MonoDrawerHeader({super.key, this.title, this.description, this.child})
+    : assert(child != null || title != null || description != null);
+
+  final Widget? title;
+  final Widget? description;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonokitThemeData theme = MonokitTheme.of(context);
+    if (child != null) {
+      return child!;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        if (title != null)
+          DefaultTextStyle.merge(
+            style: theme.typography.titleLarge.copyWith(
+              color: theme.colors.popoverForeground,
+            ),
+            child: title!,
+          ),
+        if (title != null && description != null)
+          SizedBox(height: theme.spacing.sm),
+        if (description != null)
+          DefaultTextStyle.merge(
+            style: theme.typography.bodyMedium.copyWith(
+              color: theme.colors.mutedForeground,
+            ),
+            child: description!,
+          ),
+      ],
+    );
+  }
+}
+
+/// Standard trailing action slot for a [MonoDrawer].
+class MonoDrawerFooter extends StatelessWidget {
+  const MonoDrawerFooter({super.key, required this.child, this.padding});
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonokitThemeData theme = MonokitTheme.of(context);
+    return Padding(
+      padding: padding ?? EdgeInsets.only(top: theme.spacing.lg),
+      child: child,
+    );
+  }
+}
+
+/// A modal side drawer with controlled and uncontrolled open state.
+class MonoDrawer extends StatefulWidget {
+  const MonoDrawer({
+    super.key,
+    this.trigger,
+    required this.child,
+    this.open,
+    this.defaultOpen = false,
+    this.onOpenChange,
+    this.side = MonoDrawerSide.start,
+    this.dismissible = true,
+    this.requestFocus = true,
+    this.semanticLabel,
+    this.width,
+    this.statesController,
+  }) : assert(width == null || width > 0);
+
+  final Widget? trigger;
+  final Widget child;
+  final bool? open;
+  final bool defaultOpen;
+  final ValueChanged<bool>? onOpenChange;
+  final MonoDrawerSide side;
+  final bool dismissible;
+  final bool requestFocus;
+  final String? semanticLabel;
+  final double? width;
+  final MonoStatesController? statesController;
+
+  static MonoDrawerScope? maybeOf(BuildContext context) =>
+      MonoDrawerScope.maybeOf(context);
+
+  @override
+  State<MonoDrawer> createState() => _MonoDrawerState();
+}
+
+class _MonoDrawerState extends State<MonoDrawer> {
+  OverlayEntry? _entry;
+  FocusNode? _previousFocus;
+  late bool _uncontrolledOpen;
+  late MonoStatesController _statesController;
+  late bool _ownsStatesController;
+  MonokitThemeData? _overlayTheme;
+  TextDirection _textDirection = TextDirection.ltr;
+  bool _disableAnimations = false;
+  bool _overlaySyncScheduled = false;
+  bool _restoreFocusOnNextOverlaySync = false;
+
+  bool get _isControlled => widget.open != null;
+  bool get _isOpen => widget.open ?? _uncontrolledOpen;
+
+  @override
+  void initState() {
+    super.initState();
+    _uncontrolledOpen = widget.defaultOpen;
+    _ownsStatesController = widget.statesController == null;
+    _statesController = widget.statesController ?? MonoStatesController();
+    _syncStates();
+    _statesController.addListener(_handleStatesChanged);
+    _scheduleOverlaySync();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scheduleOverlaySync();
+  }
+
+  @override
+  void didUpdateWidget(covariant MonoDrawer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final bool wasOpen = oldWidget.open ?? _uncontrolledOpen;
+    if (oldWidget.open != null && widget.open == null) {
+      _uncontrolledOpen = oldWidget.open!;
+    }
+    if (oldWidget.statesController != widget.statesController) {
+      _statesController.removeListener(_handleStatesChanged);
+      if (_ownsStatesController) {
+        _statesController.dispose();
+      }
+      _ownsStatesController = widget.statesController == null;
+      _statesController = widget.statesController ?? MonoStatesController();
+      _syncStates();
+      _statesController.addListener(_handleStatesChanged);
+    }
+    _syncStates();
+    _scheduleOverlaySync(restoreFocus: wasOpen && !_isOpen);
+  }
+
+  @override
+  void dispose() {
+    _removeOverlayNow();
+    _statesController.removeListener(_handleStatesChanged);
+    if (_ownsStatesController) {
+      _statesController.dispose();
+    }
+    super.dispose();
+  }
+
+  void _syncStates() => _statesController.update(MonoState.open, _isOpen);
+
+  void _handleStatesChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _requestOpen(bool value) {
+    if (_isOpen == value) {
+      return;
+    }
+    if (_isControlled) {
+      widget.onOpenChange?.call(value);
+      return;
+    }
+    setState(() => _uncontrolledOpen = value);
+    _statesController.update(MonoState.open, value);
+    widget.onOpenChange?.call(value);
+    _scheduleOverlaySync(restoreFocus: !value);
+  }
+
+  void _scheduleOverlaySync({bool restoreFocus = false}) {
+    _restoreFocusOnNextOverlaySync |= restoreFocus;
+    if (_overlaySyncScheduled || !mounted) {
+      return;
+    }
+    _overlaySyncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _overlaySyncScheduled = false;
+      if (!mounted) {
+        return;
+      }
+      final bool restoreFocusOnRemove = _restoreFocusOnNextOverlaySync;
+      _restoreFocusOnNextOverlaySync = false;
+      if (_isOpen) {
+        _showOrRefreshOverlayNow();
+      } else {
+        _removeOverlayNow(restoreFocus: restoreFocusOnRemove);
+      }
+    });
+  }
+
+  void _showOrRefreshOverlayNow() {
+    if (!mounted) {
+      return;
+    }
+    _overlayTheme = MonokitTheme.of(context);
+    _textDirection = Directionality.of(context);
+    _disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final OverlayEntry? entry = _entry;
+    if (entry != null) {
+      entry.markNeedsBuild();
+      return;
+    }
+    final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) {
+      return;
+    }
+    _previousFocus = FocusManager.instance.primaryFocus;
+    _entry = OverlayEntry(
+      maintainState: true,
+      builder: (BuildContext context) => _buildOverlay(),
+    );
+    overlay.insert(_entry!);
+  }
+
+  void _removeOverlayNow({bool restoreFocus = false}) {
+    final OverlayEntry? entry = _entry;
+    _entry = null;
+    entry?.remove();
+    entry?.dispose();
+    if (restoreFocus) {
+      final FocusNode? focus = _previousFocus;
+      if (focus != null && focus.canRequestFocus) {
+        focus.requestFocus();
+      }
+    }
+    _previousFocus = null;
+  }
+
+  Widget _buildOverlay() {
+    final MonokitThemeData? theme = _overlayTheme;
+    if (theme == null) {
+      return const SizedBox.shrink();
+    }
+    return MonokitTheme(
+      data: theme,
+      child: _MonoDrawerOverlay(
+        theme: theme,
+        side: widget.side,
+        textDirection: _textDirection,
+        dismissible: widget.dismissible,
+        requestFocus: widget.requestFocus,
+        disableAnimations: _disableAnimations,
+        semanticLabel: widget.semanticLabel,
+        width: widget.width,
+        onDismiss: () => _requestOpen(false),
+        scope: MonoDrawerScope(
+          isOpen: _isOpen,
+          open: () => _requestOpen(true),
+          close: () => _requestOpen(false),
+          toggle: () => _requestOpen(!_isOpen),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget trigger = widget.trigger == null
+        ? const SizedBox.shrink()
+        : widget.trigger is MonoDrawerTrigger
+        ? widget.trigger!
+        : GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => _requestOpen(!_isOpen),
+            child: widget.trigger,
+          );
+    return MonoDrawerScope(
+      isOpen: _isOpen,
+      open: () => _requestOpen(true),
+      close: () => _requestOpen(false),
+      toggle: () => _requestOpen(!_isOpen),
+      child: trigger,
+    );
+  }
+}
+
+class _MonoDrawerOverlay extends StatefulWidget {
+  const _MonoDrawerOverlay({
+    required this.theme,
+    required this.side,
+    required this.textDirection,
+    required this.dismissible,
+    required this.requestFocus,
+    required this.disableAnimations,
+    required this.scope,
+    required this.onDismiss,
+    this.semanticLabel,
+    this.width,
+  });
+
+  final MonokitThemeData theme;
+  final MonoDrawerSide side;
+  final TextDirection textDirection;
+  final bool dismissible;
+  final bool requestFocus;
+  final bool disableAnimations;
+  final MonoDrawerScope scope;
+  final VoidCallback onDismiss;
+  final String? semanticLabel;
+  final double? width;
+
+  @override
+  State<_MonoDrawerOverlay> createState() => _MonoDrawerOverlayState();
+}
+
+class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.theme.motion.duration,
+    );
+    _focusNode = FocusNode(debugLabel: 'MonoDrawer');
+    if (widget.disableAnimations) {
+      _controller.value = 1;
+    } else {
+      _controller.forward();
+    }
+    if (widget.requestFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Animation<double> animation = CurvedAnimation(
+      parent: _controller,
+      curve: widget.theme.motion.curve,
+    );
+    final bool startIsLeft = widget.textDirection == TextDirection.ltr;
+    final bool opensLeft = widget.side == MonoDrawerSide.start
+        ? startIsLeft
+        : !startIsLeft;
+    final Alignment alignment = opensLeft
+        ? Alignment.centerLeft
+        : Alignment.centerRight;
+    final Offset begin = Offset(opensLeft ? -1 : 1, 0);
+    final BorderRadius radius = opensLeft
+        ? BorderRadius.horizontal(right: Radius.circular(widget.theme.radii.xl))
+        : BorderRadius.horizontal(left: Radius.circular(widget.theme.radii.xl));
+    final double width = widget.width ?? widget.theme.spacing.giant * 7;
+    final Widget surface = SafeArea(
+      child: SizedBox(
+        width: width,
+        height: double.infinity,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.theme.colors.popover,
+            borderRadius: radius,
+            border: Border.all(color: widget.theme.colors.border),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: widget.theme.colors.foreground.withAlpha(48),
+                blurRadius: widget.theme.spacing.xxl,
+                offset: Offset(
+                  opensLeft
+                      ? widget.theme.spacing.xs
+                      : -widget.theme.spacing.xs,
+                  0,
+                ),
+              ),
+            ],
+          ),
+          child: widget.scope,
+        ),
+      ),
+    );
+
+    return FocusScope(
+      autofocus: widget.requestFocus,
+      child: Focus(
+        focusNode: _focusNode,
+        onKeyEvent: (FocusNode node, KeyEvent event) {
+          if (widget.dismissible &&
+              event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.escape) {
+            widget.onDismiss();
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            FadeTransition(
+              opacity: animation,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.dismissible ? widget.onDismiss : null,
+                child: ColoredBox(
+                  color: widget.theme.colors.foreground.withAlpha(128),
+                ),
+              ),
+            ),
+            Align(
+              alignment: alignment,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: begin,
+                  end: Offset.zero,
+                ).animate(animation),
+                child: Semantics(
+                  scopesRoute: true,
+                  namesRoute: true,
+                  explicitChildNodes: true,
+                  label: widget.semanticLabel ?? 'Drawer',
+                  child: surface,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
