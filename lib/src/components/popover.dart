@@ -1,0 +1,638 @@
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
+import '../primitives/mono_pressable.dart';
+import '../theme/monokit_theme.dart';
+import '../theme/monokit_theme_data.dart';
+
+/// Where a [MonoPopover] is anchored relative to its trigger.
+enum MonoPopoverPlacement {
+  top,
+  topStart,
+  topEnd,
+  right,
+  rightStart,
+  rightEnd,
+  bottom,
+  bottomStart,
+  bottomEnd,
+  left,
+  leftStart,
+  leftEnd,
+}
+
+/// Exposes a [MonoPopover]'s current state and close actions to descendants.
+class MonoPopoverScope extends InheritedWidget {
+  const MonoPopoverScope({
+    super.key,
+    required this.isOpen,
+    required this.open,
+    required this.close,
+    required this.toggle,
+    required super.child,
+  });
+
+  final bool isOpen;
+  final VoidCallback open;
+  final VoidCallback close;
+  final VoidCallback toggle;
+
+  static MonoPopoverScope of(BuildContext context) {
+    final scope = maybeOf(context);
+    assert(scope != null, 'No MonoPopover found in context.');
+    return scope!;
+  }
+
+  static MonoPopoverScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MonoPopoverScope>();
+  }
+
+  @override
+  bool updateShouldNotify(MonoPopoverScope oldWidget) {
+    return isOpen != oldWidget.isOpen ||
+        open != oldWidget.open ||
+        close != oldWidget.close ||
+        toggle != oldWidget.toggle;
+  }
+}
+
+/// An accessible trigger that toggles the nearest [MonoPopover].
+///
+/// Use this for keyboard activation when [MonoPopover.trigger] is not already
+/// an interactive widget such as [MonoButton].
+class MonoPopoverTrigger extends StatelessWidget {
+  const MonoPopoverTrigger({
+    super.key,
+    required this.child,
+    this.semanticLabel = 'Toggle popover',
+    this.enabled = true,
+  });
+
+  final Widget child;
+  final String semanticLabel;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = MonoPopoverScope.maybeOf(context);
+    return MonoPressable(
+      semanticLabel: semanticLabel,
+      enabled: enabled && scope != null,
+      onPressed: scope?.toggle,
+      child: (context, states) =>
+          Semantics(expanded: scope?.isOpen ?? false, child: child),
+    );
+  }
+}
+
+/// An accessible close action for content inside a [MonoPopover].
+class MonoPopoverClose extends StatelessWidget {
+  const MonoPopoverClose({
+    super.key,
+    required this.child,
+    this.semanticLabel = 'Close popover',
+  });
+
+  final Widget child;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = MonoPopoverScope.maybeOf(context);
+    return MonoPressable(
+      semanticLabel: semanticLabel,
+      enabled: scope != null,
+      onPressed: scope?.close,
+      child: (context, states) => child,
+    );
+  }
+}
+
+/// A token-derived floating surface for [MonoPopover] content.
+class MonoPopoverContent extends StatelessWidget {
+  const MonoPopoverContent({
+    super.key,
+    required this.child,
+    this.padding,
+    this.constraints,
+    this.semanticLabel,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final BoxConstraints? constraints;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    Widget surface = DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colors.popover,
+        border: Border.all(color: theme.colors.border),
+        borderRadius: BorderRadius.circular(theme.radii.lg),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: theme.colors.foreground.withValues(alpha: 0.12),
+            blurRadius: theme.spacing.xxl,
+            offset: Offset(0, theme.spacing.sm),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: padding ?? EdgeInsets.all(theme.spacing.md),
+        child: DefaultTextStyle.merge(
+          style: theme.typography.bodyMedium.copyWith(
+            color: theme.colors.popoverForeground,
+          ),
+          child: child,
+        ),
+      ),
+    );
+    if (constraints != null) {
+      surface = ConstrainedBox(constraints: constraints!, child: surface);
+    }
+    return Semantics(
+      container: true,
+      label: semanticLabel ?? 'Popover',
+      child: surface,
+    );
+  }
+}
+
+/// A non-modal, anchored overlay with controlled and uncontrolled modes.
+///
+/// A plain [trigger] opens the popover on tap. Use [MonoPopoverTrigger] when
+/// the trigger itself needs the library-provided keyboard interaction. Use
+/// [open] with [onOpenChange] for controlled state, or [defaultOpen] for an
+/// uncontrolled popover.
+class MonoPopover extends StatefulWidget {
+  const MonoPopover({
+    super.key,
+    this.trigger,
+    required this.child,
+    this.open,
+    this.defaultOpen = false,
+    this.onOpenChange,
+    this.placement = MonoPopoverPlacement.bottomStart,
+    this.offset = Offset.zero,
+    this.gap,
+    this.dismissible = true,
+    this.requestFocus = true,
+    this.semanticLabel,
+  });
+
+  final Widget? trigger;
+  final Widget child;
+  final bool? open;
+  final bool defaultOpen;
+  final ValueChanged<bool>? onOpenChange;
+  final MonoPopoverPlacement placement;
+  final Offset offset;
+
+  /// Space between the trigger and the popover. Defaults to the small spacing
+  /// token.
+  final double? gap;
+
+  /// Dismisses from Escape and an outside pointer press when true.
+  final bool dismissible;
+
+  /// Moves keyboard focus into the overlay when it opens.
+  final bool requestFocus;
+  final String? semanticLabel;
+
+  static MonoPopoverScope of(BuildContext context) =>
+      MonoPopoverScope.of(context);
+
+  static MonoPopoverScope? maybeOf(BuildContext context) =>
+      MonoPopoverScope.maybeOf(context);
+
+  @override
+  State<MonoPopover> createState() => _MonoPopoverState();
+}
+
+class _MonoPopoverState extends State<MonoPopover> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _entry;
+  FocusNode? _previousFocus;
+  late bool _uncontrolledOpen;
+  MonokitThemeData? _overlayTheme;
+  TextDirection _textDirection = TextDirection.ltr;
+  bool _disableAnimations = false;
+  bool _overlaySyncScheduled = false;
+  bool _restoreFocusOnNextOverlayRemoval = false;
+
+  bool get _isControlled => widget.open != null;
+  bool get _isOpen => widget.open ?? _uncontrolledOpen;
+
+  @override
+  void initState() {
+    super.initState();
+    _uncontrolledOpen = widget.defaultOpen;
+    _scheduleOverlaySync();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scheduleOverlaySync();
+  }
+
+  @override
+  void didUpdateWidget(covariant MonoPopover oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.open != null && widget.open == null) {
+      _uncontrolledOpen = oldWidget.open!;
+    }
+
+    _scheduleOverlaySync(
+      restoreFocus: oldWidget.open != widget.open && !_isOpen,
+    );
+  }
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _requestOpen(bool value) {
+    if (_isOpen == value) {
+      return;
+    }
+    if (_isControlled) {
+      widget.onOpenChange?.call(value);
+      return;
+    }
+
+    setState(() => _uncontrolledOpen = value);
+    widget.onOpenChange?.call(value);
+    _scheduleOverlaySync(restoreFocus: !value);
+  }
+
+  /// Defers overlay mutations until the current widget update has completed.
+  ///
+  /// An [OverlayEntry] belongs to a separate part of the element tree, so
+  /// inserting, removing, or rebuilding it from a lifecycle callback can mark
+  /// that tree dirty while this widget is building. Coalescing work here also
+  /// makes a sequence of controlled updates resolve to its final value.
+  void _scheduleOverlaySync({bool restoreFocus = false}) {
+    _restoreFocusOnNextOverlayRemoval |= restoreFocus;
+    if (_overlaySyncScheduled) {
+      return;
+    }
+    _overlaySyncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _overlaySyncScheduled = false;
+      final shouldRestoreFocus = _restoreFocusOnNextOverlayRemoval;
+      _restoreFocusOnNextOverlayRemoval = false;
+      if (!mounted) {
+        return;
+      }
+      if (_isOpen) {
+        _showOverlay();
+      } else {
+        _removeOverlay(restoreFocus: shouldRestoreFocus);
+      }
+    });
+  }
+
+  void _showOverlay() {
+    if (_entry != null || !mounted) {
+      _refreshOverlay();
+      return;
+    }
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) {
+      return;
+    }
+    _previousFocus = FocusManager.instance.primaryFocus;
+    _overlayTheme = MonokitTheme.of(context);
+    _textDirection = Directionality.of(context);
+    _disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _entry = OverlayEntry(
+      maintainState: true,
+      builder: (overlayContext) => _buildOverlay(),
+    );
+    overlay.insert(_entry!);
+  }
+
+  void _refreshOverlay() {
+    if (_entry == null || !mounted) {
+      return;
+    }
+    _overlayTheme = MonokitTheme.of(context);
+    _textDirection = Directionality.of(context);
+    _disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _entry!.markNeedsBuild();
+  }
+
+  void _removeOverlay({bool restoreFocus = false}) {
+    final entry = _entry;
+    _entry = null;
+    entry?.remove();
+    entry?.dispose();
+    if (restoreFocus) {
+      final previousFocus = _previousFocus;
+      if (previousFocus != null && previousFocus.canRequestFocus) {
+        previousFocus.requestFocus();
+      }
+    }
+    _previousFocus = null;
+  }
+
+  Widget _buildOverlay() {
+    final theme = _overlayTheme;
+    if (theme == null) {
+      return const SizedBox.shrink();
+    }
+    return _MonoPopoverOverlay(
+      theme: theme,
+      layerLink: _layerLink,
+      placement: widget.placement,
+      offset: widget.offset,
+      gap: widget.gap ?? theme.spacing.sm,
+      textDirection: _textDirection,
+      dismissible: widget.dismissible,
+      requestFocus: widget.requestFocus,
+      disableAnimations: _disableAnimations,
+      semanticLabel: widget.semanticLabel,
+      onOpen: () => _requestOpen(true),
+      onDismiss: () => _requestOpen(false),
+      onToggle: () => _requestOpen(!_isOpen),
+      child: widget.child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final trigger = widget.trigger;
+    final child = trigger == null
+        ? const SizedBox.shrink()
+        : trigger is MonoPopoverTrigger
+        ? trigger
+        : GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => _requestOpen(!_isOpen),
+            child: trigger,
+          );
+    return MonoPopoverScope(
+      isOpen: _isOpen,
+      open: () => _requestOpen(true),
+      close: () => _requestOpen(false),
+      toggle: () => _requestOpen(!_isOpen),
+      child: CompositedTransformTarget(link: _layerLink, child: child),
+    );
+  }
+}
+
+class _MonoPopoverOverlay extends StatefulWidget {
+  const _MonoPopoverOverlay({
+    required this.theme,
+    required this.layerLink,
+    required this.placement,
+    required this.offset,
+    required this.gap,
+    required this.textDirection,
+    required this.dismissible,
+    required this.requestFocus,
+    required this.disableAnimations,
+    required this.onOpen,
+    required this.onDismiss,
+    required this.onToggle,
+    required this.child,
+    this.semanticLabel,
+  });
+
+  final MonokitThemeData theme;
+  final LayerLink layerLink;
+  final MonoPopoverPlacement placement;
+  final Offset offset;
+  final double gap;
+  final TextDirection textDirection;
+  final bool dismissible;
+  final bool requestFocus;
+  final bool disableAnimations;
+  final VoidCallback onOpen;
+  final VoidCallback onDismiss;
+  final VoidCallback onToggle;
+  final Widget child;
+  final String? semanticLabel;
+
+  @override
+  State<_MonoPopoverOverlay> createState() => _MonoPopoverOverlayState();
+}
+
+class _MonoPopoverOverlayState extends State<_MonoPopoverOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.disableAnimations
+          ? Duration.zero
+          : widget.theme.motion.duration,
+    )..forward();
+    _focusNode = FocusNode(debugLabel: 'MonoPopover');
+    if (widget.requestFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final anchors = _MonoPopoverAnchors.resolve(
+      widget.placement,
+      widget.textDirection,
+    );
+    final animation = CurvedAnimation(
+      parent: _controller,
+      curve: widget.theme.motion.curve,
+    );
+    final follower = CompositedTransformFollower(
+      link: widget.layerLink,
+      showWhenUnlinked: false,
+      targetAnchor: anchors.targetAnchor,
+      followerAnchor: anchors.followerAnchor,
+      offset: anchors.offset(widget.gap) + widget.offset,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {},
+        child: FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.98, end: 1).animate(animation),
+            alignment: anchors.scaleAlignment,
+            child: Semantics(
+              container: true,
+              label: widget.semanticLabel ?? 'Popover',
+              child: MonoPopoverScope(
+                isOpen: true,
+                open: widget.onOpen,
+                close: widget.onDismiss,
+                toggle: widget.onToggle,
+                child: widget.child,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return MonokitTheme(
+      data: widget.theme,
+      child: FocusScope(
+        autofocus: false,
+        child: Focus(
+          focusNode: _focusNode,
+          onKeyEvent: (_, event) {
+            if (widget.dismissible &&
+                event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.escape) {
+              widget.onDismiss();
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          },
+          child: Stack(
+            fit: StackFit.expand,
+            clipBehavior: Clip.none,
+            children: <Widget>[
+              if (widget.dismissible)
+                Positioned.fill(
+                  child: Semantics(
+                    button: true,
+                    label: 'Dismiss popover',
+                    onTap: widget.onDismiss,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: widget.onDismiss,
+                    ),
+                  ),
+                ),
+              follower,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+@immutable
+class _MonoPopoverAnchors {
+  const _MonoPopoverAnchors({
+    required this.targetAnchor,
+    required this.followerAnchor,
+    required this.direction,
+  });
+
+  final Alignment targetAnchor;
+  final Alignment followerAnchor;
+  final AxisDirection direction;
+
+  Alignment get scaleAlignment => switch (direction) {
+    AxisDirection.up => Alignment.bottomCenter,
+    AxisDirection.down => Alignment.topCenter,
+    AxisDirection.left => Alignment.centerRight,
+    AxisDirection.right => Alignment.centerLeft,
+  };
+
+  Offset offset(double gap) => switch (direction) {
+    AxisDirection.up => Offset(0, -gap),
+    AxisDirection.down => Offset(0, gap),
+    AxisDirection.left => Offset(-gap, 0),
+    AxisDirection.right => Offset(gap, 0),
+  };
+
+  static _MonoPopoverAnchors resolve(
+    MonoPopoverPlacement placement,
+    TextDirection textDirection,
+  ) {
+    final isLtr = textDirection == TextDirection.ltr;
+    final start = isLtr ? Alignment.topLeft : Alignment.topRight;
+    final end = isLtr ? Alignment.topRight : Alignment.topLeft;
+    final bottomStart = isLtr ? Alignment.bottomLeft : Alignment.bottomRight;
+    final bottomEnd = isLtr ? Alignment.bottomRight : Alignment.bottomLeft;
+
+    return switch (placement) {
+      MonoPopoverPlacement.top => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.topCenter,
+        followerAnchor: Alignment.bottomCenter,
+        direction: AxisDirection.up,
+      ),
+      MonoPopoverPlacement.topStart => _MonoPopoverAnchors(
+        targetAnchor: start,
+        followerAnchor: bottomStart,
+        direction: AxisDirection.up,
+      ),
+      MonoPopoverPlacement.topEnd => _MonoPopoverAnchors(
+        targetAnchor: end,
+        followerAnchor: bottomEnd,
+        direction: AxisDirection.up,
+      ),
+      MonoPopoverPlacement.right => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.centerRight,
+        followerAnchor: Alignment.centerLeft,
+        direction: AxisDirection.right,
+      ),
+      MonoPopoverPlacement.rightStart => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.topRight,
+        followerAnchor: Alignment.topLeft,
+        direction: AxisDirection.right,
+      ),
+      MonoPopoverPlacement.rightEnd => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.bottomRight,
+        followerAnchor: Alignment.bottomLeft,
+        direction: AxisDirection.right,
+      ),
+      MonoPopoverPlacement.bottom => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.bottomCenter,
+        followerAnchor: Alignment.topCenter,
+        direction: AxisDirection.down,
+      ),
+      MonoPopoverPlacement.bottomStart => _MonoPopoverAnchors(
+        targetAnchor: bottomStart,
+        followerAnchor: start,
+        direction: AxisDirection.down,
+      ),
+      MonoPopoverPlacement.bottomEnd => _MonoPopoverAnchors(
+        targetAnchor: bottomEnd,
+        followerAnchor: end,
+        direction: AxisDirection.down,
+      ),
+      MonoPopoverPlacement.left => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.centerLeft,
+        followerAnchor: Alignment.centerRight,
+        direction: AxisDirection.left,
+      ),
+      MonoPopoverPlacement.leftStart => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.topLeft,
+        followerAnchor: Alignment.topRight,
+        direction: AxisDirection.left,
+      ),
+      MonoPopoverPlacement.leftEnd => const _MonoPopoverAnchors(
+        targetAnchor: Alignment.bottomLeft,
+        followerAnchor: Alignment.bottomRight,
+        direction: AxisDirection.left,
+      ),
+    };
+  }
+}
