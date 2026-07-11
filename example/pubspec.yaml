@@ -1,0 +1,23 @@
+name: monokit_example
+description: A component gallery for the Monokit Flutter package.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  monokit:
+    path: ../
+  go_router: ^17.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.15.1
+  go_router_builder: ^4.3.0
+
+flutter:
