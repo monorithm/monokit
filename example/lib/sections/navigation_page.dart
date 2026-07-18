@@ -66,15 +66,9 @@ class NavigationPage extends StatelessWidget {
           widgetName: 'MonoBreadcrumb',
           child: MonoBreadcrumb(
             children: <Widget>[
-              MonoBreadcrumbLink(
-                onPressed: () {},
-                child: const Text('Home'),
-              ),
+              MonoBreadcrumbLink(onPressed: () {}, child: const Text('Home')),
               const MonoBreadcrumbSeparator(),
-              MonoBreadcrumbLink(
-                onPressed: () {},
-                child: const Text('Phones'),
-              ),
+              MonoBreadcrumbLink(onPressed: () {}, child: const Text('Phones')),
               const MonoBreadcrumbSeparator(),
               const MonoBreadcrumbPage(child: Text('iPhone 13')),
             ],

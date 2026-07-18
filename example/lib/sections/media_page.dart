@@ -62,7 +62,8 @@ class MediaPage extends StatelessWidget {
         ComponentSection(
           title: 'Waveform',
           widgetName: 'MonoWaveform',
-          description: 'Voice-note visual (captions/transcripts required in '
+          description:
+              'Voice-note visual (captions/transcripts required in '
               'production).',
           child: const SizedBox(
             width: 260,

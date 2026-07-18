@@ -75,8 +75,9 @@ class _MonoPressableState extends State<MonoPressable> {
       _setController(widget.statesController);
     }
     if (oldWidget.focusNode != widget.focusNode) {
-      (oldWidget.focusNode ?? _internalFocusNode)
-          ?.removeListener(_onFocusChanged);
+      (oldWidget.focusNode ?? _internalFocusNode)?.removeListener(
+        _onFocusChanged,
+      );
       _focusNode.addListener(_onFocusChanged);
       _onFocusChanged();
     }

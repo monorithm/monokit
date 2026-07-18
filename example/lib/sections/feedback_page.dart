@@ -34,7 +34,8 @@ class FeedbackPage extends StatelessWidget {
         ComponentSection(
           title: 'Banners',
           widgetName: 'MonoBanner',
-          description: 'Inline, dismissible status. Offline is a condition, '
+          description:
+              'Inline, dismissible status. Offline is a condition, '
               'not an error.',
           child: Column(
             children: <Widget>[
@@ -75,10 +76,7 @@ class FeedbackPage extends StatelessWidget {
               SizedBox(height: theme.spacing.sm),
               const MonoSkeleton(width: 160, height: 16),
               SizedBox(height: theme.spacing.sm),
-              const MonoSkeleton(
-                width: 120,
-                height: 12,
-              ),
+              const MonoSkeleton(width: 120, height: 12),
             ],
           ),
         ),

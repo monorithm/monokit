@@ -33,8 +33,9 @@ class _MonokitGalleryState extends State<MonokitGallery> {
           title: 'Monokit',
           theme: MonokitThemeData.light(),
           darkTheme: MonokitThemeData.dark(),
-          themeMode:
-              _theme.isDark ? MonokitThemeMode.dark : MonokitThemeMode.light,
+          themeMode: _theme.isDark
+              ? MonokitThemeMode.dark
+              : MonokitThemeMode.light,
           routerConfig: router,
         ),
       ),
