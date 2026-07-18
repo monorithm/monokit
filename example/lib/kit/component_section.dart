@@ -69,10 +69,7 @@ class ComponentSection extends StatelessWidget {
           MonoCard(
             child: Padding(
               padding: EdgeInsets.all(theme.spacing.lg),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: child,
-              ),
+              child: Align(alignment: Alignment.centerLeft, child: child),
             ),
           ),
           if (code != null) ...<Widget>[

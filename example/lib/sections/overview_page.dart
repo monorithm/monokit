@@ -26,17 +26,20 @@ class OverviewPage extends StatelessWidget {
           children: const <Widget>[
             _PitchCard(
               title: 'Two registers',
-              body: 'Component sections document every widget; blocks show them '
+              body:
+                  'Component sections document every widget; blocks show them '
                   'composed into real product screens.',
             ),
             _PitchCard(
               title: 'Honest states',
-              body: 'The command lifecycle is design vocabulary — pending '
+              body:
+                  'The command lifecycle is design vocabulary — pending '
                   'badges, reconciling shimmer, accepted ≠ success.',
             ),
             _PitchCard(
               title: 'Built for Monorithm',
-              body: 'A country-bounded intent marketplace: chat, media, '
+              body:
+                  'A country-bounded intent marketplace: chat, media, '
                   'commerce and honest-state families lead.',
             ),
           ],
@@ -52,8 +55,10 @@ class OverviewPage extends StatelessWidget {
                   children: <Widget>[
                     const MonoIcon(MonoIcons.sparkles),
                     SizedBox(width: theme.spacing.sm),
-                    Text('Start with the Foundations',
-                        style: theme.typography.titleMedium),
+                    Text(
+                      'Start with the Foundations',
+                      style: theme.typography.titleMedium,
+                    ),
                   ],
                 ),
                 SizedBox(height: theme.spacing.sm),

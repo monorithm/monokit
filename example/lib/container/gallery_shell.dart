@@ -193,8 +193,9 @@ class _NavItem extends StatelessWidget {
         },
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment:
-              rail ? MainAxisAlignment.center : MainAxisAlignment.start,
+          mainAxisAlignment: rail
+              ? MainAxisAlignment.center
+              : MainAxisAlignment.start,
           children: <Widget>[
             MonoIcon(section.icon, size: 16),
             if (!rail) ...<Widget>[

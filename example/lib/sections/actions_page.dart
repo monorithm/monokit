@@ -15,7 +15,8 @@ class ActionsPage extends StatelessWidget {
         ComponentSection(
           title: 'Every button variant × size',
           widgetName: 'MonoButton',
-          description: 'Six variants across the size ramp. Destructive is soft.',
+          description:
+              'Six variants across the size ramp. Destructive is soft.',
           code:
               "MonoButton(\n  variant: MonoButtonVariant.primary,\n  size: MonoButtonSize.md,\n  onPressed: () {},\n  child: const Text('Register interest'),\n)",
           child: VariantMatrix<MonoButtonVariant, MonoButtonSize>(

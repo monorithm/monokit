@@ -134,13 +134,13 @@ class MonoAttachment extends StatelessWidget {
     final label = semanticLabel ?? name ?? title ?? 'Attachment';
 
     Widget buildVisual(Set<MonoState> states) {
-      final visual = child ??
+      final visual =
+          child ??
           switch (variant) {
             MonoAttachmentVariant.image => _buildImage(context),
             MonoAttachmentVariant.link => _buildLink(context, states),
             MonoAttachmentVariant.file ||
-            MonoAttachmentVariant.compact =>
-              _buildFile(context, states),
+            MonoAttachmentVariant.compact => _buildFile(context, states),
           };
       return ConstrainedBox(
         constraints: maxWidth == null
@@ -171,10 +171,7 @@ class MonoAttachment extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = AspectRatio(
       aspectRatio: aspectRatio ?? 4 / 3,
-      child: ColoredBox(
-        color: theme.colors.mediaCanvas,
-        child: thumbnail,
-      ),
+      child: ColoredBox(color: theme.colors.mediaCanvas, child: thumbnail),
     );
     if (description == null) {
       return ClipRRect(
@@ -198,8 +195,9 @@ class MonoAttachment extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(theme.spacing.sm),
               child: DefaultTextStyle.merge(
-                style: theme.typography.bodyMedium
-                    .copyWith(color: theme.colors.foreground),
+                style: theme.typography.bodyMedium.copyWith(
+                  color: theme.colors.foreground,
+                ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 child: description!,
@@ -214,7 +212,8 @@ class MonoAttachment extends StatelessWidget {
   // --- Document card ---------------------------------------------------------
   Widget _buildFile(BuildContext context, Set<MonoState> states) {
     final theme = MonokitTheme.of(context);
-    final active = states.contains(MonoState.hovered) ||
+    final active =
+        states.contains(MonoState.hovered) ||
         states.contains(MonoState.pressed);
     final preview = thumbnail ?? leading;
     return _surface(
@@ -246,14 +245,16 @@ class MonoAttachment extends StatelessWidget {
                       name!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.typography.labelLarge
-                          .copyWith(color: theme.colors.foreground),
+                      style: theme.typography.labelLarge.copyWith(
+                        color: theme.colors.foreground,
+                      ),
                     ),
                   if (meta != null || description != null) ...<Widget>[
                     SizedBox(height: theme.spacing.xs / 2),
                     DefaultTextStyle.merge(
-                      style: theme.typography.labelMedium
-                          .copyWith(color: theme.colors.mutedForeground),
+                      style: theme.typography.labelMedium.copyWith(
+                        color: theme.colors.mutedForeground,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       child: meta != null ? Text(meta!) : description!,
@@ -264,7 +265,10 @@ class MonoAttachment extends StatelessWidget {
             ),
             SizedBox(width: theme.spacing.sm),
             trailing ??
-                MonoIcon(MonoIcons.download, color: theme.colors.mutedForeground),
+                MonoIcon(
+                  MonoIcons.download,
+                  color: theme.colors.mutedForeground,
+                ),
           ],
         ),
       ),
@@ -274,7 +278,8 @@ class MonoAttachment extends StatelessWidget {
   // --- Link unfurl -----------------------------------------------------------
   Widget _buildLink(BuildContext context, Set<MonoState> states) {
     final theme = MonokitTheme.of(context);
-    final active = states.contains(MonoState.hovered) ||
+    final active =
+        states.contains(MonoState.hovered) ||
         states.contains(MonoState.pressed);
     return _surface(
       context,
@@ -312,8 +317,9 @@ class MonoAttachment extends StatelessWidget {
                         domain ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.typography.labelMedium
-                            .copyWith(color: theme.colors.mutedForeground),
+                        style: theme.typography.labelMedium.copyWith(
+                          color: theme.colors.mutedForeground,
+                        ),
                       ),
                     ),
                   ],
@@ -323,14 +329,16 @@ class MonoAttachment extends StatelessWidget {
                   title ?? '',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.typography.labelLarge
-                      .copyWith(color: theme.colors.foreground),
+                  style: theme.typography.labelLarge.copyWith(
+                    color: theme.colors.foreground,
+                  ),
                 ),
                 if (description != null) ...<Widget>[
                   SizedBox(height: theme.spacing.xs / 2),
                   DefaultTextStyle.merge(
-                    style: theme.typography.labelMedium
-                        .copyWith(color: theme.colors.mutedForeground),
+                    style: theme.typography.labelMedium.copyWith(
+                      color: theme.colors.mutedForeground,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     child: description!,

@@ -56,8 +56,10 @@ class _SignInBlockState extends State<SignInBlock> {
                   child: MonoAvatar.initials('M'),
                 ),
                 SizedBox(height: theme.spacing.lg),
-                Text('Welcome to Monorithm',
-                    style: theme.typography.headlineMedium),
+                Text(
+                  'Welcome to Monorithm',
+                  style: theme.typography.headlineMedium,
+                ),
                 SizedBox(height: theme.spacing.xs),
                 Text(
                   'Post what you have or need. We route it to the right people '

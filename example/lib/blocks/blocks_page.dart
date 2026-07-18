@@ -66,7 +66,10 @@ class BlocksIndexPage extends StatelessWidget {
                         MonoButton(
                           variant: MonoButtonVariant.outline,
                           size: MonoButtonSize.sm,
-                          trailing: const MonoIcon(MonoIcons.arrowRight, size: 14),
+                          trailing: const MonoIcon(
+                            MonoIcons.arrowRight,
+                            size: 14,
+                          ),
                           onPressed: () => context.go(b.path),
                           child: const Text('Open'),
                         ),

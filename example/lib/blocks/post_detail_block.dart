@@ -21,8 +21,9 @@ class _PostDetailBlockState extends State<PostDetailBlock> {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final availability =
-        _sold ? MonoAvailability.fulfilled : MonoAvailability.available;
+    final availability = _sold
+        ? MonoAvailability.fulfilled
+        : MonoAvailability.available;
     final actionable = availability.isActionable;
     return MonoScreen(
       header: Padding(
@@ -42,7 +43,10 @@ class _PostDetailBlockState extends State<PostDetailBlock> {
       body: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          AspectRatio(aspectRatio: 1, child: MonoMediaSurface(child: _post.media)),
+          AspectRatio(
+            aspectRatio: 1,
+            child: MonoMediaSurface(child: _post.media),
+          ),
           Padding(
             padding: EdgeInsets.all(theme.spacing.lg),
             child: Column(

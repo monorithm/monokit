@@ -22,12 +22,18 @@ class MonoIconData {
 /// set. Names describe role, not glyph, so a vendor swap never touches call
 /// sites.
 abstract final class MonoIcons {
-  static const MonoIconData add =
-      MonoIconData(HugeIcons.strokeRoundedAdd01, semanticLabel: 'Add');
-  static const MonoIconData close =
-      MonoIconData(HugeIcons.strokeRoundedCancel01, semanticLabel: 'Close');
-  static const MonoIconData check =
-      MonoIconData(HugeIcons.strokeRoundedTick02, semanticLabel: 'Selected');
+  static const MonoIconData add = MonoIconData(
+    HugeIcons.strokeRoundedAdd01,
+    semanticLabel: 'Add',
+  );
+  static const MonoIconData close = MonoIconData(
+    HugeIcons.strokeRoundedCancel01,
+    semanticLabel: 'Close',
+  );
+  static const MonoIconData check = MonoIconData(
+    HugeIcons.strokeRoundedTick02,
+    semanticLabel: 'Selected',
+  );
   static const MonoIconData chevronDown = MonoIconData(
     HugeIcons.strokeRoundedArrowDown01,
     semanticLabel: 'Expand',
@@ -48,40 +54,62 @@ abstract final class MonoIcons {
     HugeIcons.strokeRoundedArrowRight01,
     semanticLabel: 'Continue',
   );
-  static const MonoIconData menu =
-      MonoIconData(HugeIcons.strokeRoundedMenu01, semanticLabel: 'Menu');
+  static const MonoIconData menu = MonoIconData(
+    HugeIcons.strokeRoundedMenu01,
+    semanticLabel: 'Menu',
+  );
   static const MonoIconData more = MonoIconData(
     HugeIcons.strokeRoundedMoreHorizontal,
     semanticLabel: 'More options',
   );
-  static const MonoIconData sparkles =
-      MonoIconData(HugeIcons.strokeRoundedAiMagic, semanticLabel: 'Sparkles');
-  static const MonoIconData search =
-      MonoIconData(HugeIcons.strokeRoundedSearch01, semanticLabel: 'Search');
-  static const MonoIconData send =
-      MonoIconData(HugeIcons.strokeRoundedSent, semanticLabel: 'Send');
-  static const MonoIconData play =
-      MonoIconData(HugeIcons.strokeRoundedPlay, semanticLabel: 'Play');
-  static const MonoIconData pause =
-      MonoIconData(HugeIcons.strokeRoundedPause, semanticLabel: 'Pause');
+  static const MonoIconData sparkles = MonoIconData(
+    HugeIcons.strokeRoundedAiMagic,
+    semanticLabel: 'Sparkles',
+  );
+  static const MonoIconData search = MonoIconData(
+    HugeIcons.strokeRoundedSearch01,
+    semanticLabel: 'Search',
+  );
+  static const MonoIconData send = MonoIconData(
+    HugeIcons.strokeRoundedSent,
+    semanticLabel: 'Send',
+  );
+  static const MonoIconData play = MonoIconData(
+    HugeIcons.strokeRoundedPlay,
+    semanticLabel: 'Play',
+  );
+  static const MonoIconData pause = MonoIconData(
+    HugeIcons.strokeRoundedPause,
+    semanticLabel: 'Pause',
+  );
   static const MonoIconData bag = MonoIconData(
     HugeIcons.strokeRoundedShoppingBag01,
     semanticLabel: 'Shop',
   );
-  static const MonoIconData receipt =
-      MonoIconData(HugeIcons.strokeRoundedInvoice01, semanticLabel: 'Orders');
+  static const MonoIconData receipt = MonoIconData(
+    HugeIcons.strokeRoundedInvoice01,
+    semanticLabel: 'Orders',
+  );
   static const MonoIconData grid = MonoIconData(
     HugeIcons.strokeRoundedDashboardSquare01,
     semanticLabel: 'Workspace',
   );
-  static const MonoIconData video =
-      MonoIconData(HugeIcons.strokeRoundedVideo01, semanticLabel: 'Live video');
-  static const MonoIconData message =
-      MonoIconData(HugeIcons.strokeRoundedMessage01, semanticLabel: 'Messages');
-  static const MonoIconData call =
-      MonoIconData(HugeIcons.strokeRoundedCall, semanticLabel: 'Call');
-  static const MonoIconData like =
-      MonoIconData(HugeIcons.strokeRoundedFavourite, semanticLabel: 'Like');
+  static const MonoIconData video = MonoIconData(
+    HugeIcons.strokeRoundedVideo01,
+    semanticLabel: 'Live video',
+  );
+  static const MonoIconData message = MonoIconData(
+    HugeIcons.strokeRoundedMessage01,
+    semanticLabel: 'Messages',
+  );
+  static const MonoIconData call = MonoIconData(
+    HugeIcons.strokeRoundedCall,
+    semanticLabel: 'Call',
+  );
+  static const MonoIconData like = MonoIconData(
+    HugeIcons.strokeRoundedFavourite,
+    semanticLabel: 'Like',
+  );
   static const MonoIconData location = MonoIconData(
     HugeIcons.strokeRoundedLocation01,
     semanticLabel: 'Location',
@@ -90,24 +118,38 @@ abstract final class MonoIcons {
     HugeIcons.strokeRoundedFilterHorizontal,
     semanticLabel: 'Filter',
   );
-  static const MonoIconData mic =
-      MonoIconData(HugeIcons.strokeRoundedMic01, semanticLabel: 'Voice note');
-  static const MonoIconData image =
-      MonoIconData(HugeIcons.strokeRoundedImage01, semanticLabel: 'Photo');
-  static const MonoIconData star =
-      MonoIconData(HugeIcons.strokeRoundedStar, semanticLabel: 'Featured');
-  static const MonoIconData bookmark =
-      MonoIconData(HugeIcons.strokeRoundedBookmark01, semanticLabel: 'Save');
-  static const MonoIconData mute =
-      MonoIconData(HugeIcons.strokeRoundedVolumeMute01, semanticLabel: 'Mute');
-  static const MonoIconData clock =
-      MonoIconData(HugeIcons.strokeRoundedClock01, semanticLabel: 'Time');
+  static const MonoIconData mic = MonoIconData(
+    HugeIcons.strokeRoundedMic01,
+    semanticLabel: 'Voice note',
+  );
+  static const MonoIconData image = MonoIconData(
+    HugeIcons.strokeRoundedImage01,
+    semanticLabel: 'Photo',
+  );
+  static const MonoIconData star = MonoIconData(
+    HugeIcons.strokeRoundedStar,
+    semanticLabel: 'Featured',
+  );
+  static const MonoIconData bookmark = MonoIconData(
+    HugeIcons.strokeRoundedBookmark01,
+    semanticLabel: 'Save',
+  );
+  static const MonoIconData mute = MonoIconData(
+    HugeIcons.strokeRoundedVolumeMute01,
+    semanticLabel: 'Mute',
+  );
+  static const MonoIconData clock = MonoIconData(
+    HugeIcons.strokeRoundedClock01,
+    semanticLabel: 'Time',
+  );
   static const MonoIconData document = MonoIconData(
     HugeIcons.strokeRoundedFile01,
     semanticLabel: 'Document',
   );
-  static const MonoIconData link =
-      MonoIconData(HugeIcons.strokeRoundedLink01, semanticLabel: 'Link');
+  static const MonoIconData link = MonoIconData(
+    HugeIcons.strokeRoundedLink01,
+    semanticLabel: 'Link',
+  );
   static const MonoIconData download = MonoIconData(
     HugeIcons.strokeRoundedDownload01,
     semanticLabel: 'Download',

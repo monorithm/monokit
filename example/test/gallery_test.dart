@@ -44,7 +44,11 @@ void main() {
     for (final section in gallerySections) {
       router.go(section.path);
       await _flush(tester);
-      expect(tester.takeException(), isNull, reason: 'overflow at ${section.path}');
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'overflow at ${section.path}',
+      );
     }
   });
 
