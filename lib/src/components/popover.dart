@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_placement.dart';
 import '../primitives/mono_pressable.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
@@ -221,6 +222,9 @@ class _MonoPopoverState extends State<MonoPopover> {
   bool _disableAnimations = false;
   bool _overlaySyncScheduled = false;
   bool _restoreFocusOnNextOverlayRemoval = false;
+  bool _overlayVisible = false;
+  bool _pendingRestoreFocus = false;
+  MonoPopoverPlacement _resolvedPlacement = MonoPopoverPlacement.bottomStart;
 
   bool get _isControlled => widget.open != null;
   bool get _isOpen => widget.open ?? _uncontrolledOpen;
@@ -292,12 +296,13 @@ class _MonoPopoverState extends State<MonoPopover> {
       if (_isOpen) {
         _showOverlay();
       } else {
-        _removeOverlay(restoreFocus: shouldRestoreFocus);
+        _beginClose(restoreFocus: shouldRestoreFocus);
       }
     });
   }
 
   void _showOverlay() {
+    _overlayVisible = true;
     if (_entry != null || !mounted) {
       _refreshOverlay();
       return;
@@ -311,11 +316,40 @@ class _MonoPopoverState extends State<MonoPopover> {
     _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _resolvedPlacement = widget.placement;
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      final MonoPlacement resolved = MonoPlacement.values
+          .byName(widget.placement.name)
+          .resolveWithin(
+            renderBox.localToGlobal(Offset.zero) & renderBox.size,
+            MediaQuery.sizeOf(context),
+          );
+      _resolvedPlacement = MonoPopoverPlacement.values.byName(resolved.name);
+    }
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
     );
     overlay.insert(_entry!);
+  }
+
+  /// Plays the exit animation, then removes the entry from [_onOverlayExited].
+  void _beginClose({bool restoreFocus = false}) {
+    if (_entry == null) {
+      return;
+    }
+    _pendingRestoreFocus = restoreFocus;
+    _overlayVisible = false;
+    _refreshOverlay();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return; // Re-opened mid-exit.
+    }
+    _removeOverlay(restoreFocus: _pendingRestoreFocus);
+    _pendingRestoreFocus = false;
   }
 
   void _refreshOverlay() {
@@ -350,8 +384,10 @@ class _MonoPopoverState extends State<MonoPopover> {
     }
     return _MonoPopoverOverlay(
       theme: theme,
+      visible: _overlayVisible,
+      onExited: _onOverlayExited,
       layerLink: _layerLink,
-      placement: widget.placement,
+      placement: _resolvedPlacement,
       offset: widget.offset,
       gap: widget.gap ?? theme.spacing.sm,
       textDirection: _textDirection,
@@ -391,6 +427,8 @@ class _MonoPopoverState extends State<MonoPopover> {
 class _MonoPopoverOverlay extends StatefulWidget {
   const _MonoPopoverOverlay({
     required this.theme,
+    required this.visible,
+    required this.onExited,
     required this.layerLink,
     required this.placement,
     required this.offset,
@@ -407,6 +445,8 @@ class _MonoPopoverOverlay extends StatefulWidget {
   });
 
   final MonokitThemeData theme;
+  final bool visible;
+  final VoidCallback onExited;
   final LayerLink layerLink;
   final MonoPopoverPlacement placement;
   final Offset offset;
@@ -437,8 +477,12 @@ class _MonoPopoverOverlayState extends State<_MonoPopoverOverlay>
       vsync: this,
       duration: widget.disableAnimations
           ? Duration.zero
-          : widget.theme.motion.duration,
-    )..forward();
+          : widget.theme.motion.base,
+    );
+    _controller.addStatusListener(_onStatus);
+    if (widget.visible) {
+      _controller.forward();
+    }
     _focusNode = FocusNode(debugLabel: 'MonoPopover');
     if (widget.requestFocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -450,7 +494,26 @@ class _MonoPopoverOverlayState extends State<_MonoPopoverOverlay>
   }
 
   @override
+  void didUpdateWidget(covariant _MonoPopoverOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible != oldWidget.visible) {
+      if (widget.visible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !widget.visible) {
+      widget.onExited();
+    }
+  }
+
+  @override
   void dispose() {
+    _controller.removeStatusListener(_onStatus);
     _focusNode.dispose();
     _controller.dispose();
     super.dispose();

@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_pressable.dart';
+import '../primitives/mono_overlay_fade.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -178,12 +179,15 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
       if (_isOpen) {
         _showOrRefreshOverlay();
       } else {
-        _removeOverlayNow();
+        _beginClose();
       }
     });
   }
 
+  bool _overlayVisible = false;
+
   void _showOrRefreshOverlay() {
+    _overlayVisible = true;
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
     _disableAnimations =
@@ -205,6 +209,21 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
     }
     _entry = OverlayEntry(builder: (context) => _buildOverlay());
     overlay.insert(_entry!);
+  }
+
+  void _beginClose() {
+    if (_entry == null) {
+      return;
+    }
+    _overlayVisible = false;
+    _entry!.markNeedsBuild();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlayNow();
   }
 
   void _removeOverlayNow() {
@@ -231,18 +250,22 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
       data: theme,
       child: Directionality(
         textDirection: _textDirection,
-        child: _MonoCommandPaletteOverlay(
-          commands: widget._commands,
-          theme: theme,
-          placeholder: widget.placeholder,
-          empty: widget.empty,
-          width: widget.width,
-          maxHeight: widget.maxHeight,
-          dismissible: widget.dismissible,
-          disableAnimations: _disableAnimations,
-          semanticLabel: widget.semanticLabel,
-          onDismiss: () => _setOpen(false),
-          onSelected: _select,
+        child: MonoOverlayFade(
+          visible: _overlayVisible,
+          onExited: _onOverlayExited,
+          child: _MonoCommandPaletteOverlay(
+            commands: widget._commands,
+            theme: theme,
+            placeholder: widget.placeholder,
+            empty: widget.empty,
+            width: widget.width,
+            maxHeight: widget.maxHeight,
+            dismissible: widget.dismissible,
+            disableAnimations: _disableAnimations,
+            semanticLabel: widget.semanticLabel,
+            onDismiss: () => _setOpen(false),
+            onSelected: _select,
+          ),
         ),
       ),
     );

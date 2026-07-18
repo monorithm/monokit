@@ -94,7 +94,7 @@ class MonoBubbleStyleResolver {
       ),
       MonoBubbleVariant.destructive => (
         colors.destructive,
-        colors.primary,
+        colors.destructiveForeground,
         null,
       ),
     };

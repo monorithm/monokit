@@ -1,3 +1,13 @@
+## 0.2.0
+
+- Migrated the theme to the canonical mist, emerald, status, media, glass,
+  sidebar, elevation, density, breakpoint, haptic, and motion vocabulary.
+- Added honest-state feedback, engine-neutral media and communication surfaces,
+  and commerce components.
+- Added shared logical placement and surface primitives while retaining the
+  existing controlled overlay contracts.
+- Deprecated numeric card elevation and legacy motion names.
+
 ## 0.1.0
 
 - Introduce the widgets-first Monokit theme, app wrapper, state system, and page shell.

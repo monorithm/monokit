@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-import 'container/app_container.dart';
+import 'container/gallery.dart';
 
-void main() => runApp(const AppContainer());
+void main() => runApp(const MonokitGallery());

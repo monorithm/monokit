@@ -1,90 +1,120 @@
-import 'package:go_router/go_router.dart';
 import 'package:monokit/monokit.dart';
 
-import '../widgets/widgets.dart';
-
-/// Display metadata for a top-level documentation section, backed by its typed
-/// route so navigation stays type-safe.
-class NavSection {
-  const NavSection({
-    required this.route,
+/// Sidebar metadata for a gallery destination. `★`-grouped sections are
+/// Monorithm's differentiator families.
+class GallerySection {
+  const GallerySection({
+    required this.path,
     required this.title,
     required this.navLabel,
-    required this.icon,
     required this.description,
+    required this.icon,
+    required this.group,
   });
 
-  final GoRouteData route;
-
-  /// Header / footer label.
+  final String path;
   final String title;
-
-  /// Compact label used in the expanded sidebar.
   final String navLabel;
-
-  /// Glyph used in the collapsed sidebar rail.
-  final MonoIconData icon;
   final String description;
-
-  String get location => route.location;
+  final MonoIconData icon;
+  final String group;
 }
 
-/// The ordered sections rendered by the shell navigation and the overview map.
-const List<NavSection> navSections = <NavSection>[
-  NavSection(
-    route: OverviewRoute(),
+const List<GallerySection> gallerySections = <GallerySection>[
+  GallerySection(
+    path: '/',
     title: 'Overview',
     navLabel: 'Overview',
+    description: 'A production-grade, self-documenting Monokit showcase',
     icon: MonoIcons.sparkles,
-    description: 'Tokens, architecture, and getting started.',
+    group: 'Get started',
   ),
-  NavSection(
-    route: FoundationsRoute(),
+  GallerySection(
+    path: '/foundations',
     title: 'Foundations',
     navLabel: 'Foundations',
-    icon: MonoIconData('◈', semanticLabel: 'Foundations'),
-    description: 'App shell, surfaces, icons, and loading states.',
+    description: 'The design language: color, type, elevation, motion, icons',
+    icon: MonoIcons.grid,
+    group: 'Get started',
   ),
-  NavSection(
-    route: FeedbackRoute(),
-    title: 'Actions & feedback',
-    navLabel: 'Feedback',
-    icon: MonoIcons.add,
-    description: 'Buttons, badges, alerts, progress, and toasts.',
+  GallerySection(
+    path: '/actions',
+    title: 'Actions',
+    navLabel: 'Actions',
+    description: 'Buttons and badges — every variant, size, and state',
+    icon: MonoIcons.star,
+    group: 'Components',
   ),
-  NavSection(
-    route: FormsRoute(),
+  GallerySection(
+    path: '/forms',
     title: 'Forms',
     navLabel: 'Forms',
+    description: 'Inputs, fields, selection, and OTP',
     icon: MonoIcons.check,
-    description: 'Inputs, selections, validation, and OTP.',
+    group: 'Components',
   ),
-  NavSection(
-    route: NavigationShowcaseRoute(),
-    title: 'Navigation',
-    navLabel: 'Navigation',
-    icon: MonoIcons.arrowRight,
-    description: 'Tabs, disclosure, links, menus, and command palette.',
-  ),
-  NavSection(
-    route: OverlaysRoute(),
+  GallerySection(
+    path: '/overlays',
     title: 'Overlays',
     navLabel: 'Overlays',
+    description: 'Dialogs, sheets, popovers, tooltips, menus',
     icon: MonoIcons.more,
-    description: 'Dialogs, sheets, drawers, menus, and cards.',
+    group: 'Components',
   ),
-  NavSection(
-    route: MessagingRoute(),
-    title: 'Messaging',
-    navLabel: 'Messaging',
-    icon: MonoIconData('◌', semanticLabel: 'Messaging'),
-    description: 'Chat messages, bubbles, attachments, and scrolling.',
+  GallerySection(
+    path: '/navigation',
+    title: 'Navigation',
+    navLabel: 'Navigation',
+    description: 'Tabs, accordion, breadcrumb, pagination, cards',
+    icon: MonoIcons.menu,
+    group: 'Components',
   ),
-  NavSection(
-    route: PrimitivesRoute(),
-    title: 'Primitives',
-    navLabel: 'Primitives',
-    icon: MonoIconData('◇', semanticLabel: 'Primitives'),
-    description: 'States, focus, pressables, overlays, and Material bridge.',
+  GallerySection(
+    path: '/feedback',
+    title: 'Feedback',
+    navLabel: 'Feedback',
+    description: 'Alerts, banners, progress, skeletons, empty states',
+    icon: MonoIcons.receipt,
+    group: 'Components',
+  ),
+  GallerySection(
+    path: '/honest',
+    title: 'Honest states',
+    navLabel: 'Honest states',
+    description: 'The command lifecycle as design vocabulary',
+    icon: MonoIcons.clock,
+    group: 'Differentiators',
+  ),
+  GallerySection(
+    path: '/chat',
+    title: 'Chat',
+    navLabel: 'Chat',
+    description: 'Messages, bubbles, receipts, attachments, composer',
+    icon: MonoIcons.message,
+    group: 'Differentiators',
+  ),
+  GallerySection(
+    path: '/media',
+    title: 'Media',
+    navLabel: 'Media',
+    description: 'Immersive surfaces, feed, live, voice, calls',
+    icon: MonoIcons.video,
+    group: 'Differentiators',
+  ),
+  GallerySection(
+    path: '/commerce',
+    title: 'Commerce',
+    navLabel: 'Commerce',
+    description: 'Prices, product cards, order status',
+    icon: MonoIcons.bag,
+    group: 'Differentiators',
+  ),
+  GallerySection(
+    path: '/blocks',
+    title: 'Blocks',
+    navLabel: 'Blocks',
+    description: 'Production-style example screens built from the kit',
+    icon: MonoIcons.image,
+    group: 'Blocks',
   ),
 ];

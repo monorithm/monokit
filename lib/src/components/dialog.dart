@@ -108,12 +108,15 @@ class _MonoDialogState extends State<MonoDialog> {
       if (_isOpen) {
         _showOrRefreshOverlay();
       } else {
-        _removeOverlayNow();
+        _beginClose();
       }
     });
   }
 
+  bool _overlayVisible = false;
+
   void _showOrRefreshOverlay() {
+    _overlayVisible = true;
     _overlayTheme = MonokitTheme.of(context);
     if (_entry != null) {
       _entry!.markNeedsBuild();
@@ -141,11 +144,28 @@ class _MonoDialogState extends State<MonoDialog> {
     }
     return _MonoDialogOverlay(
       theme: theme,
+      visible: _overlayVisible,
+      onExited: _onOverlayExited,
       semanticLabel: widget.semanticLabel,
       dismissible: widget.dismissible,
       onDismiss: () => _setOpen(false),
       child: widget.child,
     );
+  }
+
+  void _beginClose() {
+    if (_entry == null) {
+      return;
+    }
+    _overlayVisible = false;
+    _entry!.markNeedsBuild();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlayNow();
   }
 
   void _removeOverlayNow() {
@@ -170,6 +190,8 @@ class _MonoDialogState extends State<MonoDialog> {
 class _MonoDialogOverlay extends StatefulWidget {
   const _MonoDialogOverlay({
     required this.theme,
+    required this.visible,
+    required this.onExited,
     required this.child,
     required this.dismissible,
     required this.onDismiss,
@@ -177,6 +199,8 @@ class _MonoDialogOverlay extends StatefulWidget {
   });
 
   final MonokitThemeData theme;
+  final bool visible;
+  final VoidCallback onExited;
   final Widget child;
   final String? semanticLabel;
   final bool dismissible;
@@ -195,12 +219,35 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.theme.motion.duration,
-    )..forward();
+      duration: widget.theme.motion.base,
+    );
+    _controller.addStatusListener(_onStatus);
+    if (widget.visible) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _MonoDialogOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible != oldWidget.visible) {
+      if (widget.visible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !widget.visible) {
+      widget.onExited();
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeStatusListener(_onStatus);
     _controller.dispose();
     super.dispose();
   }
@@ -233,7 +280,7 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: widget.dismissible ? widget.onDismiss : null,
-                  child: ColoredBox(color: const Color(0x9909090B)),
+                  child: ColoredBox(color: widget.theme.colors.overlayScrim),
                 ),
               ),
               Center(

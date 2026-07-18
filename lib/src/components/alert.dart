@@ -31,24 +31,24 @@ class MonoAlert extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final (background, foreground, border) = switch (variant) {
       MonoAlertVariant.destructive => (
-        theme.colors.destructive.withValues(alpha: 0.12),
+        theme.colors.destructiveSoft,
+        theme.colors.destructiveText,
         theme.colors.destructive,
-        theme.colors.destructive.withValues(alpha: 0.35),
       ),
       MonoAlertVariant.success => (
-        theme.colors.primary.withValues(alpha: 0.1),
-        theme.colors.foreground,
-        theme.colors.border,
+        theme.colors.successSoft,
+        theme.colors.successText,
+        theme.colors.success,
       ),
       MonoAlertVariant.warning => (
-        theme.colors.accent,
-        theme.colors.accentForeground,
-        theme.colors.border,
+        theme.colors.warningSoft,
+        theme.colors.warningText,
+        theme.colors.warning,
       ),
       MonoAlertVariant.info => (
-        theme.colors.secondary,
-        theme.colors.secondaryForeground,
-        theme.colors.border,
+        theme.colors.infoSoft,
+        theme.colors.infoText,
+        theme.colors.info,
       ),
       MonoAlertVariant.defaultStyle => (
         theme.colors.muted,
@@ -77,7 +77,9 @@ class MonoAlert extends StatelessWidget {
           ],
         );
     return Semantics(
-      liveRegion: variant == MonoAlertVariant.destructive,
+      liveRegion:
+          variant == MonoAlertVariant.destructive ||
+          variant == MonoAlertVariant.warning,
       container: true,
       child: DecoratedBox(
         decoration: BoxDecoration(

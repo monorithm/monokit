@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_overlay_fade.dart';
+import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -254,18 +256,39 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
       if (_isOpen) {
         _showOrRefreshOverlay();
       } else {
-        _removeOverlayNow(restoreFocus: shouldRestoreFocus);
+        _beginClose(restoreFocus: shouldRestoreFocus);
       }
     });
   }
 
+  bool _overlayVisible = false;
+  bool _pendingRestoreFocus = true;
+
   void _showOrRefreshOverlay() {
+    _overlayVisible = true;
     if (_entry != null) {
       _entry!.markNeedsBuild();
       return;
     }
     _showOverlayNow();
   }
+
+  MonoDropdownMenuPlacement _resolvedPlacement =
+      MonoDropdownMenuPlacement.bottomStart;
+
+  MonoPlacement _monoPlacement(MonoDropdownMenuPlacement p) => switch (p) {
+    MonoDropdownMenuPlacement.bottomStart => MonoPlacement.bottomStart,
+    MonoDropdownMenuPlacement.bottomEnd => MonoPlacement.bottomEnd,
+    MonoDropdownMenuPlacement.topStart => MonoPlacement.topStart,
+    MonoDropdownMenuPlacement.topEnd => MonoPlacement.topEnd,
+  };
+
+  MonoDropdownMenuPlacement _dropdownPlacement(MonoPlacement p) => switch (p) {
+    MonoPlacement.bottomEnd => MonoDropdownMenuPlacement.bottomEnd,
+    MonoPlacement.topStart => MonoDropdownMenuPlacement.topStart,
+    MonoPlacement.topEnd => MonoDropdownMenuPlacement.topEnd,
+    _ => MonoDropdownMenuPlacement.bottomStart,
+  };
 
   void _showOverlayNow() {
     if (_entry != null || !mounted) {
@@ -276,26 +299,55 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
       return;
     }
     final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    _resolvedPlacement = widget.placement;
     if (renderBox != null && renderBox.hasSize) {
       _triggerSize = renderBox.size;
+      final Offset position = renderBox.localToGlobal(Offset.zero);
+      _resolvedPlacement = _dropdownPlacement(
+        _monoPlacement(widget.placement).resolveWithin(
+          position & _triggerSize,
+          MediaQuery.sizeOf(context),
+          estimate: widget.maxHeight,
+        ),
+      );
     }
     final MonokitThemeData theme = MonokitTheme.of(context);
     _entry = OverlayEntry(
       builder: (BuildContext overlayContext) => MonokitTheme(
         data: theme,
-        child: _MonoDropdownOverlay<T>(
-          link: _layerLink,
-          targetSize: _triggerSize,
-          items: widget._items,
-          placement: widget.placement,
-          width: widget.width,
-          maxHeight: widget.maxHeight,
-          onDismiss: () => _setOpen(false),
-          onSelected: _select,
+        child: MonoOverlayFade(
+          visible: _overlayVisible,
+          onExited: _onOverlayExited,
+          child: _MonoDropdownOverlay<T>(
+            link: _layerLink,
+            targetSize: _triggerSize,
+            items: widget._items,
+            placement: _resolvedPlacement,
+            width: widget.width,
+            maxHeight: widget.maxHeight,
+            onDismiss: () => _setOpen(false),
+            onSelected: _select,
+          ),
         ),
       ),
     );
     overlay.insert(_entry!);
+  }
+
+  void _beginClose({bool restoreFocus = true}) {
+    if (_entry == null) {
+      return;
+    }
+    _pendingRestoreFocus = restoreFocus;
+    _overlayVisible = false;
+    _entry!.markNeedsBuild();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlayNow(restoreFocus: _pendingRestoreFocus);
   }
 
   void _removeOverlayNow({bool restoreFocus = true}) {

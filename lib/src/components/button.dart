@@ -99,9 +99,7 @@ class MonoButtonStyleResolver {
         break;
       case MonoButtonVariant.destructive:
         background = colors.destructive;
-        // The semantic palette does not have a destructive foreground token.
-        // [primary] remains high contrast against the light and dark presets.
-        foreground = colors.primary;
+        foreground = colors.destructiveForeground;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
@@ -124,7 +122,9 @@ class MonoButtonStyleResolver {
       borderColor: borderColor,
       borderRadius: BorderRadius.circular(theme.radii.md),
       padding: sizeTokens.padding,
-      minimumHeight: sizeTokens.minimumHeight,
+      minimumHeight: sizeTokens.minimumHeight < theme.density.minimumTarget
+          ? theme.density.minimumTarget
+          : sizeTokens.minimumHeight,
       iconSize: sizeTokens.iconSize,
       opacity: isDisabled ? 0.5 : 1,
       textStyle: theme.typography.button.copyWith(

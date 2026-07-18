@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -144,6 +145,7 @@ class _MonoTooltipState extends State<MonoTooltip> {
   MonokitThemeData? _overlayTheme;
   TextDirection _textDirection = TextDirection.ltr;
   bool _disableAnimations = false;
+  MonoTooltipPlacement _resolvedPlacement = MonoTooltipPlacement.top;
   bool _overlaySyncScheduled = false;
 
   bool get _isControlled => widget.open != null;
@@ -263,12 +265,15 @@ class _MonoTooltipState extends State<MonoTooltip> {
       if (widget.enabled && _isOpen) {
         _showOverlay();
       } else {
-        _removeOverlay();
+        _beginClose();
       }
     });
   }
 
+  bool _overlayVisible = false;
+
   void _showOverlay() {
+    _overlayVisible = true;
     if (_entry != null || !mounted) {
       _refreshOverlay();
       return;
@@ -281,11 +286,38 @@ class _MonoTooltipState extends State<MonoTooltip> {
     _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _resolvedPlacement = widget.placement;
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      final MonoPlacement resolved = MonoPlacement.values
+          .byName(widget.placement.name)
+          .resolveWithin(
+            renderBox.localToGlobal(Offset.zero) & renderBox.size,
+            MediaQuery.sizeOf(context),
+            estimate: 80,
+          );
+      _resolvedPlacement = MonoTooltipPlacement.values.byName(resolved.name);
+    }
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
     );
     overlay.insert(_entry!);
+  }
+
+  void _beginClose() {
+    if (_entry == null) {
+      return;
+    }
+    _overlayVisible = false;
+    _refreshOverlay();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlay();
   }
 
   void _refreshOverlay() {
@@ -313,8 +345,10 @@ class _MonoTooltipState extends State<MonoTooltip> {
     }
     return _MonoTooltipOverlay(
       theme: theme,
+      visible: _overlayVisible,
+      onExited: _onOverlayExited,
       layerLink: _layerLink,
-      placement: widget.placement,
+      placement: _resolvedPlacement,
       offset: widget.offset,
       gap: widget.gap ?? theme.spacing.xs,
       textDirection: _textDirection,
@@ -394,6 +428,8 @@ class _MonoTooltipState extends State<MonoTooltip> {
 class _MonoTooltipOverlay extends StatefulWidget {
   const _MonoTooltipOverlay({
     required this.theme,
+    required this.visible,
+    required this.onExited,
     required this.layerLink,
     required this.placement,
     required this.offset,
@@ -405,6 +441,8 @@ class _MonoTooltipOverlay extends StatefulWidget {
   });
 
   final MonokitThemeData theme;
+  final bool visible;
+  final VoidCallback onExited;
   final LayerLink layerLink;
   final MonoTooltipPlacement placement;
   final Offset offset;
@@ -430,11 +468,34 @@ class _MonoTooltipOverlayState extends State<_MonoTooltipOverlay>
       duration: widget.disableAnimations
           ? Duration.zero
           : widget.theme.motion.fast,
-    )..forward();
+    );
+    _controller.addStatusListener(_onStatus);
+    if (widget.visible) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _MonoTooltipOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible != oldWidget.visible) {
+      if (widget.visible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !widget.visible) {
+      widget.onExited();
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeStatusListener(_onStatus);
     _controller.dispose();
     super.dispose();
   }

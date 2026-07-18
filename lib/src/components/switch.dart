@@ -152,7 +152,7 @@ class _MonoSwitchState extends State<MonoSwitch> {
         : theme.colors.card;
 
     final Widget toggle = AnimatedContainer(
-      duration: theme.motion.duration,
+      duration: theme.motion.reduced(context, theme.motion.base),
       curve: theme.motion.curve,
       width: theme.spacing.huge,
       height: theme.spacing.xl,
@@ -171,7 +171,7 @@ class _MonoSwitchState extends State<MonoSwitch> {
             : null,
       ),
       child: AnimatedAlign(
-        duration: theme.motion.duration,
+        duration: theme.motion.reduced(context, theme.motion.base),
         curve: theme.motion.curve,
         alignment: widget.value
             ? AlignmentDirectional.centerEnd

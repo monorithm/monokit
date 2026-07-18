@@ -183,7 +183,7 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
         : const SizedBox.expand();
 
     final Widget checkbox = AnimatedContainer(
-      duration: theme.motion.duration,
+      duration: theme.motion.reduced(context, theme.motion.base),
       curve: theme.motion.curve,
       width: theme.spacing.xl,
       height: theme.spacing.xl,

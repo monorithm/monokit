@@ -74,7 +74,7 @@ class _MonoSkeletonState extends State<MonoSkeleton>
 
   void _syncAnimation() {
     final theme = MonokitTheme.of(context);
-    _controller.duration = theme.motion.slow;
+    _controller.duration = theme.motion.shimmerLoop;
     final animationsDisabled =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final shouldAnimate =

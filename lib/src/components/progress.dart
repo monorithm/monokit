@@ -60,7 +60,7 @@ class _MonoProgressState extends State<MonoProgress>
 
   void _syncAnimation() {
     final theme = MonokitTheme.of(context);
-    _controller.duration = theme.motion.slow * 4;
+    _controller.duration = theme.motion.progressLoop;
     final disabled = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (widget.value == null &&
         !disabled &&
