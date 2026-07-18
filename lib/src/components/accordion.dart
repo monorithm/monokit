@@ -692,8 +692,6 @@ class _MonoAccordionTriggerStyle {
     final focused = states.contains(MonoState.focusVisible);
     final foreground = !enabled
         ? theme.colors.mutedForeground
-        : expanded
-        ? theme.colors.foreground
         : theme.colors.foreground;
     final background = !enabled
         ? theme.colors.card

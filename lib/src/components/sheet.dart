@@ -6,6 +6,7 @@ import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
+import '../theme/monokit_elevation.dart';
 
 /// Edge from which a [MonoSheet] enters the screen.
 enum MonoSheetSide { bottom, top }
@@ -311,15 +312,19 @@ class _MonoSheetState extends State<MonoSheet> {
       if (_isOpen) {
         _showOrRefreshOverlayNow();
       } else {
-        _removeOverlayNow(restoreFocus: restoreFocusOnRemove);
+        _beginClose(restoreFocus: restoreFocusOnRemove);
       }
     });
   }
+
+  bool _overlayVisible = false;
+  bool _pendingRestoreFocus = false;
 
   void _showOrRefreshOverlayNow() {
     if (!mounted) {
       return;
     }
+    _overlayVisible = true;
     _overlayTheme = MonokitTheme.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
@@ -338,6 +343,23 @@ class _MonoSheetState extends State<MonoSheet> {
       builder: (BuildContext context) => _buildOverlay(),
     );
     overlay.insert(_entry!);
+  }
+
+  void _beginClose({bool restoreFocus = false}) {
+    if (_entry == null) {
+      return;
+    }
+    _pendingRestoreFocus = restoreFocus;
+    _overlayVisible = false;
+    _entry!.markNeedsBuild();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlayNow(restoreFocus: _pendingRestoreFocus);
+    _pendingRestoreFocus = false;
   }
 
   void _removeOverlayNow({bool restoreFocus = false}) {
@@ -363,6 +385,8 @@ class _MonoSheetState extends State<MonoSheet> {
       data: theme,
       child: _MonoSheetOverlay(
         theme: theme,
+        visible: _overlayVisible,
+        onExited: _onOverlayExited,
         side: widget.side,
         dismissible: widget.dismissible,
         requestFocus: widget.requestFocus,
@@ -406,6 +430,8 @@ class _MonoSheetState extends State<MonoSheet> {
 class _MonoSheetOverlay extends StatefulWidget {
   const _MonoSheetOverlay({
     required this.theme,
+    required this.visible,
+    required this.onExited,
     required this.side,
     required this.dismissible,
     required this.requestFocus,
@@ -418,6 +444,8 @@ class _MonoSheetOverlay extends StatefulWidget {
   });
 
   final MonokitThemeData theme;
+  final bool visible;
+  final VoidCallback onExited;
   final MonoSheetSide side;
   final bool dismissible;
   final bool requestFocus;
@@ -442,12 +470,13 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.theme.motion.duration,
+      duration: widget.disableAnimations
+          ? Duration.zero
+          : widget.theme.motion.base,
     );
+    _controller.addStatusListener(_onStatus);
     _focusNode = FocusNode(debugLabel: 'MonoSheet');
-    if (widget.disableAnimations) {
-      _controller.value = 1;
-    } else {
+    if (widget.visible) {
       _controller.forward();
     }
     if (widget.requestFocus) {
@@ -460,7 +489,26 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
   }
 
   @override
+  void didUpdateWidget(covariant _MonoSheetOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible != oldWidget.visible) {
+      if (widget.visible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !widget.visible) {
+      widget.onExited();
+    }
+  }
+
+  @override
   void dispose() {
+    _controller.removeStatusListener(_onStatus);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -487,16 +535,7 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
           color: widget.theme.colors.popover,
           borderRadius: radius,
           border: Border.all(color: widget.theme.colors.border),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: widget.theme.colors.foreground.withAlpha(48),
-              blurRadius: widget.theme.spacing.xxl,
-              offset: Offset(
-                0,
-                isBottom ? -widget.theme.spacing.xs : widget.theme.spacing.xs,
-              ),
-            ),
-          ],
+          boxShadow: widget.theme.elevation.resolve(MonoElevationTier.e3),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -551,9 +590,7 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: widget.dismissible ? widget.onDismiss : null,
-                child: ColoredBox(
-                  color: widget.theme.colors.foreground.withAlpha(128),
-                ),
+                child: ColoredBox(color: widget.theme.colors.overlayScrim),
               ),
             ),
             Align(

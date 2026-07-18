@@ -71,7 +71,7 @@ class _MonoSpinnerState extends State<MonoSpinner>
 
   void _syncAnimation() {
     final theme = MonokitTheme.of(context);
-    _controller.duration = theme.motion.slow;
+    _controller.duration = theme.motion.spinnerLoop;
     final animationsDisabled =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final shouldAnimate =

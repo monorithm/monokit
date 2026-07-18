@@ -367,12 +367,16 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
       if (widget.enabled && _isOpen) {
         _showOverlay();
       } else {
-        _removeOverlay(restoreFocus: shouldRestoreFocus);
+        _beginClose(restoreFocus: shouldRestoreFocus);
       }
     });
   }
 
+  bool _overlayVisible = false;
+  bool _pendingRestoreFocus = false;
+
   void _showOverlay() {
+    _overlayVisible = true;
     if (_entry != null || !mounted) {
       _refreshOverlay();
       return;
@@ -390,6 +394,23 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
       builder: (overlayContext) => _buildOverlay(),
     );
     overlay.insert(_entry!);
+  }
+
+  void _beginClose({bool restoreFocus = false}) {
+    if (_entry == null) {
+      return;
+    }
+    _pendingRestoreFocus = restoreFocus;
+    _overlayVisible = false;
+    _refreshOverlay();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlay(restoreFocus: _pendingRestoreFocus);
+    _pendingRestoreFocus = false;
   }
 
   void _refreshOverlay() {
@@ -423,6 +444,8 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     }
     return _MonoContextMenuOverlay(
       theme: theme,
+      visible: _overlayVisible,
+      onExited: _onOverlayExited,
       layerLink: _layerLink,
       anchorOffset: _anchorOffset + widget.offset,
       dismissible: widget.dismissible,
@@ -491,6 +514,8 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
 class _MonoContextMenuOverlay extends StatefulWidget {
   const _MonoContextMenuOverlay({
     required this.theme,
+    required this.visible,
+    required this.onExited,
     required this.layerLink,
     required this.anchorOffset,
     required this.dismissible,
@@ -501,6 +526,8 @@ class _MonoContextMenuOverlay extends StatefulWidget {
   });
 
   final MonokitThemeData theme;
+  final bool visible;
+  final VoidCallback onExited;
   final LayerLink layerLink;
   final Offset anchorOffset;
   final bool dismissible;
@@ -527,7 +554,11 @@ class _MonoContextMenuOverlayState extends State<_MonoContextMenuOverlay>
       duration: widget.disableAnimations
           ? Duration.zero
           : widget.theme.motion.fast,
-    )..forward();
+    );
+    _controller.addStatusListener(_onStatus);
+    if (widget.visible) {
+      _controller.forward();
+    }
     _focusNode = FocusNode(debugLabel: 'MonoContextMenu');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -537,7 +568,26 @@ class _MonoContextMenuOverlayState extends State<_MonoContextMenuOverlay>
   }
 
   @override
+  void didUpdateWidget(covariant _MonoContextMenuOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible != oldWidget.visible) {
+      if (widget.visible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !widget.visible) {
+      widget.onExited();
+    }
+  }
+
+  @override
   void dispose() {
+    _controller.removeStatusListener(_onStatus);
     _focusNode.dispose();
     _controller.dispose();
     super.dispose();

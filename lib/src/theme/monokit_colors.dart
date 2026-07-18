@@ -1,9 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-/// Semantic color tokens used by every Monokit component.
-///
-/// The values deliberately use sRGB hex literals so the Flutter package has
-/// the same stable palette on every platform.
+/// Canonical mist, emerald, status, media, glass, and sidebar colors.
+@immutable
 class MonokitColors {
   const MonokitColors({
     required this.background,
@@ -14,6 +12,7 @@ class MonokitColors {
     required this.popoverForeground,
     required this.primary,
     required this.primaryForeground,
+    required this.primarySoft,
     required this.secondary,
     required this.secondaryForeground,
     required this.muted,
@@ -21,70 +20,170 @@ class MonokitColors {
     required this.accent,
     required this.accentForeground,
     required this.destructive,
+    required this.destructiveForeground,
+    required this.destructiveSoft,
+    required this.destructiveText,
+    required this.success,
+    required this.successForeground,
+    required this.successSoft,
+    required this.successText,
+    required this.warning,
+    required this.warningForeground,
+    required this.warningSoft,
+    required this.warningText,
+    required this.info,
+    required this.infoForeground,
+    required this.infoSoft,
+    required this.infoText,
     required this.border,
     required this.input,
     required this.ring,
+    required this.live,
+    required this.liveForeground,
+    required this.mediaCanvas,
+    required this.onMedia,
+    required this.onMediaMuted,
+    required this.scrim,
+    required this.scrimStrong,
+    required this.overlayScrim,
+    required this.glassFill,
+    required this.glassBorder,
+    required this.sidebar,
+    required this.sidebarForeground,
+    required this.sidebarPrimary,
+    required this.sidebarPrimaryForeground,
+    required this.sidebarAccent,
+    required this.sidebarAccentForeground,
+    required this.sidebarBorder,
+    required this.sidebarRing,
   });
 
-  final Color background;
-  final Color foreground;
-  final Color card;
-  final Color cardForeground;
-  final Color popover;
-  final Color popoverForeground;
-  final Color primary;
-  final Color primaryForeground;
-  final Color secondary;
-  final Color secondaryForeground;
-  final Color muted;
-  final Color mutedForeground;
-  final Color accent;
-  final Color accentForeground;
-  final Color destructive;
-  final Color border;
-  final Color input;
-  final Color ring;
+  final Color background, foreground, card, cardForeground;
+  final Color popover, popoverForeground, primary, primaryForeground;
+  final Color primarySoft, secondary, secondaryForeground, muted;
+  final Color mutedForeground, accent, accentForeground;
+  final Color destructive,
+      destructiveForeground,
+      destructiveSoft,
+      destructiveText;
+  final Color success, successForeground, successSoft, successText;
+  final Color warning, warningForeground, warningSoft, warningText;
+  final Color info, infoForeground, infoSoft, infoText;
+  final Color border, input, ring, live, liveForeground;
+  final Color mediaCanvas, onMedia, onMediaMuted, scrim, scrimStrong;
+  final Color overlayScrim, glassFill, glassBorder;
+  final Color sidebar, sidebarForeground, sidebarPrimary;
+  final Color sidebarPrimaryForeground, sidebarAccent;
+  final Color sidebarAccentForeground, sidebarBorder, sidebarRing;
 
   factory MonokitColors.light() => const MonokitColors(
-    background: Color(0xFFFAFAFA),
-    foreground: Color(0xFF09090B),
+    background: Color(0xFFFFFFFF),
+    foreground: Color(0xFF090B0C),
     card: Color(0xFFFFFFFF),
-    cardForeground: Color(0xFF09090B),
+    cardForeground: Color(0xFF090B0C),
     popover: Color(0xFFFFFFFF),
-    popoverForeground: Color(0xFF09090B),
-    primary: Color(0xFF18181B),
-    primaryForeground: Color(0xFFFAFAFA),
+    popoverForeground: Color(0xFF090B0C),
+    primary: Color(0xFF007A55),
+    primaryForeground: Color(0xFFECFDF5),
+    primarySoft: Color(0xFFCBF3E0),
     secondary: Color(0xFFF4F4F5),
     secondaryForeground: Color(0xFF18181B),
-    muted: Color(0xFFF4F4F5),
-    mutedForeground: Color(0xFF71717A),
-    accent: Color(0xFFF4F4F5),
-    accentForeground: Color(0xFF18181B),
-    destructive: Color(0xFFEF4444),
-    border: Color(0xFFE4E4E7),
-    input: Color(0xFFE4E4E7),
-    ring: Color(0xFF18181B),
+    muted: Color(0xFFF1F3F3),
+    mutedForeground: Color(0xFF67787C),
+    accent: Color(0xFFF1F3F3),
+    accentForeground: Color(0xFF161B1D),
+    destructive: Color(0xFFE7000B),
+    destructiveForeground: Color(0xFFFAFAFA),
+    destructiveSoft: Color(0xFFFFE1DB),
+    destructiveText: Color(0xFF9F0712),
+    success: Color(0xFF00A63E),
+    successForeground: Color(0xFFFAFAFA),
+    successSoft: Color(0xFFD7F9DC),
+    successText: Color(0xFF016630),
+    warning: Color(0xFFE17100),
+    warningForeground: Color(0xFFFAFAFA),
+    warningSoft: Color(0xFFFFE6CB),
+    warningText: Color(0xFF973C00),
+    info: Color(0xFF155DFC),
+    infoForeground: Color(0xFFFAFAFA),
+    infoSoft: Color(0xFFDDEFFF),
+    infoText: Color(0xFF193CB8),
+    border: Color(0xFFE3E7E8),
+    input: Color(0xFFE3E7E8),
+    ring: Color(0xFF9CA8AB),
+    live: Color(0xFFFB2C36),
+    liveForeground: Color(0xFFFFFFFF),
+    mediaCanvas: Color(0xFF000000),
+    onMedia: Color(0xFFFFFFFF),
+    onMediaMuted: Color(0xB8FFFFFF),
+    scrim: Color(0x66000000),
+    scrimStrong: Color(0x99000000),
+    overlayScrim: Color(0x99090A0B),
+    glassFill: Color(0x0D000000),
+    glassBorder: Color(0x14000000),
+    sidebar: Color(0xFFF9FBFB),
+    sidebarForeground: Color(0xFF090B0C),
+    sidebarPrimary: Color(0xFF009966),
+    sidebarPrimaryForeground: Color(0xFFECFDF5),
+    sidebarAccent: Color(0xFFF1F3F3),
+    sidebarAccentForeground: Color(0xFF161B1D),
+    sidebarBorder: Color(0xFFE3E7E8),
+    sidebarRing: Color(0xFF9CA8AB),
   );
 
   factory MonokitColors.dark() => const MonokitColors(
-    background: Color(0xFF09090B),
-    foreground: Color(0xFFFAFAFA),
-    card: Color(0xFF18181B),
-    cardForeground: Color(0xFFFAFAFA),
-    popover: Color(0xFF18181B),
-    popoverForeground: Color(0xFFFAFAFA),
-    primary: Color(0xFFFAFAFA),
-    primaryForeground: Color(0xFF18181B),
+    background: Color(0xFF090B0C),
+    foreground: Color(0xFFF9FBFB),
+    card: Color(0xFF161B1D),
+    cardForeground: Color(0xFFF9FBFB),
+    popover: Color(0xFF161B1D),
+    popoverForeground: Color(0xFFF9FBFB),
+    primary: Color(0xFF006045),
+    primaryForeground: Color(0xFFECFDF5),
+    primarySoft: Color(0xFF19342A),
     secondary: Color(0xFF27272A),
     secondaryForeground: Color(0xFFFAFAFA),
-    muted: Color(0xFF27272A),
-    mutedForeground: Color(0xFFA1A1AA),
-    accent: Color(0xFF27272A),
-    accentForeground: Color(0xFFFAFAFA),
-    destructive: Color(0xFF7F1D1D),
-    border: Color(0xFF27272A),
-    input: Color(0xFF27272A),
-    ring: Color(0xFFD4D4D8),
+    muted: Color(0xFF22292B),
+    mutedForeground: Color(0xFF9CA8AB),
+    accent: Color(0xFF22292B),
+    accentForeground: Color(0xFFF9FBFB),
+    destructive: Color(0xFFFF6467),
+    destructiveForeground: Color(0xFF090B0C),
+    destructiveSoft: Color(0xFF3F1919),
+    destructiveText: Color(0xFFFF6467),
+    success: Color(0xFF05DF72),
+    successForeground: Color(0xFF090B0C),
+    successSoft: Color(0xFF0A2E17),
+    successText: Color(0xFF05DF72),
+    warning: Color(0xFFFFB900),
+    warningForeground: Color(0xFF090B0C),
+    warningSoft: Color(0xFF332400),
+    warningText: Color(0xFFFFB900),
+    info: Color(0xFF51A2FF),
+    infoForeground: Color(0xFF090B0C),
+    infoSoft: Color(0xFF14273E),
+    infoText: Color(0xFF51A2FF),
+    border: Color(0x1AFFFFFF),
+    input: Color(0x26FFFFFF),
+    ring: Color(0xFF67787C),
+    live: Color(0xFFFB2C36),
+    liveForeground: Color(0xFFFFFFFF),
+    mediaCanvas: Color(0xFF000000),
+    onMedia: Color(0xFFFFFFFF),
+    onMediaMuted: Color(0xB8FFFFFF),
+    scrim: Color(0x66000000),
+    scrimStrong: Color(0x99000000),
+    overlayScrim: Color(0x99090A0B),
+    glassFill: Color(0x1AFFFFFF),
+    glassBorder: Color(0x26FFFFFF),
+    sidebar: Color(0xFF161B1D),
+    sidebarForeground: Color(0xFFF9FBFB),
+    sidebarPrimary: Color(0xFF00BC7D),
+    sidebarPrimaryForeground: Color(0xFF002C22),
+    sidebarAccent: Color(0xFF22292B),
+    sidebarAccentForeground: Color(0xFFF9FBFB),
+    sidebarBorder: Color(0x1AFFFFFF),
+    sidebarRing: Color(0xFF67787C),
   );
 
   MonokitColors copyWith({
@@ -96,6 +195,7 @@ class MonokitColors {
     Color? popoverForeground,
     Color? primary,
     Color? primaryForeground,
+    Color? primarySoft,
     Color? secondary,
     Color? secondaryForeground,
     Color? muted,
@@ -103,9 +203,42 @@ class MonokitColors {
     Color? accent,
     Color? accentForeground,
     Color? destructive,
+    Color? destructiveForeground,
+    Color? destructiveSoft,
+    Color? destructiveText,
+    Color? success,
+    Color? successForeground,
+    Color? successSoft,
+    Color? successText,
+    Color? warning,
+    Color? warningForeground,
+    Color? warningSoft,
+    Color? warningText,
+    Color? info,
+    Color? infoForeground,
+    Color? infoSoft,
+    Color? infoText,
     Color? border,
     Color? input,
     Color? ring,
+    Color? live,
+    Color? liveForeground,
+    Color? mediaCanvas,
+    Color? onMedia,
+    Color? onMediaMuted,
+    Color? scrim,
+    Color? scrimStrong,
+    Color? overlayScrim,
+    Color? glassFill,
+    Color? glassBorder,
+    Color? sidebar,
+    Color? sidebarForeground,
+    Color? sidebarPrimary,
+    Color? sidebarPrimaryForeground,
+    Color? sidebarAccent,
+    Color? sidebarAccentForeground,
+    Color? sidebarBorder,
+    Color? sidebarRing,
   }) {
     return MonokitColors(
       background: background ?? this.background,
@@ -116,6 +249,7 @@ class MonokitColors {
       popoverForeground: popoverForeground ?? this.popoverForeground,
       primary: primary ?? this.primary,
       primaryForeground: primaryForeground ?? this.primaryForeground,
+      primarySoft: primarySoft ?? this.primarySoft,
       secondary: secondary ?? this.secondary,
       secondaryForeground: secondaryForeground ?? this.secondaryForeground,
       muted: muted ?? this.muted,
@@ -123,78 +257,176 @@ class MonokitColors {
       accent: accent ?? this.accent,
       accentForeground: accentForeground ?? this.accentForeground,
       destructive: destructive ?? this.destructive,
+      destructiveForeground:
+          destructiveForeground ?? this.destructiveForeground,
+      destructiveSoft: destructiveSoft ?? this.destructiveSoft,
+      destructiveText: destructiveText ?? this.destructiveText,
+      success: success ?? this.success,
+      successForeground: successForeground ?? this.successForeground,
+      successSoft: successSoft ?? this.successSoft,
+      successText: successText ?? this.successText,
+      warning: warning ?? this.warning,
+      warningForeground: warningForeground ?? this.warningForeground,
+      warningSoft: warningSoft ?? this.warningSoft,
+      warningText: warningText ?? this.warningText,
+      info: info ?? this.info,
+      infoForeground: infoForeground ?? this.infoForeground,
+      infoSoft: infoSoft ?? this.infoSoft,
+      infoText: infoText ?? this.infoText,
       border: border ?? this.border,
       input: input ?? this.input,
       ring: ring ?? this.ring,
+      live: live ?? this.live,
+      liveForeground: liveForeground ?? this.liveForeground,
+      mediaCanvas: mediaCanvas ?? this.mediaCanvas,
+      onMedia: onMedia ?? this.onMedia,
+      onMediaMuted: onMediaMuted ?? this.onMediaMuted,
+      scrim: scrim ?? this.scrim,
+      scrimStrong: scrimStrong ?? this.scrimStrong,
+      overlayScrim: overlayScrim ?? this.overlayScrim,
+      glassFill: glassFill ?? this.glassFill,
+      glassBorder: glassBorder ?? this.glassBorder,
+      sidebar: sidebar ?? this.sidebar,
+      sidebarForeground: sidebarForeground ?? this.sidebarForeground,
+      sidebarPrimary: sidebarPrimary ?? this.sidebarPrimary,
+      sidebarPrimaryForeground:
+          sidebarPrimaryForeground ?? this.sidebarPrimaryForeground,
+      sidebarAccent: sidebarAccent ?? this.sidebarAccent,
+      sidebarAccentForeground:
+          sidebarAccentForeground ?? this.sidebarAccentForeground,
+      sidebarBorder: sidebarBorder ?? this.sidebarBorder,
+      sidebarRing: sidebarRing ?? this.sidebarRing,
     );
   }
 
-  static MonokitColors lerp(MonokitColors a, MonokitColors b, double t) {
-    Color blend(Color first, Color second) => Color.lerp(first, second, t)!;
+  static MonokitColors lerp(MonokitColors a, MonokitColors b, double t) =>
+      _map(a, (name, value) => Color.lerp(value, _values(b)[name]!, t)!);
+
+  static MonokitColors _map(MonokitColors c, Color Function(String, Color) f) {
+    final v = _values(c);
+    Color x(String n) => f(n, v[n]!);
     return MonokitColors(
-      background: blend(a.background, b.background),
-      foreground: blend(a.foreground, b.foreground),
-      card: blend(a.card, b.card),
-      cardForeground: blend(a.cardForeground, b.cardForeground),
-      popover: blend(a.popover, b.popover),
-      popoverForeground: blend(a.popoverForeground, b.popoverForeground),
-      primary: blend(a.primary, b.primary),
-      primaryForeground: blend(a.primaryForeground, b.primaryForeground),
-      secondary: blend(a.secondary, b.secondary),
-      secondaryForeground: blend(a.secondaryForeground, b.secondaryForeground),
-      muted: blend(a.muted, b.muted),
-      mutedForeground: blend(a.mutedForeground, b.mutedForeground),
-      accent: blend(a.accent, b.accent),
-      accentForeground: blend(a.accentForeground, b.accentForeground),
-      destructive: blend(a.destructive, b.destructive),
-      border: blend(a.border, b.border),
-      input: blend(a.input, b.input),
-      ring: blend(a.ring, b.ring),
+      background: x('background'),
+      foreground: x('foreground'),
+      card: x('card'),
+      cardForeground: x('cardForeground'),
+      popover: x('popover'),
+      popoverForeground: x('popoverForeground'),
+      primary: x('primary'),
+      primaryForeground: x('primaryForeground'),
+      primarySoft: x('primarySoft'),
+      secondary: x('secondary'),
+      secondaryForeground: x('secondaryForeground'),
+      muted: x('muted'),
+      mutedForeground: x('mutedForeground'),
+      accent: x('accent'),
+      accentForeground: x('accentForeground'),
+      destructive: x('destructive'),
+      destructiveForeground: x('destructiveForeground'),
+      destructiveSoft: x('destructiveSoft'),
+      destructiveText: x('destructiveText'),
+      success: x('success'),
+      successForeground: x('successForeground'),
+      successSoft: x('successSoft'),
+      successText: x('successText'),
+      warning: x('warning'),
+      warningForeground: x('warningForeground'),
+      warningSoft: x('warningSoft'),
+      warningText: x('warningText'),
+      info: x('info'),
+      infoForeground: x('infoForeground'),
+      infoSoft: x('infoSoft'),
+      infoText: x('infoText'),
+      border: x('border'),
+      input: x('input'),
+      ring: x('ring'),
+      live: x('live'),
+      liveForeground: x('liveForeground'),
+      mediaCanvas: x('mediaCanvas'),
+      onMedia: x('onMedia'),
+      onMediaMuted: x('onMediaMuted'),
+      scrim: x('scrim'),
+      scrimStrong: x('scrimStrong'),
+      overlayScrim: x('overlayScrim'),
+      glassFill: x('glassFill'),
+      glassBorder: x('glassBorder'),
+      sidebar: x('sidebar'),
+      sidebarForeground: x('sidebarForeground'),
+      sidebarPrimary: x('sidebarPrimary'),
+      sidebarPrimaryForeground: x('sidebarPrimaryForeground'),
+      sidebarAccent: x('sidebarAccent'),
+      sidebarAccentForeground: x('sidebarAccentForeground'),
+      sidebarBorder: x('sidebarBorder'),
+      sidebarRing: x('sidebarRing'),
     );
   }
+
+  static Map<String, Color> _values(MonokitColors c) => <String, Color>{
+    'background': c.background,
+    'foreground': c.foreground,
+    'card': c.card,
+    'cardForeground': c.cardForeground,
+    'popover': c.popover,
+    'popoverForeground': c.popoverForeground,
+    'primary': c.primary,
+    'primaryForeground': c.primaryForeground,
+    'primarySoft': c.primarySoft,
+    'secondary': c.secondary,
+    'secondaryForeground': c.secondaryForeground,
+    'muted': c.muted,
+    'mutedForeground': c.mutedForeground,
+    'accent': c.accent,
+    'accentForeground': c.accentForeground,
+    'destructive': c.destructive,
+    'destructiveForeground': c.destructiveForeground,
+    'destructiveSoft': c.destructiveSoft,
+    'destructiveText': c.destructiveText,
+    'success': c.success,
+    'successForeground': c.successForeground,
+    'successSoft': c.successSoft,
+    'successText': c.successText,
+    'warning': c.warning,
+    'warningForeground': c.warningForeground,
+    'warningSoft': c.warningSoft,
+    'warningText': c.warningText,
+    'info': c.info,
+    'infoForeground': c.infoForeground,
+    'infoSoft': c.infoSoft,
+    'infoText': c.infoText,
+    'border': c.border,
+    'input': c.input,
+    'ring': c.ring,
+    'live': c.live,
+    'liveForeground': c.liveForeground,
+    'mediaCanvas': c.mediaCanvas,
+    'onMedia': c.onMedia,
+    'onMediaMuted': c.onMediaMuted,
+    'scrim': c.scrim,
+    'scrimStrong': c.scrimStrong,
+    'overlayScrim': c.overlayScrim,
+    'glassFill': c.glassFill,
+    'glassBorder': c.glassBorder,
+    'sidebar': c.sidebar,
+    'sidebarForeground': c.sidebarForeground,
+    'sidebarPrimary': c.sidebarPrimary,
+    'sidebarPrimaryForeground': c.sidebarPrimaryForeground,
+    'sidebarAccent': c.sidebarAccent,
+    'sidebarAccentForeground': c.sidebarAccentForeground,
+    'sidebarBorder': c.sidebarBorder,
+    'sidebarRing': c.sidebarRing,
+  };
 
   @override
   bool operator ==(Object other) {
-    return other is MonokitColors &&
-        background == other.background &&
-        foreground == other.foreground &&
-        card == other.card &&
-        cardForeground == other.cardForeground &&
-        popover == other.popover &&
-        popoverForeground == other.popoverForeground &&
-        primary == other.primary &&
-        primaryForeground == other.primaryForeground &&
-        secondary == other.secondary &&
-        secondaryForeground == other.secondaryForeground &&
-        muted == other.muted &&
-        mutedForeground == other.mutedForeground &&
-        accent == other.accent &&
-        accentForeground == other.accentForeground &&
-        destructive == other.destructive &&
-        border == other.border &&
-        input == other.input &&
-        ring == other.ring;
+    if (other is! MonokitColors) return false;
+    final a = _values(this);
+    final b = _values(other);
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
+    }
+    return true;
   }
 
   @override
-  int get hashCode => Object.hashAll(<Object>[
-    background,
-    foreground,
-    card,
-    cardForeground,
-    popover,
-    popoverForeground,
-    primary,
-    primaryForeground,
-    secondary,
-    secondaryForeground,
-    muted,
-    mutedForeground,
-    accent,
-    accentForeground,
-    destructive,
-    border,
-    input,
-    ring,
-  ]);
+  int get hashCode => Object.hashAll(_values(this).values);
 }

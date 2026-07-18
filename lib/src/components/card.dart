@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
+import '../theme/monokit_elevation.dart';
 
 /// Spacing densities shared by [MonoCard] and its slot widgets.
 enum MonoCardSize { sm, md, lg }
@@ -20,6 +21,7 @@ class MonoCard extends StatelessWidget {
     this.borderColor,
     this.showBorder = true,
     this.elevation,
+    this.tier = MonoElevationTier.e1,
     this.semanticLabel,
   });
 
@@ -31,13 +33,19 @@ class MonoCard extends StatelessWidget {
 
   /// A multiplier applied to the token-derived subtle shadow. Set to zero to
   /// render a flat card.
+  @Deprecated('Use tier.')
   final double? elevation;
+  final MonoElevationTier tier;
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final resolvedElevation = elevation ?? theme.components.card.elevation;
+    final resolvedTier = elevation == null
+        ? tier
+        : elevation! <= 0
+        ? MonoElevationTier.e0
+        : MonoElevationTier.e2;
     final card = DecoratedBox(
       decoration: BoxDecoration(
         color: background ?? theme.colors.card,
@@ -48,17 +56,7 @@ class MonoCard extends StatelessWidget {
                 width: theme.components.card.borderWidth,
               )
             : null,
-        boxShadow: resolvedElevation > 0
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: theme.colors.foreground.withValues(
-                    alpha: (0.06 * resolvedElevation.clamp(0, 1)).toDouble(),
-                  ),
-                  blurRadius: theme.spacing.sm * resolvedElevation,
-                  offset: Offset(0, theme.spacing.xs / 2 * resolvedElevation),
-                ),
-              ]
-            : null,
+        boxShadow: theme.elevation.resolve(resolvedTier),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(theme.radii.lg),

@@ -1,5 +1,8 @@
 import 'monokit_colors.dart';
 import 'monokit_component_themes.dart';
+import 'monokit_density.dart';
+import 'monokit_elevation.dart';
+import 'monokit_haptics.dart';
 import 'monokit_motion.dart';
 import 'monokit_radii.dart';
 import 'monokit_spacing.dart';
@@ -13,6 +16,10 @@ class MonokitThemeData {
     this.spacing = const MonokitSpacing(),
     this.typography = const MonokitTypography(),
     this.motion = const MonokitMotion(),
+    this.elevation = const MonokitElevation(),
+    this.density = const MonokitDensityData(),
+    this.breakpoints = const MonokitBreakpoints(),
+    this.haptics = const MonokitHaptics(),
     this.components = const MonokitComponentThemes(),
   });
 
@@ -21,13 +28,21 @@ class MonokitThemeData {
   final MonokitSpacing spacing;
   final MonokitTypography typography;
   final MonokitMotion motion;
+  final MonokitElevation elevation;
+  final MonokitDensityData density;
+  final MonokitBreakpoints breakpoints;
+  final MonokitHaptics haptics;
   final MonokitComponentThemes components;
 
-  factory MonokitThemeData.light() =>
-      MonokitThemeData(colors: MonokitColors.light());
+  factory MonokitThemeData.light() => MonokitThemeData(
+    colors: MonokitColors.light(),
+    typography: MonokitTypography.plex(),
+  );
 
-  factory MonokitThemeData.dark() =>
-      MonokitThemeData(colors: MonokitColors.dark());
+  factory MonokitThemeData.dark() => MonokitThemeData(
+    colors: MonokitColors.dark(),
+    typography: MonokitTypography.plex(),
+  );
 
   MonokitThemeData copyWith({
     MonokitColors? colors,
@@ -35,6 +50,10 @@ class MonokitThemeData {
     MonokitSpacing? spacing,
     MonokitTypography? typography,
     MonokitMotion? motion,
+    MonokitElevation? elevation,
+    MonokitDensityData? density,
+    MonokitBreakpoints? breakpoints,
+    MonokitHaptics? haptics,
     MonokitComponentThemes? components,
   }) {
     return MonokitThemeData(
@@ -43,6 +62,10 @@ class MonokitThemeData {
       spacing: spacing ?? this.spacing,
       typography: typography ?? this.typography,
       motion: motion ?? this.motion,
+      elevation: elevation ?? this.elevation,
+      density: density ?? this.density,
+      breakpoints: breakpoints ?? this.breakpoints,
+      haptics: haptics ?? this.haptics,
       components: components ?? this.components,
     );
   }
@@ -55,9 +78,23 @@ class MonokitThemeData {
       spacing == other.spacing &&
       typography == other.typography &&
       motion == other.motion &&
+      elevation == other.elevation &&
+      density == other.density &&
+      breakpoints == other.breakpoints &&
+      haptics == other.haptics &&
       components == other.components;
 
   @override
-  int get hashCode =>
-      Object.hash(colors, radii, spacing, typography, motion, components);
+  int get hashCode => Object.hash(
+    colors,
+    radii,
+    spacing,
+    typography,
+    motion,
+    elevation,
+    density,
+    breakpoints,
+    haptics,
+    components,
+  );
 }

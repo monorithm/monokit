@@ -3,9 +3,16 @@ import 'package:flutter/services.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import 'mono_focus_ring.dart';
 
 /// A widgets-only interaction primitive with hover, focus, press and keyboard
 /// activation support.
+///
+/// Focus is tracked on two axes, per the design language: [MonoState.focused]
+/// reflects *any* focus (pointer or keyboard), while [MonoState.focusVisible]
+/// is set only for keyboard focus — so a mouse click never paints a focus ring.
+/// Set [focusRing] to `true` to have the primitive paint the standard
+/// [MonoFocusRing] on keyboard focus instead of styling the ring by hand.
 class MonoPressable extends StatefulWidget {
   const MonoPressable({
     super.key,
@@ -18,6 +25,8 @@ class MonoPressable extends StatefulWidget {
     this.expanded,
     this.statesController,
     this.mouseCursor,
+    this.focusRing = false,
+    this.focusRingBorderRadius,
   });
 
   /// Built with the current immutable state snapshot.
@@ -33,6 +42,10 @@ class MonoPressable extends StatefulWidget {
   final MonoStatesController? statesController;
   final MouseCursor? mouseCursor;
 
+  /// When true, wraps the child in a [MonoFocusRing] shown on keyboard focus.
+  final bool focusRing;
+  final BorderRadius? focusRingBorderRadius;
+
   @override
   State<MonoPressable> createState() => _MonoPressableState();
 }
@@ -40,13 +53,18 @@ class MonoPressable extends StatefulWidget {
 class _MonoPressableState extends State<MonoPressable> {
   late MonoStatesController _controller;
   late bool _ownsController;
+  FocusNode? _internalFocusNode;
 
   bool get _enabled => widget.enabled && widget.onPressed != null;
+
+  FocusNode get _focusNode =>
+      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
 
   @override
   void initState() {
     super.initState();
     _setController(widget.statesController);
+    _focusNode.addListener(_onFocusChanged);
   }
 
   @override
@@ -55,6 +73,12 @@ class _MonoPressableState extends State<MonoPressable> {
     if (oldWidget.statesController != widget.statesController) {
       _detachController();
       _setController(widget.statesController);
+    }
+    if (oldWidget.focusNode != widget.focusNode) {
+      (oldWidget.focusNode ?? _internalFocusNode)
+          ?.removeListener(_onFocusChanged);
+      _focusNode.addListener(_onFocusChanged);
+      _onFocusChanged();
     }
     _controller.update(MonoState.disabled, !_enabled);
   }
@@ -79,8 +103,18 @@ class _MonoPressableState extends State<MonoPressable> {
     }
   }
 
+  /// Raw focus (pointer or keyboard) — distinct from keyboard focus-visible.
+  void _onFocusChanged() {
+    _controller.update(MonoState.focused, _focusNode.hasFocus);
+    if (!_focusNode.hasFocus) {
+      _controller.update(MonoState.focusVisible, false);
+    }
+  }
+
   @override
   void dispose() {
+    (widget.focusNode ?? _internalFocusNode)?.removeListener(_onFocusChanged);
+    _internalFocusNode?.dispose();
     _detachController();
     super.dispose();
   }
@@ -100,7 +134,7 @@ class _MonoPressableState extends State<MonoPressable> {
       expanded: widget.expanded,
       child: FocusableActionDetector(
         enabled: _enabled,
-        focusNode: widget.focusNode,
+        focusNode: _focusNode,
         autofocus: widget.autofocus,
         mouseCursor:
             widget.mouseCursor ??
@@ -110,10 +144,10 @@ class _MonoPressableState extends State<MonoPressable> {
         onShowHoverHighlight: (hovered) {
           _controller.update(MonoState.hovered, hovered);
         },
-        onShowFocusHighlight: (focused) {
-          _controller
-            ..update(MonoState.focused, focused)
-            ..update(MonoState.focusVisible, focused);
+        // Keyboard focus-visible only (FocusableActionDetector already gates
+        // this on the highlight mode, so a mouse click won't trigger it).
+        onShowFocusHighlight: (visible) {
+          _controller.update(MonoState.focusVisible, visible);
         },
         shortcuts: const <ShortcutActivator, Intent>{
           SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
@@ -139,7 +173,18 @@ class _MonoPressableState extends State<MonoPressable> {
           onTapCancel: _enabled
               ? () => _controller.update(MonoState.pressed, false)
               : null,
-          child: widget.child(context, _controller.states),
+          child: Builder(
+            builder: (context) {
+              final states = _controller.states;
+              final built = widget.child(context, states);
+              if (!widget.focusRing) return built;
+              return MonoFocusRing(
+                focused: states.contains(MonoState.focusVisible),
+                borderRadius: widget.focusRingBorderRadius,
+                child: built,
+              );
+            },
+          ),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_overlay_fade.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'mono_icon.dart';
@@ -273,12 +274,16 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
       if (_isOpen) {
         _showOrRefreshOverlay();
       } else {
-        _removeOverlayNow(restoreFocus: shouldRestoreFocus);
+        _beginClose(restoreFocus: shouldRestoreFocus);
       }
     });
   }
 
+  bool _overlayVisible = false;
+  bool _pendingRestoreFocus = true;
+
   void _showOrRefreshOverlay() {
+    _overlayVisible = true;
     if (_entry != null) {
       _entry!.markNeedsBuild();
       return;
@@ -308,20 +313,40 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     _entry = OverlayEntry(
       builder: (BuildContext overlayContext) => MonokitTheme(
         data: theme,
-        child: _MonoSelectOverlay<T>(
-          link: _layerLink,
-          targetSize: _triggerSize,
-          openUpward: _openUpward,
-          options: _options,
-          selectedValue: _selectedValue,
-          optionBuilder: widget.optionBuilder,
-          maxHeight: widget.menuMaxHeight,
-          onDismiss: () => _setOpen(false),
-          onSelected: _select,
+        child: MonoOverlayFade(
+          visible: _overlayVisible,
+          onExited: _onOverlayExited,
+          child: _MonoSelectOverlay<T>(
+            link: _layerLink,
+            targetSize: _triggerSize,
+            openUpward: _openUpward,
+            options: _options,
+            selectedValue: _selectedValue,
+            optionBuilder: widget.optionBuilder,
+            maxHeight: widget.menuMaxHeight,
+            onDismiss: () => _setOpen(false),
+            onSelected: _select,
+          ),
         ),
       ),
     );
     overlay.insert(_entry!);
+  }
+
+  void _beginClose({bool restoreFocus = true}) {
+    if (_entry == null) {
+      return;
+    }
+    _pendingRestoreFocus = restoreFocus;
+    _overlayVisible = false;
+    _entry!.markNeedsBuild();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlayNow(restoreFocus: _pendingRestoreFocus);
   }
 
   void _removeOverlayNow({bool restoreFocus = true}) {

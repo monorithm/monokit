@@ -42,15 +42,17 @@ void main() {
       final light = MonokitThemeData.light();
       final dark = MonokitThemeData.dark();
 
-      expect(light.colors.background, const Color(0xFFFAFAFA));
-      expect(light.colors.foreground, const Color(0xFF09090B));
-      expect(light.colors.destructive, const Color(0xFFEF4444));
-      expect(dark.colors.background, const Color(0xFF09090B));
-      expect(dark.colors.ring, const Color(0xFFD4D4D8));
+      expect(light.colors.background, const Color(0xFFFFFFFF));
+      expect(light.colors.foreground, const Color(0xFF090B0C));
+      expect(light.colors.primary, const Color(0xFF007A55));
+      expect(light.colors.destructive, const Color(0xFFE7000B));
+      expect(light.colors.successSoft, const Color(0xFFD7F9DC));
+      expect(dark.colors.background, const Color(0xFF090B0C));
+      expect(dark.colors.ring, const Color(0xFF67787C));
       expect(light.radii.lg, 10);
       expect(light.spacing.s4, 4);
       expect(light.spacing.s48, 48);
-      expect(light.motion.duration, const Duration(milliseconds: 150));
+      expect(light.motion.base, const Duration(milliseconds: 150));
     });
 
     test('state controller notifies only on real changes', () {
@@ -86,7 +88,7 @@ void main() {
       ),
     );
 
-    expect(find.text('ff18181b'), findsOneWidget);
+    expect(find.text('ff007a55'), findsOneWidget);
   });
 
   testWidgets('MonokitApp supports named routes with token-timed transitions', (
@@ -137,7 +139,7 @@ void main() {
       ),
     );
 
-    expect(find.text('ff18181b'), findsOneWidget);
+    expect(find.text('ff007a55'), findsOneWidget);
   });
 
   testWidgets('button and editable input are interactive without Material', (
@@ -464,7 +466,7 @@ void main() {
 
     rebuild(() => open = false);
     await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle(); // waits for the dialog's exit animation
     expect(find.text('Updated dialog'), findsNothing);
     expect(tester.takeException(), isNull);
   });

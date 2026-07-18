@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -305,12 +306,17 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
       if (widget.enabled && _isOpen) {
         _showOverlay();
       } else {
-        _removeOverlay(restoreFocus: shouldRestoreFocus);
+        _beginClose(restoreFocus: shouldRestoreFocus);
       }
     });
   }
 
+  bool _overlayVisible = false;
+  bool _pendingRestoreFocus = false;
+  MonoHoverCardPlacement _resolvedPlacement = MonoHoverCardPlacement.bottom;
+
   void _showOverlay() {
+    _overlayVisible = true;
     if (_entry != null || !mounted) {
       _refreshOverlay();
       return;
@@ -324,11 +330,39 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _resolvedPlacement = widget.placement;
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null && renderBox.hasSize) {
+      final MonoPlacement resolved = MonoPlacement.values
+          .byName(widget.placement.name)
+          .resolveWithin(
+            renderBox.localToGlobal(Offset.zero) & renderBox.size,
+            MediaQuery.sizeOf(context),
+          );
+      _resolvedPlacement = MonoHoverCardPlacement.values.byName(resolved.name);
+    }
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
     );
     overlay.insert(_entry!);
+  }
+
+  void _beginClose({bool restoreFocus = false}) {
+    if (_entry == null) {
+      return;
+    }
+    _pendingRestoreFocus = restoreFocus;
+    _overlayVisible = false;
+    _refreshOverlay();
+  }
+
+  void _onOverlayExited() {
+    if (_overlayVisible) {
+      return;
+    }
+    _removeOverlay(restoreFocus: _pendingRestoreFocus);
+    _pendingRestoreFocus = false;
   }
 
   void _refreshOverlay() {
@@ -383,8 +417,10 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     }
     return _MonoHoverCardOverlay(
       theme: theme,
+      visible: _overlayVisible,
+      onExited: _onOverlayExited,
       layerLink: _layerLink,
-      placement: widget.placement,
+      placement: _resolvedPlacement,
       offset: widget.offset,
       gap: widget.gap ?? theme.spacing.sm,
       textDirection: _textDirection,
@@ -473,6 +509,8 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
 class _MonoHoverCardOverlay extends StatefulWidget {
   const _MonoHoverCardOverlay({
     required this.theme,
+    required this.visible,
+    required this.onExited,
     required this.layerLink,
     required this.placement,
     required this.offset,
@@ -488,6 +526,8 @@ class _MonoHoverCardOverlay extends StatefulWidget {
   });
 
   final MonokitThemeData theme;
+  final bool visible;
+  final VoidCallback onExited;
   final LayerLink layerLink;
   final MonoHoverCardPlacement placement;
   final Offset offset;
@@ -517,15 +557,38 @@ class _MonoHoverCardOverlayState extends State<_MonoHoverCardOverlay>
       vsync: this,
       duration: widget.disableAnimations
           ? Duration.zero
-          : widget.theme.motion.duration,
-    )..forward();
+          : widget.theme.motion.base,
+    );
+    _controller.addStatusListener(_onStatus);
+    if (widget.visible) {
+      _controller.forward();
+    }
     _focusNode = FocusNode(debugLabel: 'MonoHoverCardContent');
+  }
+
+  @override
+  void didUpdateWidget(covariant _MonoHoverCardOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible != oldWidget.visible) {
+      if (widget.visible) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !widget.visible) {
+      widget.onExited();
+    }
   }
 
   @override
   void dispose() {
     widget.onCardHover(false);
     widget.onCardFocus(false);
+    _controller.removeStatusListener(_onStatus);
     _focusNode.dispose();
     _controller.dispose();
     super.dispose();

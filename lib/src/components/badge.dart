@@ -4,7 +4,16 @@ import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
 /// Semantic treatments for a compact [MonoBadge].
-enum MonoBadgeVariant { primary, secondary, outline, destructive }
+enum MonoBadgeVariant {
+  primary,
+  secondary,
+  outline,
+  destructive,
+  success,
+  warning,
+  info,
+  live,
+}
 
 /// Density options for a [MonoBadge].
 enum MonoBadgeSize { sm, md, lg }
@@ -84,9 +93,21 @@ class MonoBadgeStyleResolver {
       ),
       MonoBadgeVariant.destructive => (
         colors.destructive,
-        colors.primary,
+        colors.destructiveForeground,
         null,
       ),
+      MonoBadgeVariant.success => (
+        colors.success,
+        colors.successForeground,
+        null,
+      ),
+      MonoBadgeVariant.warning => (
+        colors.warning,
+        colors.warningForeground,
+        null,
+      ),
+      MonoBadgeVariant.info => (colors.info, colors.infoForeground, null),
+      MonoBadgeVariant.live => (colors.live, colors.liveForeground, null),
     };
 
     return MonoResolvedBadgeStyle(

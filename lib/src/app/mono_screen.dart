@@ -74,7 +74,7 @@ class MonoScreenMotion {
       chromeCurve: motion.curve,
       chromeDuration: motion.duration,
       sidebarCurve: motion.emphasizedCurve,
-      sidebarDuration: motion.slow,
+      sidebarDuration: motion.moderate,
       overlayCurve: motion.curve,
       overlayDuration: motion.duration,
       insetCurve: motion.curve,
@@ -303,6 +303,33 @@ class _MonoScreenState extends State<MonoScreen>
     return EdgeInsets.fromLTRB(left, top, right, bottomSafe + bottomKeyboard);
   }
 
+  /// Insets for edges in [MonoInsetMode.scrim]: the container bleeds under the
+  /// system inset, but this amount is exposed via [MonoScreenScope] so immersive
+  /// content (a feed overlay, on-media chrome) can pad itself clear of the
+  /// status bar / home indicator. [MonoInsetMode.bleed] exposes nothing.
+  EdgeInsets _scrimInsets(MediaQueryData media) {
+    final safe = media.viewPadding;
+    final keyboard = widget.resizeToAvoidInset ? media.viewInsets.bottom : 0.0;
+    final policy = widget.insetPolicy;
+    final top = policy.top == MonoInsetMode.scrim && widget.safeArea.top
+        ? safe.top
+        : 0.0;
+    final left = policy.left == MonoInsetMode.scrim && widget.safeArea.left
+        ? safe.left
+        : 0.0;
+    final right = policy.right == MonoInsetMode.scrim && widget.safeArea.right
+        ? safe.right
+        : 0.0;
+    final bottomSafe =
+        policy.bottom == MonoInsetMode.scrim && widget.safeArea.bottom
+        ? safe.bottom
+        : 0.0;
+    final bottomKeyboard = policy.keyboard == MonoInsetMode.scrim
+        ? keyboard
+        : 0.0;
+    return EdgeInsets.fromLTRB(left, top, right, bottomSafe + bottomKeyboard);
+  }
+
   EdgeInsets _edgeSafePadding(MediaQueryData media, {bool keyboard = false}) {
     return EdgeInsets.only(
       left: widget.safeArea.left ? media.viewPadding.left : 0,
@@ -430,7 +457,7 @@ class _MonoScreenState extends State<MonoScreen>
         }
 
         return MonoScreenScope(
-          resolvedBodyInsets: bodyInsets,
+          resolvedBodyInsets: _scrimInsets(media),
           overlays: _overlays,
           sidebarController: _sidebarController,
           isCompact: isCompact,
