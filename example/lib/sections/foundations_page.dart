@@ -45,10 +45,16 @@ class FoundationsPage extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: theme.spacing.sm),
                 child: MonoSeparator(),
               ),
-              _TypeRow('prose (serif)', theme.typography.prose,
-                  sample: 'Clean iPhone 13, meet at Nima.'),
-              _TypeRow('mono · tabular', theme.typography.mono,
-                  sample: 'GH₵ 4,800   ·   024 000 0000   ·   #A1B2C3'),
+              _TypeRow(
+                'prose (serif)',
+                theme.typography.prose,
+                sample: 'Clean iPhone 13, meet at Nima.',
+              ),
+              _TypeRow(
+                'mono · tabular',
+                theme.typography.mono,
+                sample: 'GH₵ 4,800   ·   024 000 0000   ·   #A1B2C3',
+              ),
               _TypeRow(
                 'tabular(titleLarge) — a price',
                 theme.typography.tabular(theme.typography.titleLarge),
@@ -102,20 +108,42 @@ class FoundationsPage extends StatelessWidget {
             spacing: theme.spacing.sm,
             runSpacing: theme.spacing.sm,
             children: const <Widget>[
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('fast 100ms')),
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('base 150ms')),
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('moderate 220ms')),
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('slow 300ms')),
-              MonoBadge(variant: MonoBadgeVariant.outline, child: Text('monoOut')),
-              MonoBadge(variant: MonoBadgeVariant.outline, child: Text('spatialSpring')),
-              MonoBadge(variant: MonoBadgeVariant.outline, child: Text('celebrateSpring')),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('fast 100ms'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('base 150ms'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('moderate 220ms'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('slow 300ms'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.outline,
+                child: Text('monoOut'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.outline,
+                child: Text('spatialSpring'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.outline,
+                child: Text('celebrateSpring'),
+              ),
             ],
           ),
         ),
         ComponentSection(
           title: 'Icons',
           widgetName: 'MonoIcons',
-          description: 'The dependency-free catalog (vector migration pending).',
+          description:
+              'The dependency-free catalog (vector migration pending).',
           child: Wrap(
             spacing: theme.spacing.lg,
             runSpacing: theme.spacing.lg,

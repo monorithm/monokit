@@ -35,7 +35,8 @@ class _FormsPageState extends State<FormsPage> {
         ComponentSection(
           title: 'Field, input & validation',
           widgetName: 'MonoField',
-          description: 'Label, description, and a live-region error. Press '
+          description:
+              'Label, description, and a live-region error. Press '
               'Continue with an empty name to see the invalid state.',
           code:
               "MonoField(\n  label: const Text('Display name'),\n  error: invalid ? const Text('Required') : null,\n  child: MonoInput(controller: name, invalid: invalid),\n)",
@@ -134,10 +135,7 @@ class _FormsPageState extends State<FormsPage> {
           title: 'One-time code',
           widgetName: 'MonoInputOtp',
           description: 'Tabular digits — 0/O and 1/l never blur.',
-          child: MonoInputOtp(
-            length: 6,
-            onCompleted: (_) {},
-          ),
+          child: MonoInputOtp(length: 6, onCompleted: (_) {}),
         ),
       ],
     );

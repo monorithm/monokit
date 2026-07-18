@@ -24,7 +24,8 @@ class OverlaysPage extends StatelessWidget {
         ComponentSection(
           title: 'Dialog',
           widgetName: 'MonoDialog',
-          description: 'Modal decisions. Scales + fades in, and back out on '
+          description:
+              'Modal decisions. Scales + fades in, and back out on '
               'close. Destructive actions live behind confirmation.',
           child: MonoDialog(
             trigger: MonoButton(
@@ -66,7 +67,8 @@ class OverlaysPage extends StatelessWidget {
         ComponentSection(
           title: 'Sheet',
           widgetName: 'MonoSheet',
-          description: 'Slides up from the bottom edge, and slides back down '
+          description:
+              'Slides up from the bottom edge, and slides back down '
               'on close.',
           child: MonoSheet(
             trigger: MonoButton(
@@ -83,8 +85,10 @@ class OverlaysPage extends StatelessWidget {
                     description: Text('Narrow your search.'),
                   ),
                   SizedBox(height: theme.spacing.md),
-                  Text('Sheet body content.',
-                      style: theme.typography.bodyMedium),
+                  Text(
+                    'Sheet body content.',
+                    style: theme.typography.bodyMedium,
+                  ),
                 ],
               ),
             ),
@@ -107,8 +111,10 @@ class OverlaysPage extends StatelessWidget {
                 children: <Widget>[
                   Text('Navigation', style: theme.typography.titleMedium),
                   SizedBox(height: theme.spacing.sm),
-                  Text('Drawer body content.',
-                      style: theme.typography.bodyMedium),
+                  Text(
+                    'Drawer body content.',
+                    style: theme.typography.bodyMedium,
+                  ),
                 ],
               ),
             ),
@@ -138,7 +144,8 @@ class OverlaysPage extends StatelessWidget {
         ComponentSection(
           title: 'Collision-aware placement',
           widgetName: 'MonoPlacement.resolveWithin',
-          description: 'This popover prefers to open toward the right — but it '
+          description:
+              'This popover prefers to open toward the right — but it '
               'sits at the right edge, so it flips left to stay on screen. '
               '(Selects and dropdowns flip up near the bottom the same way.)',
           child: Align(
@@ -195,12 +202,16 @@ class OverlaysPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Text('Abbas Mohammed',
-                              style: theme.typography.titleMedium),
-                          Text('12 active posts · Nima',
-                              style: theme.typography.labelMedium.copyWith(
-                                color: theme.colors.mutedForeground,
-                              )),
+                          Text(
+                            'Abbas Mohammed',
+                            style: theme.typography.titleMedium,
+                          ),
+                          Text(
+                            '12 active posts · Nima',
+                            style: theme.typography.labelMedium.copyWith(
+                              color: theme.colors.mutedForeground,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -230,10 +241,12 @@ class OverlaysPage extends StatelessWidget {
                   SizedBox(height: theme.spacing.sm),
                   Text('Save', style: theme.typography.bodyMedium),
                   SizedBox(height: theme.spacing.sm),
-                  Text('Report',
-                      style: theme.typography.bodyMedium.copyWith(
-                        color: theme.colors.destructiveText,
-                      )),
+                  Text(
+                    'Report',
+                    style: theme.typography.bodyMedium.copyWith(
+                      color: theme.colors.destructiveText,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -246,17 +259,20 @@ class OverlaysPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(theme.radii.md),
                 border: Border.all(color: theme.colors.border),
               ),
-              child: Text('Right-click me',
-                  style: theme.typography.bodyMedium.copyWith(
-                    color: theme.colors.mutedForeground,
-                  )),
+              child: Text(
+                'Right-click me',
+                style: theme.typography.bodyMedium.copyWith(
+                  color: theme.colors.mutedForeground,
+                ),
+              ),
             ),
           ),
         ),
         ComponentSection(
           title: 'Dropdown menu',
           widgetName: 'MonoDropdownMenu',
-          description: 'Fades in/out and flips up when it would overflow below.',
+          description:
+              'Fades in/out and flips up when it would overflow below.',
           child: MonoDropdownMenu<String>(
             trigger: MonoButton(
               variant: MonoButtonVariant.outline,

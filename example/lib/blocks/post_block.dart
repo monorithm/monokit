@@ -87,11 +87,15 @@ class _PostBlockState extends State<PostBlock> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text('One quick check',
-                          style: theme.typography.titleMedium),
+                      Text(
+                        'One quick check',
+                        style: theme.typography.titleMedium,
+                      ),
                       SizedBox(height: theme.spacing.xs),
-                      Text('Are you selling this, or looking for one?',
-                          style: theme.typography.bodyMedium),
+                      Text(
+                        'Are you selling this, or looking for one?',
+                        style: theme.typography.bodyMedium,
+                      ),
                       SizedBox(height: theme.spacing.md),
                       Row(
                         children: <Widget>[

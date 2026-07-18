@@ -23,7 +23,8 @@ class _CommercePageState extends State<CommercePage> {
         ComponentSection(
           title: 'Price tag',
           widgetName: 'MonoPriceTag',
-          description: 'Tabular figures; a struck-through compareAt announces '
+          description:
+              'Tabular figures; a struck-through compareAt announces '
               '"was X, now Y".',
           child: const MonoPriceTag(
             currency: 'GH₵',
@@ -79,20 +80,16 @@ class _CommercePageState extends State<CommercePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text('$_qty item${_qty == 1 ? '' : 's'}',
-                    style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.mutedForeground,
-                    )),
-                MonoPriceTag(
-                  currency: 'GH₵',
-                  price: '${4800 * _qty}',
+                Text(
+                  '$_qty item${_qty == 1 ? '' : 's'}',
+                  style: theme.typography.labelMedium.copyWith(
+                    color: theme.colors.mutedForeground,
+                  ),
                 ),
+                MonoPriceTag(currency: 'GH₵', price: '${4800 * _qty}'),
               ],
             ),
-            action: MonoButton(
-              onPressed: () {},
-              child: const Text('Checkout'),
-            ),
+            action: MonoButton(onPressed: () {}, child: const Text('Checkout')),
           ),
         ),
       ],

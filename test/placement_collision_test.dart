@@ -9,8 +9,11 @@ void main() {
   test('flips a bottom placement up when it would overflow below', () {
     const Rect nearBottom = Rect.fromLTWH(0, 720, 100, 40);
     expect(
-      MonoPlacement.bottomStart
-          .resolveWithin(nearBottom, viewport, estimate: 240),
+      MonoPlacement.bottomStart.resolveWithin(
+        nearBottom,
+        viewport,
+        estimate: 240,
+      ),
       MonoPlacement.topStart,
     );
   });
@@ -34,8 +37,11 @@ void main() {
   test('flips a right placement to the left near the right edge', () {
     const Rect nearRight = Rect.fromLTWH(360, 380, 40, 40);
     expect(
-      MonoPlacement.rightStart
-          .resolveWithin(nearRight, viewport, estimate: 240),
+      MonoPlacement.rightStart.resolveWithin(
+        nearRight,
+        viewport,
+        estimate: 240,
+      ),
       MonoPlacement.leftStart,
     );
   });

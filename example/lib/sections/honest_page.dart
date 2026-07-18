@@ -37,8 +37,9 @@ class HonestPage extends StatelessWidget {
               return next;
             },
             builder: (context, value, pending, set) => MonoButton(
-              variant:
-                  value ? MonoButtonVariant.primary : MonoButtonVariant.outline,
+              variant: value
+                  ? MonoButtonVariant.primary
+                  : MonoButtonVariant.outline,
               leading: pending
                   ? const MonoSpinner(size: 14)
                   : const MonoIcon(MonoIcons.add, size: 16),
@@ -50,7 +51,8 @@ class HonestPage extends StatelessWidget {
         ComponentSection(
           title: 'accepted ≠ success',
           widgetName: 'MonoBanner',
-          description: 'Celebration fires only on completed — never on receipt.',
+          description:
+              'Celebration fires only on completed — never on receipt.',
           child: Column(
             children: <Widget>[
               const MonoBanner(
@@ -68,7 +70,8 @@ class HonestPage extends StatelessWidget {
         ComponentSection(
           title: 'Availability is visually distinct',
           widgetName: 'MonoAvailability',
-          description: 'Terminal states (Sold / Closed / Expired) are not '
+          description:
+              'Terminal states (Sold / Closed / Expired) are not '
               'actionable — their surfaces disable the primary action.',
           child: Wrap(
             spacing: theme.spacing.sm,
@@ -86,7 +89,10 @@ class HonestPage extends StatelessWidget {
             runSpacing: theme.spacing.md,
             children: <Widget>[
               for (final s in MonoReceiptState.values)
-                DemoTile(label: s.name, child: MonoReceipt(state: s)),
+                DemoTile(
+                  label: s.name,
+                  child: MonoReceipt(state: s),
+                ),
             ],
           ),
         ),

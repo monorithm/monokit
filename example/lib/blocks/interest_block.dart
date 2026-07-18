@@ -98,8 +98,9 @@ class _InterestBlockState extends State<InterestBlock> {
         align: m.mine ? MonoMessageAlign.end : MonoMessageAlign.start,
         avatar: m.mine ? null : const MonoAvatar(initials: 'AB'),
         child: Column(
-          crossAxisAlignment:
-              m.mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: m.mine
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             if (m.attachment != null)
@@ -114,8 +115,9 @@ class _InterestBlockState extends State<InterestBlock> {
                 ),
               ),
             MonoBubble(
-              variant:
-                  m.mine ? MonoBubbleVariant.primary : MonoBubbleVariant.muted,
+              variant: m.mine
+                  ? MonoBubbleVariant.primary
+                  : MonoBubbleVariant.muted,
               child: MonoBubbleContent(child: Text(m.text)),
             ),
             if (m.mine) MonoReceipt(state: m.receipt),

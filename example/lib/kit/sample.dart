@@ -101,7 +101,8 @@ const List<FeedPost> sampleFeed = <FeedPost>[
     seed: 2,
     seller: yaa,
     isLive: true,
-    description: 'Fresh waakye with all the sides. Delivering across Accra '
+    description:
+        'Fresh waakye with all the sides. Delivering across Accra '
         'Central until 2pm. Message to reserve a plate.',
   ),
   FeedPost(
@@ -114,7 +115,8 @@ const List<FeedPost> sampleFeed = <FeedPost>[
     seed: 3,
     seller: esi,
     availability: MonoAvailability.reserved,
-    description: 'Need a foldable stroller in good condition for a 6-month-old. '
+    description:
+        'Need a foldable stroller in good condition for a 6-month-old. '
         'Can pick up around East Legon this weekend.',
   ),
 ];
@@ -188,11 +190,7 @@ class SamplePhoto extends StatelessWidget {
         ),
       ),
       child: const Center(
-        child: MonoIcon(
-          MonoIcons.image,
-          size: 28,
-          color: Color(0x33FFFFFF),
-        ),
+        child: MonoIcon(MonoIcons.image, size: 28, color: Color(0x33FFFFFF)),
       ),
     );
   }

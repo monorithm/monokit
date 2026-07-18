@@ -30,8 +30,7 @@ extension MonoCommandPhaseX on MonoCommandPhase {
   bool get isTerminalSuccess => this == MonoCommandPhase.completed;
 
   bool get isTerminalFailure =>
-      this == MonoCommandPhase.rejected ||
-      this == MonoCommandPhase.exhausted;
+      this == MonoCommandPhase.rejected || this == MonoCommandPhase.exhausted;
 
   bool get isTerminal => isTerminalSuccess || isTerminalFailure;
 
