@@ -1,3 +1,10 @@
+## 0.3.0
+
+- Added `MonoBottomNav`, an icon-only bottom navigation primitive with
+  per-item semantics (label, button, selected), token styling, and
+  bottom-inset handling.
+- Added `MonoIcons.user`.
+
 ## 0.2.0
 
 - Migrated the theme to the canonical mist, emerald, status, media, glass,

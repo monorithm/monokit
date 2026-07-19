@@ -2,6 +2,8 @@
 
 Monokit is Monorithm's private, canonical Flutter implementation of the Monokit design language. It uses mist surfaces, a rationed emerald action color, honest status treatments, and widgets-first primitives rather than a Material reskin.
 
+Monokit ships **widget and design primitives only** — buttons, the icon catalog, interaction states, navigation surfaces, theme tokens via `MonokitTheme.of(context)`. Product-shaped composites belong in the consuming app (for Monorithm: its `packages/ui`).
+
 ## Install
 
 ```bash
