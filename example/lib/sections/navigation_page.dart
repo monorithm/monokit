@@ -12,6 +12,11 @@ class NavigationPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        const ComponentSection(
+          title: 'Bottom nav',
+          widgetName: 'MonoBottomNav',
+          child: _BottomNavDemo(),
+        ),
         ComponentSection(
           title: 'Tabs',
           widgetName: 'MonoTabs',
@@ -134,6 +139,51 @@ class NavigationPage extends StatelessWidget {
       text,
       style: theme.typography.bodyMedium.copyWith(
         color: theme.colors.mutedForeground,
+      ),
+    );
+  }
+}
+
+class _BottomNavDemo extends StatefulWidget {
+  const _BottomNavDemo();
+
+  @override
+  State<_BottomNavDemo> createState() => _BottomNavDemoState();
+}
+
+class _BottomNavDemoState extends State<_BottomNavDemo> {
+  int _selected = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return SizedBox(
+      width: 340,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          MonoBottomNav(
+            items: const <MonoBottomNavItem>[
+              MonoBottomNavItem(icon: MonoIcons.add, label: 'Create'),
+              MonoBottomNavItem(icon: MonoIcons.play, label: 'Play'),
+              MonoBottomNavItem(icon: MonoIcons.search, label: 'Search'),
+              MonoBottomNavItem(icon: MonoIcons.message, label: 'Message'),
+              MonoBottomNavItem(icon: MonoIcons.user, label: 'Profile'),
+            ],
+            selectedIndex: _selected,
+            onSelected: (index) => setState(() => _selected = index),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: theme.spacing.sm),
+            child: Text(
+              'Icon-only, controlled by the host; every tap reports its '
+              'index — including re-taps of the selected destination.',
+              style: theme.typography.bodyMedium.copyWith(
+                color: theme.colors.mutedForeground,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

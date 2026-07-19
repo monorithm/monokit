@@ -65,7 +65,7 @@ const List<GallerySection> gallerySections = <GallerySection>[
     path: '/navigation',
     title: 'Navigation',
     navLabel: 'Navigation',
-    description: 'Tabs, accordion, breadcrumb, pagination, cards',
+    description: 'Bottom nav, tabs, accordion, breadcrumb, pagination, cards',
     icon: MonoIcons.menu,
     group: 'Components',
   ),
