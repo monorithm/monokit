@@ -106,6 +106,10 @@ abstract final class MonoIcons {
     HugeIcons.strokeRoundedCall,
     semanticLabel: 'Call',
   );
+  static const MonoIconData user = MonoIconData(
+    HugeIcons.strokeRoundedUser,
+    semanticLabel: 'Profile',
+  );
   static const MonoIconData like = MonoIconData(
     HugeIcons.strokeRoundedFavourite,
     semanticLabel: 'Like',
