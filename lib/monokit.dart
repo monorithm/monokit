@@ -8,6 +8,7 @@ export 'src/components/alert.dart';
 export 'src/components/attachment.dart';
 export 'src/components/avatar.dart';
 export 'src/components/badge.dart';
+export 'src/components/bottom_nav.dart';
 export 'src/components/breadcrumb.dart';
 export 'src/components/bubble.dart';
 export 'src/components/button.dart';

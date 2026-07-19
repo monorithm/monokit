@@ -3,6 +3,7 @@ export 'alert.dart';
 export 'attachment.dart';
 export 'avatar.dart';
 export 'badge.dart';
+export 'bottom_nav.dart';
 export 'breadcrumb.dart';
 export 'bubble.dart';
 export 'button.dart';
