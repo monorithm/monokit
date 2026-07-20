@@ -168,7 +168,7 @@ class _BottomNavDemoState extends State<_BottomNavDemo> {
               MonoBottomNavItem(icon: MonoIcons.play, label: 'Play'),
               MonoBottomNavItem(icon: MonoIcons.search, label: 'Search'),
               MonoBottomNavItem(icon: MonoIcons.message, label: 'Message'),
-              MonoBottomNavItem(icon: MonoIcons.user, label: 'Profile'),
+              MonoBottomNavItem(icon: MonoIcons.user, label: 'Account'),
             ],
             selectedIndex: _selected,
             onSelected: (index) => setState(() => _selected = index),
