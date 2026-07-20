@@ -1,3 +1,8 @@
+## 0.3.1
+
+- Renamed `MonoIcons.user`'s semantic label from Profile to Account
+  (Monorithm tab-5 terminology).
+
 ## 0.3.0
 
 - Added `MonoBottomNav`, an icon-only bottom navigation primitive with

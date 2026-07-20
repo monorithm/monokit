@@ -108,7 +108,7 @@ abstract final class MonoIcons {
   );
   static const MonoIconData user = MonoIconData(
     HugeIcons.strokeRoundedUser,
-    semanticLabel: 'Profile',
+    semanticLabel: 'Account',
   );
   static const MonoIconData like = MonoIconData(
     HugeIcons.strokeRoundedFavourite,

@@ -25,7 +25,7 @@ Widget _host(Widget child, {EdgeInsets viewPadding = EdgeInsets.zero}) {
 const _items = <MonoBottomNavItem>[
   MonoBottomNavItem(icon: MonoIcons.add, label: 'Create'),
   MonoBottomNavItem(icon: MonoIcons.play, label: 'Play'),
-  MonoBottomNavItem(icon: MonoIcons.user, label: 'Profile'),
+  MonoBottomNavItem(icon: MonoIcons.user, label: 'Account'),
 ];
 
 void main() {
@@ -82,7 +82,7 @@ void main() {
       ),
     );
     expect(
-      tester.getSemantics(find.bySemanticsLabel('Profile')),
+      tester.getSemantics(find.bySemanticsLabel('Account')),
       isSemantics(isButton: true, isSelected: false),
     );
     handle.dispose();
@@ -127,7 +127,7 @@ void main() {
             MonoBottomNavItem(icon: MonoIcons.add, label: 'Create'),
             MonoBottomNavItem(
               icon: MonoIcons.user,
-              label: 'Profile',
+              label: 'Account',
               enabled: false,
             ),
           ],
