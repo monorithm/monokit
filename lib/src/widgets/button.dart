@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
+import '../primitives/mono_text_scale.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'spinner.dart';
@@ -391,8 +392,10 @@ class _MonoButtonState extends State<MonoButton> {
           duration: motionDuration,
           curve: theme.motion.curve,
           constraints: BoxConstraints(
-            minWidth: isIconButton ? style.minimumHeight : 0,
-            minHeight: style.minimumHeight,
+            minWidth: isIconButton
+                ? monoScaledExtent(context, style.minimumHeight)
+                : 0,
+            minHeight: monoScaledExtent(context, style.minimumHeight),
           ),
           padding: style.padding,
           decoration: BoxDecoration(

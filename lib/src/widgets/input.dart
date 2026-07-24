@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_text_scale.dart';
 import '../theme/monokit_theme.dart';
 
 /// A compact, token-driven text input built directly on [EditableText].
@@ -370,7 +371,9 @@ class _MonoInputState extends State<MonoInput> {
           child: AnimatedContainer(
             duration: theme.motion.duration,
             curve: theme.motion.curve,
-            constraints: BoxConstraints(minHeight: theme.spacing.huge),
+            constraints: BoxConstraints(
+              minHeight: monoScaledExtent(context, theme.spacing.huge),
+            ),
             decoration: BoxDecoration(
               color: background,
               borderRadius: BorderRadius.circular(theme.radii.md),

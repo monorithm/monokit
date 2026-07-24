@@ -57,6 +57,7 @@ export 'src/primitives/mono_overlay_layer.dart';
 export 'src/primitives/mono_placement.dart';
 export 'src/primitives/mono_pressable.dart';
 export 'src/primitives/mono_surfaces.dart';
+export 'src/primitives/mono_text_scale.dart';
 export 'src/states/mono_state.dart';
 export 'src/states/mono_states_controller.dart';
 export 'src/theme/monokit_colors.dart';
