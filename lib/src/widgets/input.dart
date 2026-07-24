@@ -57,6 +57,8 @@ class MonoInput extends StatefulWidget {
     this.onTap,
     this.onFocusChanged,
     this.statesController,
+    this.restorationId,
+    this.showCounter = false,
   }) : assert(
          controller == null || initialValue == null,
          'Specify either controller or initialValue, not both.',
@@ -125,6 +127,15 @@ class MonoInput extends StatefulWidget {
   /// visual state. When omitted, the input creates one for its own lifetime.
   final MonoStatesController? statesController;
 
+  /// Restoration id. When set (and no external [controller] is supplied), the
+  /// field's text and selection survive the app being killed and relaunched.
+  final String? restorationId;
+
+  /// Shows a `current/max` character counter below the field. Requires
+  /// [maxLength]. The count is always exposed to screen readers via
+  /// `maxValueLength`/`currentValueLength` regardless of this flag.
+  final bool showCounter;
+
   @override
   State<MonoInput> createState() => _MonoInputState();
 
@@ -142,13 +153,42 @@ class MonoInput extends StatefulWidget {
 }
 
 class _MonoInputState extends State<MonoInput>
+    with RestorationMixin
     implements TextSelectionGestureDetectorBuilderDelegate {
-  late TextEditingController _controller;
+  /// The owned controller, present only when no external [MonoInput.controller]
+  /// is supplied. Registered for state restoration.
+  RestorableTextEditingController? _localController;
+  TextEditingController get _controller =>
+      widget.controller ?? _localController!.value;
   late FocusNode _focusNode;
-  late bool _ownsController;
   late bool _ownsFocusNode;
   late MonoStatesController _statesController;
   late bool _ownsStatesController;
+
+  @override
+  String? get restorationId => widget.restorationId;
+
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    if (_localController != null) {
+      _registerController();
+    }
+  }
+
+  void _registerController() {
+    registerForRestoration(_localController!, 'controller');
+    _localController!.value.removeListener(_handleTextChanged);
+    _localController!.value.addListener(_handleTextChanged);
+  }
+
+  void _createLocalController([TextEditingValue? value]) {
+    _localController = value == null
+        ? RestorableTextEditingController()
+        : RestorableTextEditingController.fromValue(value);
+    if (!restorePending) {
+      _registerController();
+    }
+  }
 
   final GlobalKey<EditableTextState> _editableTextKey =
       GlobalKey<EditableTextState>();
@@ -172,10 +212,15 @@ class _MonoInputState extends State<MonoInput>
   @override
   void initState() {
     super.initState();
-    _ownsController = widget.controller == null;
-    _controller =
-        widget.controller ?? TextEditingController(text: widget.initialValue);
-    _controller.addListener(_handleTextChanged);
+    if (widget.controller == null) {
+      _createLocalController(
+        widget.initialValue == null
+            ? null
+            : TextEditingValue(text: widget.initialValue!),
+      );
+    } else {
+      widget.controller!.addListener(_handleTextChanged);
+    }
 
     _ownsFocusNode = widget.focusNode == null;
     _focusNode = widget.focusNode ?? FocusNode();
@@ -191,16 +236,22 @@ class _MonoInputState extends State<MonoInput>
   void didUpdateWidget(covariant MonoInput oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.controller != widget.controller) {
-      _controller.removeListener(_handleTextChanged);
-      if (_ownsController) {
-        _controller.dispose();
-      }
-      _ownsController = widget.controller == null;
-      _controller =
-          widget.controller ?? TextEditingController(text: widget.initialValue);
-      _controller.addListener(_handleTextChanged);
-    } else if (_ownsController &&
+    if (widget.controller == null && oldWidget.controller != null) {
+      // External controller removed → adopt an owned restorable one seeded with
+      // the last value.
+      oldWidget.controller!.removeListener(_handleTextChanged);
+      _createLocalController(oldWidget.controller!.value);
+    } else if (widget.controller != null && oldWidget.controller == null) {
+      // External controller supplied → drop the owned one.
+      unregisterFromRestoration(_localController!);
+      _localController!.value.removeListener(_handleTextChanged);
+      _localController!.dispose();
+      _localController = null;
+      widget.controller!.addListener(_handleTextChanged);
+    } else if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.removeListener(_handleTextChanged);
+      widget.controller?.addListener(_handleTextChanged);
+    } else if (widget.controller == null &&
         oldWidget.initialValue != widget.initialValue) {
       _controller.value = _controller.value.copyWith(
         text: widget.initialValue ?? '',
@@ -243,9 +294,7 @@ class _MonoInputState extends State<MonoInput>
     _controller.removeListener(_handleTextChanged);
     _focusNode.removeListener(_handleFocusChanged);
     _statesController.removeListener(_handleStatesChanged);
-    if (_ownsController) {
-      _controller.dispose();
-    }
+    _localController?.dispose();
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -376,6 +425,7 @@ class _MonoInputState extends State<MonoInput>
           key: _editableTextKey,
           controller: _controller,
           focusNode: _focusNode,
+          restorationId: 'editable',
           readOnly: widget.readOnly,
           obscureText: widget.obscureText,
           obscuringCharacter: widget.obscuringCharacter,
@@ -414,12 +464,17 @@ class _MonoInputState extends State<MonoInput>
       ],
     );
 
-    return Semantics(
+    final int? currentLength = widget.maxLength == null
+        ? null
+        : _controller.text.characters.length;
+    final Widget field = Semantics(
       container: true,
       textField: true,
       enabled: _isEnabled,
       readOnly: widget.readOnly,
       label: widget.semanticLabel ?? widget.placeholder,
+      maxValueLength: widget.maxLength,
+      currentValueLength: currentLength,
       child: MouseRegion(
         cursor:
             widget.mouseCursor ??
@@ -477,6 +532,31 @@ class _MonoInputState extends State<MonoInput>
           ),
         ),
       ),
+    );
+
+    if (!widget.showCounter || widget.maxLength == null) {
+      return field;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        field,
+        Padding(
+          padding: EdgeInsets.only(top: theme.spacing.xs),
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: ExcludeSemantics(
+              child: Text(
+                '$currentLength/${widget.maxLength}',
+                style: theme.typography.labelMedium.copyWith(
+                  color: theme.colors.mutedForeground,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
