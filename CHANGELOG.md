@@ -1,3 +1,23 @@
+## 0.9.0
+
+Interaction-rebuild scoping (P1 performance).
+
+### Performance
+- `MonoPressable` now delivers hover / press / focus ticks to a
+  `ListenableBuilder` wrapping only the state-consuming visual leaf, instead of
+  calling `setState` on the whole widget. Its `Semantics` /
+  `FocusableActionDetector` subtree no longer rebuilds on every pointer frame.
+  This scopes the 14 widgets built on `MonoPressable` (attachment, bottom nav,
+  breadcrumb, bubble, command palette, context menu, dialog, drawer, media,
+  sidebar, navigation menu, pagination, popover, sheet).
+- `MonoButton` bumps a `ValueNotifier` on state change rather than
+  `setState`, and builds its style + contents + three nested implicit
+  animations inside a `ListenableBuilder`, so the outer `Semantics` /
+  `FocusableActionDetector` no longer reconstructs on hover.
+- The remaining `setState`-per-tick widgets (checkbox, switch, radio, select,
+  combobox, dropdown, input, tabs, accordion) can adopt the same pattern
+  incrementally; their `Semantics(focused:)` entanglement wants per-widget care.
+
 ## 0.8.0
 
 Input hardening.
