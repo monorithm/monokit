@@ -54,6 +54,9 @@ class MonoSelect<T> extends StatefulWidget {
     this.value,
     this.defaultValue,
     this.onChanged,
+    this.open,
+    this.defaultOpen = false,
+    this.onOpenChange,
     this.placeholder,
     this.hint,
     this.enabled = true,
@@ -92,6 +95,15 @@ class MonoSelect<T> extends StatefulWidget {
   final T? value;
   final T? defaultValue;
   final ValueChanged<T?>? onChanged;
+
+  /// Controlled popup open state. Pair with [onOpenChange].
+  final bool? open;
+
+  /// Initial popup open state in uncontrolled mode.
+  final bool defaultOpen;
+
+  /// Called when the popup wants to open or close.
+  final ValueChanged<bool>? onOpenChange;
   final String? placeholder;
   final String? hint;
   final bool enabled;
@@ -141,7 +153,8 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
   List<MonoSelectOption<T>> get _options => widget._options;
   bool get _isControlled => widget.controlled || widget.value != null;
   T? get _selectedValue => _isControlled ? widget.value : _uncontrolledValue;
-  bool get _isOpen => _uncontrolledOpen;
+  bool get _isOpenControlled => widget.open != null;
+  bool get _isOpen => widget.open ?? _uncontrolledOpen;
   bool get _isEnabled => widget.enabled;
   bool get _isFocused => _statesController.contains(MonoState.focused);
   bool get _isFocusVisible =>
@@ -153,7 +166,10 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     super.initState();
     _assertUniqueOptions(_options);
     _uncontrolledValue = widget.defaultValue;
-    _uncontrolledOpen = false;
+    _uncontrolledOpen = widget.defaultOpen;
+    if (_isOpen) {
+      _scheduleOverlaySync();
+    }
     _ownsFocusNode = widget.focusNode == null;
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_handleFocusChanged);
@@ -199,6 +215,13 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     }
     if (!_isEnabled && _isOpen) {
       _setOpen(false);
+    }
+    // Controlled open transitioning to closed should restore focus.
+    if (oldWidget.open != null &&
+        widget.open != null &&
+        oldWidget.open! &&
+        !widget.open!) {
+      _overlayFocus.requestRestoreOnClose();
     }
     _syncFixedStates();
     _scheduleOverlaySync();
@@ -258,8 +281,13 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     if (open && !_isEnabled) {
       return;
     }
+    if (_isOpenControlled) {
+      widget.onOpenChange?.call(open);
+      return;
+    }
     setState(() => _uncontrolledOpen = open);
     _statesController.update(MonoState.open, open);
+    widget.onOpenChange?.call(open);
     if (!open) {
       _overlayFocus.requestRestoreOnClose();
     }

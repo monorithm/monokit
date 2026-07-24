@@ -403,6 +403,19 @@ class _MonoCommandPaletteOverlayState
       setState(() => _highlightedIndex = _nextEnabledIndex(commands, -1));
       return KeyEventResult.handled;
     }
+    if (event.logicalKey == LogicalKeyboardKey.home) {
+      setState(() => _highlightedIndex = _firstEnabledIndex(commands));
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.end) {
+      for (var i = commands.length - 1; i >= 0; i--) {
+        if (commands[i].enabled) {
+          setState(() => _highlightedIndex = i);
+          break;
+        }
+      }
+      return KeyEventResult.handled;
+    }
     if (event.logicalKey == LogicalKeyboardKey.enter &&
         _highlightedIndex >= 0 &&
         _highlightedIndex < commands.length) {
