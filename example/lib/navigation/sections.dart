@@ -78,14 +78,6 @@ const List<GallerySection> gallerySections = <GallerySection>[
     group: 'Components',
   ),
   GallerySection(
-    path: '/honest',
-    title: 'Honest states',
-    navLabel: 'Honest states',
-    description: 'The command lifecycle as design vocabulary',
-    icon: MonoIcons.clock,
-    group: 'Differentiators',
-  ),
-  GallerySection(
     path: '/chat',
     title: 'Chat',
     navLabel: 'Chat',

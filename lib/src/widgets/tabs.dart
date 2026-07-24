@@ -408,7 +408,7 @@ class _MonoTabsState extends State<MonoTabs> {
         : Semantics(
             container: true,
             label: selectedTab.semanticLabel == null
-                ? 'Tab panel ${selectedIndex + 1}'
+                ? theme.labels.tabPanel(selectedIndex + 1)
                 : '${selectedTab.semanticLabel} panel',
             child: KeyedSubtree(
               key: ValueKey<String>(selectedTab.value),
@@ -546,6 +546,7 @@ class _MonoTabsState extends State<MonoTabs> {
 
     final trigger = Semantics(
       button: true,
+      inMutuallyExclusiveGroup: true,
       enabled: tab.enabled,
       selected: selected,
       focusable: tab.enabled,

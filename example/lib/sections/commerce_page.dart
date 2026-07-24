@@ -54,16 +54,6 @@ class _CommercePageState extends State<CommercePage> {
           ),
         ),
         ComponentSection(
-          title: 'Order status',
-          widgetName: 'MonoOrderStatus',
-          description: 'Honest order state, driven by the command phase.',
-          child: MonoOrderStatus(
-            phase: MonoCommandPhase.accepted,
-            label: const Text('Processing your order'),
-            progress: 0.6,
-          ),
-        ),
-        ComponentSection(
           title: 'Quantity stepper',
           widgetName: 'MonoQuantityStepper',
           child: MonoQuantityStepper(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
@@ -165,7 +166,8 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
   OverlayEntry? _entry;
   Timer? _openTimer;
   Timer? _closeTimer;
-  FocusNode? _previousFocus;
+  late final MonoOverlayFocusController _overlayFocus =
+      MonoOverlayFocusController(triggerFocusNode: () => _triggerFocusNode);
   late bool _uncontrolledOpen;
   bool _isTriggerHovered = false;
   bool _isCardHovered = false;
@@ -176,7 +178,6 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
   TextDirection _textDirection = TextDirection.ltr;
   bool _disableAnimations = false;
   bool _overlaySyncScheduled = false;
-  bool _restoreFocusOnNextOverlayRemoval = false;
 
   bool get _isControlled => widget.open != null;
   bool get _isOpen => widget.open ?? _uncontrolledOpen;
@@ -209,7 +210,7 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     if (!widget.enabled) {
       _cancelTimers();
       _uncontrolledOpen = false;
-      _restoreFocusOnNextOverlayRemoval = false;
+      _overlayFocus.cancelRestore();
       _scheduleOverlaySync();
       return;
     }
@@ -221,6 +222,7 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
   @override
   void dispose() {
     _cancelTimers();
+    _overlayFocus.cancelRestore();
     _triggerFocusNode.dispose();
     _removeOverlay();
     super.dispose();
@@ -291,28 +293,27 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
 
   /// Defers overlay mutations until the current widget update has completed.
   void _scheduleOverlaySync({bool restoreFocus = false}) {
-    _restoreFocusOnNextOverlayRemoval |= restoreFocus;
+    if (restoreFocus) {
+      _overlayFocus.requestRestoreOnClose();
+    }
     if (_overlaySyncScheduled) {
       return;
     }
     _overlaySyncScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _overlaySyncScheduled = false;
-      final shouldRestoreFocus = _restoreFocusOnNextOverlayRemoval;
-      _restoreFocusOnNextOverlayRemoval = false;
       if (!mounted) {
         return;
       }
       if (widget.enabled && _isOpen) {
         _showOverlay();
       } else {
-        _beginClose(restoreFocus: shouldRestoreFocus);
+        _beginClose();
       }
     });
   }
 
   bool _overlayVisible = false;
-  bool _pendingRestoreFocus = false;
   MonoHoverCardPlacement _resolvedPlacement = MonoHoverCardPlacement.bottom;
 
   void _showOverlay() {
@@ -325,7 +326,7 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     if (overlay == null) {
       return;
     }
-    _previousFocus = FocusManager.instance.primaryFocus;
+    _overlayFocus.captureForOpen();
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
     _disableAnimations =
@@ -348,11 +349,10 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     overlay.insert(_entry!);
   }
 
-  void _beginClose({bool restoreFocus = false}) {
+  void _beginClose() {
     if (_entry == null) {
       return;
     }
-    _pendingRestoreFocus = restoreFocus;
     _overlayVisible = false;
     _refreshOverlay();
   }
@@ -361,8 +361,7 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     if (_overlayVisible) {
       return;
     }
-    _removeOverlay(restoreFocus: _pendingRestoreFocus);
-    _pendingRestoreFocus = false;
+    _removeOverlay();
   }
 
   void _refreshOverlay() {
@@ -376,18 +375,12 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     _entry!.markNeedsBuild();
   }
 
-  void _removeOverlay({bool restoreFocus = false}) {
+  void _removeOverlay() {
     final entry = _entry;
     _entry = null;
     entry?.remove();
     entry?.dispose();
-    if (restoreFocus) {
-      final previousFocus = _previousFocus;
-      if (previousFocus != null && previousFocus.canRequestFocus) {
-        previousFocus.requestFocus();
-      }
-    }
-    _previousFocus = null;
+    _overlayFocus.restoreIfRequested(mounted: mounted);
   }
 
   void _onCardHover(bool hovered) {

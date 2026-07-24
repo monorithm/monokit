@@ -1,3 +1,4 @@
+import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_overlay_layer.dart';
@@ -373,22 +374,33 @@ class _MonoScreenState extends State<MonoScreen>
             child: widget.footer,
           );
 
+    // Reading order for screen readers: the header/body/footer column reads
+    // before the floating region, regardless of paint order. The floating
+    // action is painted last and sits bottom-end, so without an explicit key it
+    // can read in an ambiguous spot relative to the page content. Within the
+    // column, header → body → footer already follow natural vertical order.
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            ?header,
-            Expanded(child: body),
-            ?footer,
-          ],
+        Semantics(
+          sortKey: const OrdinalSortKey(1),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              ?header,
+              Expanded(child: body),
+              ?footer,
+            ],
+          ),
         ),
         if (widget.floating != null)
           PositionedDirectional(
             end: bodyInsets.right + theme.spacing.lg,
             bottom: bodyInsets.bottom + theme.spacing.lg,
-            child: widget.floating!,
+            child: Semantics(
+              sortKey: const OrdinalSortKey(2),
+              child: widget.floating!,
+            ),
           ),
       ],
     );

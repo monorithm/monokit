@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_announcer.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../theme/monokit_theme.dart';
@@ -82,6 +83,9 @@ class _MonoPaginationState extends State<MonoPagination> {
     if (!_isControlled) {
       setState(() => _uncontrolledPage = next);
     }
+    // Focus stays on the pagination control while the page content swaps out of
+    // band, so nothing is re-read automatically — announce the new page.
+    MonoAnnouncer.announce(context, 'Page $next of ${widget.totalPages}');
     widget.onChanged?.call(next);
     widget.onPageChanged?.call(next);
   }

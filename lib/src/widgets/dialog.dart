@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_focus_trap.dart';
+import '../primitives/mono_heading.dart';
 import '../primitives/mono_pressable.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
@@ -260,7 +262,7 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
     );
     return MonokitTheme(
       data: widget.theme,
-      child: FocusScope(
+      child: MonoFocusTrap(
         autofocus: true,
         child: Focus(
           onKeyEvent: (_, event) {
@@ -374,9 +376,11 @@ class MonoDialogHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         if (title != null)
-          DefaultTextStyle.merge(
-            style: theme.typography.titleLarge,
-            child: title!,
+          MonoHeading(
+            DefaultTextStyle.merge(
+              style: theme.typography.titleLarge,
+              child: title!,
+            ),
           ),
         if (title != null && description != null)
           SizedBox(height: theme.spacing.sm),
@@ -422,20 +426,20 @@ class MonoDialogPortal extends StatelessWidget {
 
 /// An accessible close trigger for dialog content.
 class MonoDialogClose extends StatelessWidget {
-  const MonoDialogClose({
-    super.key,
-    required this.child,
-    this.semanticLabel = 'Close dialog',
-  });
+  const MonoDialogClose({super.key, required this.child, this.semanticLabel});
 
   final Widget child;
-  final String semanticLabel;
+
+  /// Accessible name for the close control. Falls back to
+  /// `MonokitTheme.of(context).labels.closeDialog` when null.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final scope = MonoDialogScope.maybeOf(context);
     return MonoPressable(
-      semanticLabel: semanticLabel,
+      semanticLabel:
+          semanticLabel ?? MonokitTheme.of(context).labels.closeDialog,
       onPressed: scope?.close,
       child: (context, states) => child,
     );

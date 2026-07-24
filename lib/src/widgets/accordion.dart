@@ -705,7 +705,9 @@ class _MonoAccordionTriggerStyle {
       foreground: foreground,
       background: background,
       focusDecoration: BoxDecoration(
-        border: focused ? Border.all(color: theme.colors.ring, width: 2) : null,
+        border: focused
+            ? Border.all(color: theme.colors.ring, width: theme.focus.ringWidth)
+            : null,
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
+import 'availability.dart';
+
 /// Marketplace-flavoured sample data (Ghana). Keeps every demo in the product's
 /// world — GH₵ prices, Accra locations, real-sounding posts — without being the
 /// app. Real photography would live in `assets/`; here we render tasteful
@@ -28,7 +30,7 @@ class FeedPost {
     required this.seller,
     required this.description,
     this.wasPrice,
-    this.availability = MonoAvailability.available,
+    this.availability = DemoAvailability.available,
     this.isLive = false,
   });
 
@@ -42,7 +44,7 @@ class FeedPost {
   final int seed;
   final Person seller;
   final String description;
-  final MonoAvailability availability;
+  final DemoAvailability availability;
   final bool isLive;
 
   Widget get media => SamplePhoto(seed: seed);
@@ -114,7 +116,7 @@ const List<FeedPost> sampleFeed = <FeedPost>[
     condition: 'used',
     seed: 3,
     seller: esi,
-    availability: MonoAvailability.reserved,
+    availability: DemoAvailability.reserved,
     description:
         'Need a foldable stroller in good condition for a 6-month-old. '
         'Can pick up around East Legon this weekend.',

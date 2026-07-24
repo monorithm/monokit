@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_heading.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import '../theme/monokit_elevation.dart';
@@ -154,14 +155,16 @@ class MonoCardTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    return DefaultTextStyle.merge(
-      style: theme.typography.titleLarge.copyWith(
-        color: theme.colors.cardForeground,
+    return MonoHeading(
+      DefaultTextStyle.merge(
+        style: theme.typography.titleLarge.copyWith(
+          color: theme.colors.cardForeground,
+        ),
+        textAlign: textAlign,
+        maxLines: maxLines,
+        overflow: overflow,
+        child: child,
       ),
-      textAlign: textAlign,
-      maxLines: maxLines,
-      overflow: overflow,
-      child: child,
     );
   }
 }

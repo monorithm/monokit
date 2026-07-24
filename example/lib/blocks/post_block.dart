@@ -130,20 +130,42 @@ class _PostBlockState extends State<PostBlock> {
         padding: EdgeInsets.all(theme.spacing.md),
         child: ListenableBuilder(
           listenable: _phase,
-          builder: (context, _) => _phase.phase == MonoCommandPhase.created
+          builder: (context, _) => _phase.phase == DemoPhase.created
               ? MonoButton(
                   size: MonoButtonSize.lg,
                   onPressed: _needsClarification ? null : _phase.start,
                   child: const Text('Post'),
                 )
-              : MonoOrderStatus(
-                  phase: _phase.phase,
-                  label: Text(
-                    _phase.phase.isTerminalSuccess
-                        ? 'Posted — reaching people near Nima'
-                        : 'Publishing…',
-                  ),
-                  onRetry: _phase.retry,
+              : Row(
+                  children: <Widget>[
+                    MonoBadge(
+                      variant: _phase.phase.isTerminalFailure
+                          ? MonoBadgeVariant.destructive
+                          : _phase.phase.isTerminalSuccess
+                          ? MonoBadgeVariant.success
+                          : MonoBadgeVariant.info,
+                      child: Text(
+                        _phase.phase.isTerminalSuccess
+                            ? 'Posted'
+                            : _phase.phase.isTerminalFailure
+                            ? 'Failed'
+                            : 'Publishing…',
+                      ),
+                    ),
+                    SizedBox(width: theme.spacing.sm),
+                    Expanded(
+                      child: Text(
+                        _phase.phase.isTerminalSuccess
+                            ? 'Posted — reaching people near Nima'
+                            : 'Publishing…',
+                      ),
+                    ),
+                    if (_phase.phase.isTerminalFailure)
+                      MonoButton(
+                        onPressed: _phase.retry,
+                        child: const Text('Retry'),
+                      ),
+                  ],
                 ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
+import '../kit/availability.dart';
 import '../kit/component_section.dart';
 import '../kit/sample.dart';
 
@@ -22,8 +23,8 @@ class _PostDetailBlockState extends State<PostDetailBlock> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final availability = _sold
-        ? MonoAvailability.fulfilled
-        : MonoAvailability.available;
+        ? DemoAvailability.fulfilled
+        : DemoAvailability.available;
     final actionable = availability.isActionable;
     return MonoScreen(
       header: Padding(

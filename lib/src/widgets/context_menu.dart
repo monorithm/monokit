@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../theme/monokit_theme.dart';
@@ -259,13 +260,13 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
   final LayerLink _layerLink = LayerLink();
   final FocusNode _focusNode = FocusNode(debugLabel: 'MonoContextMenuTrigger');
   OverlayEntry? _entry;
-  FocusNode? _previousFocus;
+  late final MonoOverlayFocusController _overlayFocus =
+      MonoOverlayFocusController(triggerFocusNode: () => _focusNode);
   late bool _uncontrolledOpen;
   Offset _anchorOffset = Offset.zero;
   MonokitThemeData? _overlayTheme;
   bool _disableAnimations = false;
   bool _overlaySyncScheduled = false;
-  bool _restoreFocusOnNextOverlayRemoval = false;
   bool _centerAnchorOnNextOverlaySync = false;
 
   bool get _isControlled => widget.open != null;
@@ -292,7 +293,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     }
     if (!widget.enabled) {
       _uncontrolledOpen = false;
-      _restoreFocusOnNextOverlayRemoval = false;
+      _overlayFocus.cancelRestore();
       _scheduleOverlaySync();
       return;
     }
@@ -304,6 +305,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
 
   @override
   void dispose() {
+    _overlayFocus.cancelRestore();
     _focusNode.dispose();
     _removeOverlay();
     super.dispose();
@@ -346,7 +348,9 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     bool restoreFocus = false,
     bool anchorAtCenter = false,
   }) {
-    _restoreFocusOnNextOverlayRemoval |= restoreFocus;
+    if (restoreFocus) {
+      _overlayFocus.requestRestoreOnClose();
+    }
     _centerAnchorOnNextOverlaySync |= anchorAtCenter;
     if (_overlaySyncScheduled) {
       return;
@@ -354,9 +358,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     _overlaySyncScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _overlaySyncScheduled = false;
-      final shouldRestoreFocus = _restoreFocusOnNextOverlayRemoval;
       final shouldAnchorAtCenter = _centerAnchorOnNextOverlaySync;
-      _restoreFocusOnNextOverlayRemoval = false;
       _centerAnchorOnNextOverlaySync = false;
       if (!mounted) {
         return;
@@ -367,13 +369,12 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
       if (widget.enabled && _isOpen) {
         _showOverlay();
       } else {
-        _beginClose(restoreFocus: shouldRestoreFocus);
+        _beginClose();
       }
     });
   }
 
   bool _overlayVisible = false;
-  bool _pendingRestoreFocus = false;
 
   void _showOverlay() {
     _overlayVisible = true;
@@ -385,7 +386,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     if (overlay == null) {
       return;
     }
-    _previousFocus = FocusManager.instance.primaryFocus;
+    _overlayFocus.captureForOpen();
     _overlayTheme = MonokitTheme.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
@@ -396,11 +397,10 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     overlay.insert(_entry!);
   }
 
-  void _beginClose({bool restoreFocus = false}) {
+  void _beginClose() {
     if (_entry == null) {
       return;
     }
-    _pendingRestoreFocus = restoreFocus;
     _overlayVisible = false;
     _refreshOverlay();
   }
@@ -409,8 +409,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     if (_overlayVisible) {
       return;
     }
-    _removeOverlay(restoreFocus: _pendingRestoreFocus);
-    _pendingRestoreFocus = false;
+    _removeOverlay();
   }
 
   void _refreshOverlay() {
@@ -423,18 +422,12 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     _entry!.markNeedsBuild();
   }
 
-  void _removeOverlay({bool restoreFocus = false}) {
+  void _removeOverlay() {
     final entry = _entry;
     _entry = null;
     entry?.remove();
     entry?.dispose();
-    if (restoreFocus) {
-      final previousFocus = _previousFocus;
-      if (previousFocus != null && previousFocus.canRequestFocus) {
-        previousFocus.requestFocus();
-      }
-    }
-    _previousFocus = null;
+    _overlayFocus.restoreIfRequested(mounted: mounted);
   }
 
   Widget _buildOverlay() {
@@ -622,7 +615,7 @@ class _MonoContextMenuOverlayState extends State<_MonoContextMenuOverlay>
                 Positioned.fill(
                   child: Semantics(
                     button: true,
-                    label: 'Dismiss context menu',
+                    label: widget.theme.labels.dismissContextMenu,
                     onTap: widget.onDismiss,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,

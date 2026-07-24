@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_focus_trap.dart';
 import '../primitives/mono_pressable.dart';
 import '../primitives/mono_overlay_fade.dart';
 import '../theme/monokit_theme.dart';
@@ -74,7 +75,7 @@ class MonoCommandPalette extends StatefulWidget {
     this.width = 560,
     this.maxHeight = 420,
     this.dismissible = true,
-    this.semanticLabel = 'Command palette',
+    this.semanticLabel,
   }) : assert(
          (commands?.length ?? 0) > 0 || (items?.length ?? 0) > 0,
          'MonoCommandPalette needs at least one command.',
@@ -426,7 +427,7 @@ class _MonoCommandPaletteOverlayState
             ),
           ],
         ),
-        child: FocusScope(
+        child: MonoFocusTrap(
           autofocus: true,
           child: Focus(
             onKeyEvent: _handleKey,
@@ -434,7 +435,9 @@ class _MonoCommandPaletteOverlayState
               explicitChildNodes: true,
               scopesRoute: true,
               namesRoute: true,
-              label: widget.semanticLabel,
+              label:
+                  widget.semanticLabel ??
+                  MonokitTheme.of(context).labels.commandPalette,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[

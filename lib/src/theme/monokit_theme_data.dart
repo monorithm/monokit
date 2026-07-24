@@ -2,7 +2,9 @@ import 'monokit_colors.dart';
 import 'monokit_component_themes.dart';
 import 'monokit_density.dart';
 import 'monokit_elevation.dart';
+import 'monokit_focus.dart';
 import 'monokit_haptics.dart';
+import 'monokit_labels.dart';
 import 'monokit_motion.dart';
 import 'monokit_radii.dart';
 import 'monokit_spacing.dart';
@@ -21,6 +23,8 @@ class MonokitThemeData {
     this.breakpoints = const MonokitBreakpoints(),
     this.haptics = const MonokitHaptics(),
     this.components = const MonokitComponentThemes(),
+    this.focus = const MonokitFocus(),
+    this.labels = const MonokitLabels(),
   });
 
   final MonokitColors colors;
@@ -33,6 +37,8 @@ class MonokitThemeData {
   final MonokitBreakpoints breakpoints;
   final MonokitHaptics haptics;
   final MonokitComponentThemes components;
+  final MonokitFocus focus;
+  final MonokitLabels labels;
 
   factory MonokitThemeData.light() => MonokitThemeData(
     colors: MonokitColors.light(),
@@ -55,6 +61,8 @@ class MonokitThemeData {
     MonokitBreakpoints? breakpoints,
     MonokitHaptics? haptics,
     MonokitComponentThemes? components,
+    MonokitFocus? focus,
+    MonokitLabels? labels,
   }) {
     return MonokitThemeData(
       colors: colors ?? this.colors,
@@ -67,6 +75,8 @@ class MonokitThemeData {
       breakpoints: breakpoints ?? this.breakpoints,
       haptics: haptics ?? this.haptics,
       components: components ?? this.components,
+      focus: focus ?? this.focus,
+      labels: labels ?? this.labels,
     );
   }
 
@@ -82,7 +92,9 @@ class MonokitThemeData {
       density == other.density &&
       breakpoints == other.breakpoints &&
       haptics == other.haptics &&
-      components == other.components;
+      components == other.components &&
+      focus == other.focus &&
+      labels == other.labels;
 
   @override
   int get hashCode => Object.hash(
@@ -96,5 +108,7 @@ class MonokitThemeData {
     breakpoints,
     haptics,
     components,
+    focus,
+    labels,
   );
 }

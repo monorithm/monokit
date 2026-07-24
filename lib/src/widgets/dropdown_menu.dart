@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../primitives/mono_overlay_fade.dart';
+import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
@@ -121,7 +122,7 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
   OverlayEntry? _entry;
   Size _triggerSize = Size.zero;
   bool _overlaySyncScheduled = false;
-  bool _restoreFocusAfterOverlaySync = false;
+  late final MonoOverlayFocusController _overlayFocus;
   late bool _uncontrolledOpen;
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
@@ -141,6 +142,9 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     _ownsFocusNode = widget.focusNode == null;
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_handleFocusChanged);
+    _overlayFocus = MonoOverlayFocusController(
+      triggerFocusNode: () => _focusNode,
+    );
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _syncFixedStates();
@@ -182,7 +186,8 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
 
   @override
   void dispose() {
-    _removeOverlayNow(restoreFocus: false);
+    _overlayFocus.cancelRestore();
+    _removeOverlayNow();
     _focusNode.removeListener(_handleFocusChanged);
     _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
@@ -237,32 +242,31 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     setState(() => _uncontrolledOpen = open);
     _statesController.update(MonoState.open, open);
     widget.onOpenChange?.call(open);
-    _scheduleOverlaySync(restoreFocus: !open);
+    if (!open) {
+      _overlayFocus.requestRestoreOnClose();
+    }
+    _scheduleOverlaySync();
   }
 
-  void _scheduleOverlaySync({bool restoreFocus = false}) {
-    _restoreFocusAfterOverlaySync |= restoreFocus;
+  void _scheduleOverlaySync() {
     if (_overlaySyncScheduled || !mounted) {
       return;
     }
     _overlaySyncScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _overlaySyncScheduled = false;
-      final bool shouldRestoreFocus = _restoreFocusAfterOverlaySync;
-      _restoreFocusAfterOverlaySync = false;
       if (!mounted) {
         return;
       }
       if (_isOpen) {
         _showOrRefreshOverlay();
       } else {
-        _beginClose(restoreFocus: shouldRestoreFocus);
+        _beginClose();
       }
     });
   }
 
   bool _overlayVisible = false;
-  bool _pendingRestoreFocus = true;
 
   void _showOrRefreshOverlay() {
     _overlayVisible = true;
@@ -331,14 +335,14 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
         ),
       ),
     );
+    _overlayFocus.captureForOpen();
     overlay.insert(_entry!);
   }
 
-  void _beginClose({bool restoreFocus = true}) {
+  void _beginClose() {
     if (_entry == null) {
       return;
     }
-    _pendingRestoreFocus = restoreFocus;
     _overlayVisible = false;
     _entry!.markNeedsBuild();
   }
@@ -347,20 +351,14 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     if (_overlayVisible) {
       return;
     }
-    _removeOverlayNow(restoreFocus: _pendingRestoreFocus);
+    _removeOverlayNow();
   }
 
-  void _removeOverlayNow({bool restoreFocus = true}) {
+  void _removeOverlayNow() {
     _entry?.remove();
     _entry?.dispose();
     _entry = null;
-    if (restoreFocus && mounted && _isEnabled) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _focusNode.requestFocus();
-        }
-      });
-    }
+    _overlayFocus.restoreIfRequested(mounted: mounted, enabled: _isEnabled);
   }
 
   void _select(T value) {
@@ -627,7 +625,7 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
               onKeyEvent: _handleKeyEvent,
               child: Semantics(
                 container: true,
-                label: 'Menu items',
+                label: theme.labels.menuItems,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: theme.colors.popover,
