@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
@@ -133,7 +134,7 @@ class MonoTooltip extends StatefulWidget {
 }
 
 class _MonoTooltipState extends State<MonoTooltip> {
-  final LayerLink _layerLink = LayerLink();
+  Rect _anchorRect = Rect.zero;
   final FocusNode _focusNode = FocusNode(debugLabel: 'MonoTooltip');
   OverlayEntry? _entry;
   Timer? _showTimer;
@@ -145,7 +146,6 @@ class _MonoTooltipState extends State<MonoTooltip> {
   MonokitThemeData? _overlayTheme;
   TextDirection _textDirection = TextDirection.ltr;
   bool _disableAnimations = false;
-  MonoTooltipPlacement _resolvedPlacement = MonoTooltipPlacement.top;
   bool _overlaySyncScheduled = false;
 
   bool get _isControlled => widget.open != null;
@@ -286,23 +286,21 @@ class _MonoTooltipState extends State<MonoTooltip> {
     _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    _resolvedPlacement = widget.placement;
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null && renderBox.hasSize) {
-      final MonoPlacement resolved = MonoPlacement.values
-          .byName(widget.placement.name)
-          .resolveWithin(
-            renderBox.localToGlobal(Offset.zero) & renderBox.size,
-            MediaQuery.sizeOf(context),
-            estimate: 80,
-          );
-      _resolvedPlacement = MonoTooltipPlacement.values.byName(resolved.name);
-    }
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
     );
     overlay.insert(_entry!);
+  }
+
+  /// Reads the trigger's current global rect, keeping the last known value
+  /// when the render box is not laid out.
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
+    }
+    return _anchorRect;
   }
 
   void _beginClose() {
@@ -347,8 +345,8 @@ class _MonoTooltipState extends State<MonoTooltip> {
       theme: theme,
       visible: _overlayVisible,
       onExited: _onOverlayExited,
-      layerLink: _layerLink,
-      placement: _resolvedPlacement,
+      anchorRect: _resolveAnchorRect(),
+      placement: widget.placement,
       offset: widget.offset,
       gap: widget.gap ?? theme.spacing.xs,
       textDirection: _textDirection,
@@ -360,64 +358,59 @@ class _MonoTooltipState extends State<MonoTooltip> {
 
   @override
   Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: Semantics(
-        tooltip: widget.message,
-        child: Focus(
-          focusNode: _focusNode,
-          canRequestFocus: false,
-          skipTraversal: true,
-          onFocusChange: (hasFocus) {
-            _hasFocus = hasFocus;
-            if (hasFocus) {
-              _scheduleOpen(immediately: true);
-            } else {
-              _scheduleClose();
-            }
-          },
-          onKeyEvent: (_, event) {
-            if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.escape &&
-                _isOpen) {
-              _cancelTimers();
-              _requestOpen(false);
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: MouseRegion(
-            cursor: widget.enabled
-                ? MouseCursor.defer
-                : SystemMouseCursors.basic,
-            onEnter: widget.enabled
+    return Semantics(
+      tooltip: widget.message,
+      child: Focus(
+        focusNode: _focusNode,
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (hasFocus) {
+          _hasFocus = hasFocus;
+          if (hasFocus) {
+            _scheduleOpen(immediately: true);
+          } else {
+            _scheduleClose();
+          }
+        },
+        onKeyEvent: (_, event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.escape &&
+              _isOpen) {
+            _cancelTimers();
+            _requestOpen(false);
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: MouseRegion(
+          cursor: widget.enabled ? MouseCursor.defer : SystemMouseCursors.basic,
+          onEnter: widget.enabled
+              ? (_) {
+                  _isHovering = true;
+                  _scheduleOpen(immediately: false);
+                }
+              : null,
+          onExit: widget.enabled
+              ? (_) {
+                  _isHovering = false;
+                  _scheduleClose();
+                }
+              : null,
+          child: GestureDetector(
+            behavior: HitTestBehavior.deferToChild,
+            onLongPressStart: widget.enabled
                 ? (_) {
-                    _isHovering = true;
-                    _scheduleOpen(immediately: false);
+                    _isLongPressing = true;
+                    _scheduleOpen(immediately: true);
                   }
                 : null,
-            onExit: widget.enabled
+            onLongPressEnd: widget.enabled
                 ? (_) {
-                    _isHovering = false;
+                    _isLongPressing = false;
                     _scheduleClose();
                   }
                 : null,
-            child: GestureDetector(
-              behavior: HitTestBehavior.deferToChild,
-              onLongPressStart: widget.enabled
-                  ? (_) {
-                      _isLongPressing = true;
-                      _scheduleOpen(immediately: true);
-                    }
-                  : null,
-              onLongPressEnd: widget.enabled
-                  ? (_) {
-                      _isLongPressing = false;
-                      _scheduleClose();
-                    }
-                  : null,
-              child: widget.child,
-            ),
+            child: widget.child,
           ),
         ),
       ),
@@ -430,7 +423,7 @@ class _MonoTooltipOverlay extends StatefulWidget {
     required this.theme,
     required this.visible,
     required this.onExited,
-    required this.layerLink,
+    required this.anchorRect,
     required this.placement,
     required this.offset,
     required this.gap,
@@ -443,7 +436,7 @@ class _MonoTooltipOverlay extends StatefulWidget {
   final MonokitThemeData theme;
   final bool visible;
   final VoidCallback onExited;
-  final LayerLink layerLink;
+  final Rect anchorRect;
   final MonoTooltipPlacement placement;
   final Offset offset;
   final double gap;
@@ -514,12 +507,10 @@ class _MonoTooltipOverlayState extends State<_MonoTooltipOverlay>
       data: widget.theme,
       child: IgnorePointer(
         ignoring: true,
-        child: CompositedTransformFollower(
-          link: widget.layerLink,
-          showWhenUnlinked: false,
-          targetAnchor: anchors.targetAnchor,
-          followerAnchor: anchors.followerAnchor,
-          offset: anchors.offset(widget.gap) + widget.offset,
+        child: MonoAnchoredOverlay(
+          anchorRect: widget.anchorRect.shift(widget.offset),
+          placement: MonoPlacement.values.byName(widget.placement.name),
+          gap: widget.gap,
           child: FadeTransition(
             opacity: animation,
             child: ScaleTransition(

@@ -47,6 +47,7 @@ export 'src/widgets/system_feedback.dart';
 export 'src/widgets/tabs.dart';
 export 'src/widgets/textarea.dart';
 export 'src/widgets/tooltip.dart';
+export 'src/primitives/mono_anchored_layout.dart';
 export 'src/primitives/mono_announcer.dart';
 export 'src/primitives/mono_focus_ring.dart';
 export 'src/primitives/mono_focus_trap.dart';

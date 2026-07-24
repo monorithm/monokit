@@ -3,8 +3,10 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_fade.dart';
 import '../primitives/mono_overlay_focus.dart';
+import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -115,10 +117,8 @@ class MonoCombobox<T> extends StatefulWidget {
 }
 
 class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
-  final LayerLink _layerLink = LayerLink();
+  Rect _anchorRect = Rect.zero;
   OverlayEntry? _entry;
-  Size _targetSize = Size.zero;
-  bool _openUpward = false;
   bool _overlaySyncScheduled = false;
   late final MonoOverlayFocusController _overlayFocus;
   late T? _uncontrolledValue;
@@ -293,6 +293,16 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     _showOverlayNow();
   }
 
+  /// Reads the trigger's current global rect, keeping the last known value
+  /// when the render box is not laid out.
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
+    }
+    return _anchorRect;
+  }
+
   void _showOverlayNow() {
     if (_entry != null || !mounted) {
       return;
@@ -300,16 +310,6 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) {
       return;
-    }
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null && renderBox.hasSize) {
-      _targetSize = renderBox.size;
-      final position = renderBox.localToGlobal(Offset.zero);
-      final size = MediaQuery.sizeOf(context);
-      _openUpward =
-          position.dy + _targetSize.height + widget.menuMaxHeight >
-              size.height &&
-          position.dy > widget.menuMaxHeight;
     }
     final theme = MonokitTheme.of(context);
     _entry = OverlayEntry(
@@ -319,9 +319,7 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
           visible: _overlayVisible,
           onExited: _onOverlayExited,
           child: _MonoComboboxOverlay<T>(
-            link: _layerLink,
-            targetSize: _targetSize,
-            openUpward: _openUpward,
+            anchorRect: _resolveAnchorRect(),
             options: _options,
             selectedValue: _selectedValue,
             searchPlaceholder: widget.searchPlaceholder,
@@ -401,100 +399,97 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
           )
         : (widget.selectedBuilder?.call(context, selected) ?? selected.label);
 
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: FocusableActionDetector(
+    return FocusableActionDetector(
+      enabled: _isEnabled,
+      focusNode: _focusNode,
+      autofocus: widget.autofocus,
+      includeFocusSemantics: false,
+      mouseCursor: _isEnabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.forbidden,
+      onShowHoverHighlight: (value) =>
+          _statesController.update(MonoState.hovered, value),
+      onShowFocusHighlight: (value) =>
+          _statesController.update(MonoState.focusVisible, value),
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowDown):
+            _MonoComboboxOpenIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (intent) {
+            _setOpen(!_isOpen);
+            return null;
+          },
+        ),
+        _MonoComboboxOpenIntent: CallbackAction<_MonoComboboxOpenIntent>(
+          onInvoke: (intent) {
+            _setOpen(true);
+            return null;
+          },
+        ),
+      },
+      child: Semantics(
+        container: true,
+        button: true,
         enabled: _isEnabled,
-        focusNode: _focusNode,
-        autofocus: widget.autofocus,
-        includeFocusSemantics: false,
-        mouseCursor: _isEnabled
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.forbidden,
-        onShowHoverHighlight: (value) =>
-            _statesController.update(MonoState.hovered, value),
-        onShowFocusHighlight: (value) =>
-            _statesController.update(MonoState.focusVisible, value),
-        shortcuts: const <ShortcutActivator, Intent>{
-          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.arrowDown):
-              _MonoComboboxOpenIntent(),
-        },
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (intent) {
-              _setOpen(!_isOpen);
-              return null;
-            },
-          ),
-          _MonoComboboxOpenIntent: CallbackAction<_MonoComboboxOpenIntent>(
-            onInvoke: (intent) {
-              _setOpen(true);
-              return null;
-            },
-          ),
-        },
-        child: Semantics(
-          container: true,
-          button: true,
-          enabled: _isEnabled,
-          expanded: _isOpen,
-          focused: focused,
-          label: widget.semanticLabel ?? widget.placeholder,
-          value: selected?.semanticLabel ?? selected?.searchText,
+        expanded: _isOpen,
+        focused: focused,
+        label: widget.semanticLabel ?? widget.placeholder,
+        value: selected?.semanticLabel ?? selected?.searchText,
+        onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: _isEnabled
+              ? (_) => _statesController.update(MonoState.pressed, true)
+              : null,
+          onTapUp: _isEnabled
+              ? (_) => _statesController.update(MonoState.pressed, false)
+              : null,
+          onTapCancel: _isEnabled
+              ? () => _statesController.update(MonoState.pressed, false)
+              : null,
           onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown: _isEnabled
-                ? (_) => _statesController.update(MonoState.pressed, true)
-                : null,
-            onTapUp: _isEnabled
-                ? (_) => _statesController.update(MonoState.pressed, false)
-                : null,
-            onTapCancel: _isEnabled
-                ? () => _statesController.update(MonoState.pressed, false)
-                : null,
-            onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-            child: AnimatedContainer(
-              duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
-                  ? Duration.zero
-                  : theme.motion.duration,
-              curve: theme.motion.curve,
-              constraints: BoxConstraints(minHeight: theme.spacing.huge),
-              padding: EdgeInsets.symmetric(
-                horizontal: theme.spacing.md,
-                vertical: theme.spacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: _isEnabled
-                    ? theme.colors.background.withValues(alpha: 0)
-                    : theme.colors.muted.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(theme.radii.md),
-                border: Border.all(color: borderColor),
-                boxShadow: _statesController.contains(MonoState.focusVisible)
-                    ? <BoxShadow>[
-                        BoxShadow(
-                          color: theme.colors.ring.withValues(alpha: 0.28),
-                          spreadRadius: theme.components.input.focusRingWidth,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: DefaultTextStyle.merge(
-                style: theme.typography.bodyMedium.copyWith(color: foreground),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(child: display),
-                    SizedBox(width: theme.spacing.sm),
-                    Text(
-                      _isOpen ? '⌃' : '⌄',
-                      style: theme.typography.labelLarge.copyWith(
-                        color: theme.colors.mutedForeground,
+          child: AnimatedContainer(
+            duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
+                ? Duration.zero
+                : theme.motion.duration,
+            curve: theme.motion.curve,
+            constraints: BoxConstraints(minHeight: theme.spacing.huge),
+            padding: EdgeInsets.symmetric(
+              horizontal: theme.spacing.md,
+              vertical: theme.spacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: _isEnabled
+                  ? theme.colors.background.withValues(alpha: 0)
+                  : theme.colors.muted.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(theme.radii.md),
+              border: Border.all(color: borderColor),
+              boxShadow: _statesController.contains(MonoState.focusVisible)
+                  ? <BoxShadow>[
+                      BoxShadow(
+                        color: theme.colors.ring.withValues(alpha: 0.28),
+                        spreadRadius: theme.components.input.focusRingWidth,
                       ),
+                    ]
+                  : null,
+            ),
+            child: DefaultTextStyle.merge(
+              style: theme.typography.bodyMedium.copyWith(color: foreground),
+              child: Row(
+                children: <Widget>[
+                  Expanded(child: display),
+                  SizedBox(width: theme.spacing.sm),
+                  Text(
+                    _isOpen ? '⌃' : '⌄',
+                    style: theme.typography.labelLarge.copyWith(
+                      color: theme.colors.mutedForeground,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -510,9 +505,7 @@ class _MonoComboboxOpenIntent extends Intent {
 
 class _MonoComboboxOverlay<T> extends StatefulWidget {
   const _MonoComboboxOverlay({
-    required this.link,
-    required this.targetSize,
-    required this.openUpward,
+    required this.anchorRect,
     required this.options,
     required this.selectedValue,
     required this.searchPlaceholder,
@@ -522,9 +515,7 @@ class _MonoComboboxOverlay<T> extends StatefulWidget {
     required this.onSelected,
   });
 
-  final LayerLink link;
-  final Size targetSize;
-  final bool openUpward;
+  final Rect anchorRect;
   final List<MonoComboboxOption<T>> options;
   final T? selectedValue;
   final String searchPlaceholder;
@@ -637,34 +628,36 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final options = _filteredOptions;
-    final surface = SizedBox(
-      width: widget.targetSize.width,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colors.popover,
-          borderRadius: BorderRadius.circular(theme.radii.lg),
-          border: Border.all(color: theme.colors.border),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: theme.colors.foreground.withValues(alpha: 0.12),
-              blurRadius: theme.spacing.xxl,
-              offset: Offset(0, theme.spacing.sm),
-            ),
-          ],
-        ),
-        child: FocusScope(
-          autofocus: true,
-          child: Focus(
-            onKeyEvent: _handleKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                _buildSearch(theme),
-                DecoratedBox(
-                  decoration: BoxDecoration(color: theme.colors.border),
-                  child: SizedBox(height: theme.spacing.xs / 4),
-                ),
-                ConstrainedBox(
+    final surface = DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colors.popover,
+        borderRadius: BorderRadius.circular(theme.radii.lg),
+        border: Border.all(color: theme.colors.border),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: theme.colors.foreground.withValues(alpha: 0.12),
+            blurRadius: theme.spacing.xxl,
+            offset: Offset(0, theme.spacing.sm),
+          ),
+        ],
+      ),
+      child: FocusScope(
+        autofocus: true,
+        child: Focus(
+          onKeyEvent: _handleKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildSearch(theme),
+              DecoratedBox(
+                decoration: BoxDecoration(color: theme.colors.border),
+                child: SizedBox(height: theme.spacing.xs / 4),
+              ),
+              // Flexible lets the list yield to the search field when the
+              // whole popup is height-capped by the anchored layout, so the
+              // search + divider + list total never exceeds available space.
+              Flexible(
+                child: ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: widget.maxHeight),
                   child: options.isEmpty
                       ? Padding(
@@ -687,26 +680,11 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
                           ),
                         ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-    final follower = CompositedTransformFollower(
-      link: widget.link,
-      showWhenUnlinked: false,
-      targetAnchor: widget.openUpward
-          ? Alignment.topLeft
-          : Alignment.bottomLeft,
-      followerAnchor: widget.openUpward
-          ? Alignment.bottomLeft
-          : Alignment.topLeft,
-      offset: Offset(
-        0,
-        widget.openUpward ? -theme.spacing.xs : theme.spacing.xs,
-      ),
-      child: surface,
     );
     return Stack(
       fit: StackFit.expand,
@@ -716,7 +694,13 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
           onTap: widget.onDismiss,
           child: const SizedBox.expand(),
         ),
-        follower,
+        MonoAnchoredOverlay(
+          anchorRect: widget.anchorRect,
+          placement: MonoPlacement.bottomStart,
+          gap: theme.spacing.xs,
+          matchAnchorWidth: true,
+          child: surface,
+        ),
       ],
     );
   }

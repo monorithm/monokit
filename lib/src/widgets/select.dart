@@ -3,8 +3,10 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_fade.dart';
 import '../primitives/mono_overlay_focus.dart';
+import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'mono_icon.dart';
@@ -125,10 +127,8 @@ class MonoSelect<T> extends StatefulWidget {
 }
 
 class _MonoSelectState<T> extends State<MonoSelect<T>> {
-  final LayerLink _layerLink = LayerLink();
   OverlayEntry? _entry;
-  Size _triggerSize = Size.zero;
-  bool _openUpward = false;
+  Rect _anchorRect = Rect.zero;
   bool _overlaySyncScheduled = false;
   late final MonoOverlayFocusController _overlayFocus;
   late T? _uncontrolledValue;
@@ -295,6 +295,17 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     _showOverlayNow();
   }
 
+  /// Reads the trigger's current global rect, keeping the last known value
+  /// when the render box is not laid out (so an open overlay never jumps to
+  /// the origin mid-transition).
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
+    }
+    return _anchorRect;
+  }
+
   void _showOverlayNow() {
     if (_entry != null || !mounted) {
       return;
@@ -302,16 +313,6 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) {
       return;
-    }
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null && renderBox.hasSize) {
-      _triggerSize = renderBox.size;
-      final Offset position = renderBox.localToGlobal(Offset.zero);
-      final Size viewport = MediaQuery.sizeOf(context);
-      final double popupEstimate = widget.menuMaxHeight + 2 * 4;
-      _openUpward =
-          position.dy + _triggerSize.height + popupEstimate > viewport.height &&
-          position.dy > popupEstimate;
     }
     final MonokitThemeData theme = MonokitTheme.of(context);
     _entry = OverlayEntry(
@@ -321,9 +322,7 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
           visible: _overlayVisible,
           onExited: _onOverlayExited,
           child: _MonoSelectOverlay<T>(
-            link: _layerLink,
-            targetSize: _triggerSize,
-            openUpward: _openUpward,
+            anchorRect: _resolveAnchorRect(),
             options: _options,
             selectedValue: _selectedValue,
             optionBuilder: widget.optionBuilder,
@@ -408,115 +407,111 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
           )
         : (widget.selectedBuilder?.call(context, selected) ?? selected.label);
 
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: FocusableActionDetector(
+    return FocusableActionDetector(
+      enabled: _isEnabled,
+      focusNode: _focusNode,
+      autofocus: widget.autofocus,
+      includeFocusSemantics: false,
+      mouseCursor: _isEnabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.forbidden,
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowDown): _MonoSelectOpenIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowUp): _MonoSelectOpenIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (ActivateIntent intent) {
+            _setOpen(!_isOpen);
+            return null;
+          },
+        ),
+        _MonoSelectOpenIntent: CallbackAction<_MonoSelectOpenIntent>(
+          onInvoke: (_MonoSelectOpenIntent intent) {
+            _setOpen(true);
+            return null;
+          },
+        ),
+      },
+      onShowFocusHighlight: (bool visible) =>
+          _statesController.update(MonoState.focusVisible, visible),
+      onShowHoverHighlight: (bool hovered) =>
+          _statesController.update(MonoState.hovered, hovered),
+      child: Semantics(
+        container: true,
+        button: true,
         enabled: _isEnabled,
-        focusNode: _focusNode,
-        autofocus: widget.autofocus,
-        includeFocusSemantics: false,
-        mouseCursor: _isEnabled
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.forbidden,
-        shortcuts: const <ShortcutActivator, Intent>{
-          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.arrowDown):
-              _MonoSelectOpenIntent(),
-          SingleActivator(LogicalKeyboardKey.arrowUp): _MonoSelectOpenIntent(),
-        },
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (ActivateIntent intent) {
-              _setOpen(!_isOpen);
-              return null;
-            },
-          ),
-          _MonoSelectOpenIntent: CallbackAction<_MonoSelectOpenIntent>(
-            onInvoke: (_MonoSelectOpenIntent intent) {
-              _setOpen(true);
-              return null;
-            },
-          ),
-        },
-        onShowFocusHighlight: (bool visible) =>
-            _statesController.update(MonoState.focusVisible, visible),
-        onShowHoverHighlight: (bool hovered) =>
-            _statesController.update(MonoState.hovered, hovered),
-        child: Semantics(
-          container: true,
-          button: true,
-          enabled: _isEnabled,
-          expanded: _isOpen,
-          focusable: _isEnabled,
-          focused: _isFocused,
-          label: widget.semanticLabel ?? widget.placeholder ?? 'Select',
-          value: selected?.semanticLabel,
+        expanded: _isOpen,
+        focusable: _isEnabled,
+        focused: _isFocused,
+        label: widget.semanticLabel ?? widget.placeholder ?? 'Select',
+        value: selected?.semanticLabel,
+        onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: _isEnabled
+              ? (_) => _statesController.update(MonoState.pressed, true)
+              : null,
+          onTapUp: _isEnabled
+              ? (_) => _statesController.update(MonoState.pressed, false)
+              : null,
+          onTapCancel: _isEnabled
+              ? () => _statesController.update(MonoState.pressed, false)
+              : null,
           onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapDown: _isEnabled
-                ? (_) => _statesController.update(MonoState.pressed, true)
-                : null,
-            onTapUp: _isEnabled
-                ? (_) => _statesController.update(MonoState.pressed, false)
-                : null,
-            onTapCancel: _isEnabled
-                ? () => _statesController.update(MonoState.pressed, false)
-                : null,
-            onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-            child: AnimatedContainer(
-              duration: theme.motion.duration,
-              curve: theme.motion.curve,
-              constraints: BoxConstraints(minHeight: theme.spacing.huge),
-              padding: EdgeInsets.symmetric(
-                horizontal: theme.spacing.md,
-                vertical: theme.spacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: _isEnabled
-                    ? theme.colors.background.withAlpha(0)
-                    : theme.colors.muted.withAlpha(150),
-                borderRadius: BorderRadius.circular(theme.radii.md),
-                border: Border.all(color: borderColor),
-                boxShadow: _isFocusVisible || _isOpen
-                    ? <BoxShadow>[
-                        BoxShadow(
-                          color: theme.colors.ring.withAlpha(72),
-                          blurRadius: 0,
-                          spreadRadius: 3,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: DefaultTextStyle.merge(
-                      style: theme.typography.bodyMedium.copyWith(
-                        color: foreground,
+          child: AnimatedContainer(
+            duration: theme.motion.duration,
+            curve: theme.motion.curve,
+            constraints: BoxConstraints(minHeight: theme.spacing.huge),
+            padding: EdgeInsets.symmetric(
+              horizontal: theme.spacing.md,
+              vertical: theme.spacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: _isEnabled
+                  ? theme.colors.background.withAlpha(0)
+                  : theme.colors.muted.withAlpha(150),
+              borderRadius: BorderRadius.circular(theme.radii.md),
+              border: Border.all(color: borderColor),
+              boxShadow: _isFocusVisible || _isOpen
+                  ? <BoxShadow>[
+                      BoxShadow(
+                        color: theme.colors.ring.withAlpha(72),
+                        blurRadius: 0,
+                        spreadRadius: 3,
                       ),
-                      child: value,
+                    ]
+                  : null,
+            ),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: DefaultTextStyle.merge(
+                    style: theme.typography.bodyMedium.copyWith(
+                      color: foreground,
                     ),
+                    child: value,
                   ),
-                  SizedBox(width: theme.spacing.sm),
-                  AnimatedRotation(
-                    turns: _isOpen ? 0.5 : 0,
-                    duration: theme.motion.duration,
-                    curve: theme.motion.curve,
-                    child: MonoIcon(
-                      MonoIcons.chevronDown,
-                      size: theme.spacing.lg,
-                      color: _isEnabled
-                          ? theme.colors.mutedForeground
-                          : theme.colors.mutedForeground.withAlpha(150),
-                      semanticLabel: _isOpen
-                          ? theme.labels.closeOptions
-                          : theme.labels.openOptions,
-                    ),
+                ),
+                SizedBox(width: theme.spacing.sm),
+                AnimatedRotation(
+                  turns: _isOpen ? 0.5 : 0,
+                  duration: theme.motion.duration,
+                  curve: theme.motion.curve,
+                  child: MonoIcon(
+                    MonoIcons.chevronDown,
+                    size: theme.spacing.lg,
+                    color: _isEnabled
+                        ? theme.colors.mutedForeground
+                        : theme.colors.mutedForeground.withAlpha(150),
+                    semanticLabel: _isOpen
+                        ? theme.labels.closeOptions
+                        : theme.labels.openOptions,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -531,9 +526,7 @@ class _MonoSelectOpenIntent extends Intent {
 
 class _MonoSelectOverlay<T> extends StatefulWidget {
   const _MonoSelectOverlay({
-    required this.link,
-    required this.targetSize,
-    required this.openUpward,
+    required this.anchorRect,
     required this.options,
     required this.selectedValue,
     required this.maxHeight,
@@ -542,9 +535,7 @@ class _MonoSelectOverlay<T> extends StatefulWidget {
     this.optionBuilder,
   });
 
-  final LayerLink link;
-  final Size targetSize;
-  final bool openUpward;
+  final Rect anchorRect;
   final List<MonoSelectOption<T>> options;
   final T? selectedValue;
   final double maxHeight;
@@ -565,7 +556,10 @@ class _MonoSelectOverlay<T> extends StatefulWidget {
 class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
   late final FocusNode _focusNode;
   late final ScrollController _scrollController;
+  final Map<int, GlobalKey> _itemKeys = <int, GlobalKey>{};
   late int _highlightedIndex;
+
+  GlobalKey _keyFor(int index) => _itemKeys.putIfAbsent(index, GlobalKey.new);
 
   @override
   void initState() {
@@ -576,6 +570,44 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _focusNode.requestFocus();
+        // Open on the selection, not the top of the list.
+        _revealHighlighted(animate: false);
+      }
+    });
+  }
+
+  /// Scrolls the highlighted option into view using its real laid-out
+  /// position (replaces the previous fixed 44px row estimate).
+  ///
+  /// Rows outside the viewport are not built yet, so when the highlighted
+  /// row's context is missing this first jumps proportionally into the list
+  /// and retries, letting [Scrollable.ensureVisible] finish with exact
+  /// positioning once the row exists.
+  void _revealHighlighted({bool animate = true, bool retry = true}) {
+    final BuildContext? itemContext =
+        _itemKeys[_highlightedIndex]?.currentContext;
+    if (itemContext != null) {
+      final MonokitThemeData theme = MonokitTheme.of(context);
+      Scrollable.ensureVisible(
+        itemContext,
+        alignment: 0.5,
+        duration: animate ? theme.motion.fast : Duration.zero,
+        curve: theme.motion.curve,
+      );
+      return;
+    }
+    if (!retry || !_scrollController.hasClients || widget.options.length < 2) {
+      return;
+    }
+    final double estimate =
+        _scrollController.position.maxScrollExtent *
+        (_highlightedIndex / (widget.options.length - 1));
+    _scrollController.jumpTo(
+      estimate.clamp(0, _scrollController.position.maxScrollExtent),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _revealHighlighted(animate: false, retry: false);
       }
     });
   }
@@ -636,14 +668,11 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
       return;
     }
     setState(() => _highlightedIndex = next);
-    final double estimatedOffset = next * 44.0;
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        estimatedOffset.clamp(0, _scrollController.position.maxScrollExtent),
-        duration: MonokitTheme.of(context).motion.fast,
-        curve: MonokitTheme.of(context).motion.curve,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _revealHighlighted();
+      }
+    });
   }
 
   void _selectHighlighted() {
@@ -695,16 +724,6 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
   @override
   Widget build(BuildContext context) {
     final MonokitThemeData theme = MonokitTheme.of(context);
-    final Alignment targetAnchor = widget.openUpward
-        ? Alignment.topLeft
-        : Alignment.bottomLeft;
-    final Alignment followerAnchor = widget.openUpward
-        ? Alignment.bottomLeft
-        : Alignment.topLeft;
-    final Offset offset = Offset(
-      0,
-      widget.openUpward ? -theme.spacing.xs : theme.spacing.xs,
-    );
 
     return Stack(
       fit: StackFit.expand,
@@ -716,58 +735,59 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
             child: const SizedBox.expand(),
           ),
         ),
-        CompositedTransformFollower(
-          link: widget.link,
-          showWhenUnlinked: false,
-          targetAnchor: targetAnchor,
-          followerAnchor: followerAnchor,
-          offset: offset,
-          child: SizedBox(
-            width: widget.targetSize.width,
-            child: Focus(
-              focusNode: _focusNode,
-              onKeyEvent: _handleKeyEvent,
-              child: Semantics(
-                container: true,
-                label: theme.labels.selectOptions,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: theme.colors.popover,
-                    borderRadius: BorderRadius.circular(theme.radii.md),
-                    border: Border.all(color: theme.colors.border),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.foreground.withAlpha(38),
-                        blurRadius: theme.spacing.lg,
-                        offset: Offset(0, theme.spacing.sm / 2),
-                      ),
-                    ],
-                  ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.all(theme.spacing.xs),
-                      shrinkWrap: true,
-                      itemCount: widget.options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final MonoSelectOption<T> option =
-                            widget.options[index];
-                        final bool selected =
-                            option.value == widget.selectedValue;
-                        final bool highlighted = index == _highlightedIndex;
-                        final Widget defaultOption = _MonoSelectOptionTile<T>(
-                          option: option,
-                          selected: selected,
-                          highlighted: highlighted,
-                          onTap: option.enabled
-                              ? () => widget.onSelected(option.value)
-                              : null,
+        MonoAnchoredOverlay(
+          anchorRect: widget.anchorRect,
+          placement: MonoPlacement.bottomStart,
+          gap: theme.spacing.xs,
+          matchAnchorWidth: true,
+          child: Focus(
+            focusNode: _focusNode,
+            onKeyEvent: _handleKeyEvent,
+            child: Semantics(
+              container: true,
+              label: theme.labels.selectOptions,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colors.popover,
+                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  border: Border.all(color: theme.colors.border),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: theme.colors.foreground.withAlpha(38),
+                      blurRadius: theme.spacing.lg,
+                      offset: Offset(0, theme.spacing.sm / 2),
+                    ),
+                  ],
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: widget.maxHeight),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(theme.spacing.xs),
+                    shrinkWrap: true,
+                    itemCount: widget.options.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final MonoSelectOption<T> option = widget.options[index];
+                      final bool selected =
+                          option.value == widget.selectedValue;
+                      final bool highlighted = index == _highlightedIndex;
+                      final Widget defaultOption = _MonoSelectOptionTile<T>(
+                        option: option,
+                        selected: selected,
+                        highlighted: highlighted,
+                        onTap: option.enabled
+                            ? () => widget.onSelected(option.value)
+                            : null,
+                      );
+                      if (widget.optionBuilder == null) {
+                        return KeyedSubtree(
+                          key: _keyFor(index),
+                          child: defaultOption,
                         );
-                        if (widget.optionBuilder == null) {
-                          return defaultOption;
-                        }
-                        return Semantics(
+                      }
+                      return KeyedSubtree(
+                        key: _keyFor(index),
+                        child: Semantics(
                           button: true,
                           enabled: option.enabled,
                           selected: selected,
@@ -791,9 +811,9 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
                               highlighted,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
