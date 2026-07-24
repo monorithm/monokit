@@ -88,20 +88,15 @@ class _MonoPressableState extends State<MonoPressable> {
   void _setController(MonoStatesController? supplied) {
     _ownsController = supplied == null;
     _controller = supplied ?? MonoStatesController();
-    _controller.addListener(_onStatesChanged);
+    // No whole-widget setState listener: the states-consuming visual leaf is
+    // scoped in a ListenableBuilder, so hover/press/focus ticks rebuild only
+    // that leaf, not this widget's Semantics/FocusableActionDetector tree.
     _controller.update(MonoState.disabled, !_enabled);
   }
 
   void _detachController() {
-    _controller.removeListener(_onStatesChanged);
     if (_ownsController) {
       _controller.dispose();
-    }
-  }
-
-  void _onStatesChanged() {
-    if (mounted) {
-      setState(() {});
     }
   }
 
@@ -177,8 +172,9 @@ class _MonoPressableState extends State<MonoPressable> {
           onTapCancel: _enabled
               ? () => _controller.update(MonoState.pressed, false)
               : null,
-          child: Builder(
-            builder: (context) {
+          child: ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
               final states = _controller.states;
               final built = widget.child(context, states);
               if (!widget.focusRing) return built;

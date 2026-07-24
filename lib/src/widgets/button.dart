@@ -276,6 +276,9 @@ class _MonoButtonState extends State<MonoButton> {
   final MonoButtonStyleResolver _styleResolver =
       const MonoButtonStyleResolver();
   final Set<MonoState> _states = <MonoState>{};
+  // Bumped on every interaction-state change to rebuild only the visual leaf
+  // (scoped in a ListenableBuilder), not the Semantics/FocusableActionDetector.
+  final ValueNotifier<int> _statesTick = ValueNotifier<int>(0);
   late final FocusNode _internalFocusNode;
 
   FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
@@ -312,6 +315,7 @@ class _MonoButtonState extends State<MonoButton> {
   void dispose() {
     _focusNode.removeListener(_handleFocusChanged);
     _internalFocusNode.dispose();
+    _statesTick.dispose();
     super.dispose();
   }
 
@@ -325,7 +329,7 @@ class _MonoButtonState extends State<MonoButton> {
   void _setState(MonoState state, bool value) {
     final didChange = value ? _states.add(state) : _states.remove(state);
     if (didChange && mounted) {
-      setState(() {});
+      _statesTick.value++;
     }
   }
 
@@ -351,26 +355,17 @@ class _MonoButtonState extends State<MonoButton> {
         : duration;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = MonokitTheme.of(context);
-    final states = _resolvedStates;
-    final style = _styleResolver.resolve(
-      theme: theme,
-      variant: widget.variant,
-      size: widget.size,
-      states: states,
-    );
-    final motionDuration = _motionDuration(context, theme.motion.fast);
-    final isPressed = states.contains(MonoState.pressed);
-    final isIconButton = switch (widget.size) {
-      MonoButtonSize.icon ||
-      MonoButtonSize.iconXs ||
-      MonoButtonSize.iconSm ||
-      MonoButtonSize.iconLg => true,
-      _ => false,
-    };
-
+  /// The interaction-state-dependent visual, rebuilt in isolation by the
+  /// [ListenableBuilder] in [build].
+  Widget _buildVisual(
+    BuildContext context,
+    MonokitThemeData theme,
+    MonoResolvedButtonStyle style,
+    Set<MonoState> states,
+    bool isPressed,
+    bool isIconButton,
+    Duration motionDuration,
+  ) {
     Widget contents;
     if (widget.isLoading) {
       contents = SizedBox(
@@ -408,7 +403,7 @@ class _MonoButtonState extends State<MonoButton> {
       contents = Row(mainAxisSize: MainAxisSize.min, children: children);
     }
 
-    final visual = AnimatedOpacity(
+    return AnimatedOpacity(
       opacity: style.opacity,
       duration: motionDuration,
       curve: theme.motion.curve,
@@ -449,6 +444,44 @@ class _MonoButtonState extends State<MonoButton> {
           ),
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    final motionDuration = _motionDuration(context, theme.motion.fast);
+    final isIconButton = switch (widget.size) {
+      MonoButtonSize.icon ||
+      MonoButtonSize.iconXs ||
+      MonoButtonSize.iconSm ||
+      MonoButtonSize.iconLg => true,
+      _ => false,
+    };
+
+    // Only this leaf rebuilds on hover/press/focus ticks; the Semantics and
+    // FocusableActionDetector below stay stable.
+    final Widget visual = ListenableBuilder(
+      listenable: _statesTick,
+      builder: (BuildContext context, Widget? _) {
+        final states = _resolvedStates;
+        final style = _styleResolver.resolve(
+          theme: theme,
+          variant: widget.variant,
+          size: widget.size,
+          states: states,
+        );
+        final isPressed = states.contains(MonoState.pressed);
+        return _buildVisual(
+          context,
+          theme,
+          style,
+          states,
+          isPressed,
+          isIconButton,
+          motionDuration,
+        );
+      },
     );
 
     return Semantics(
