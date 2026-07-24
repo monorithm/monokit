@@ -1,3 +1,15 @@
+## 0.8.0
+
+Input hardening.
+
+- `MonoInput` / `MonoTextarea` gain a `restorationId`: with it set (and no
+  external controller), the field's text and selection survive the app being
+  killed and relaunched (via `RestorationMixin` +
+  `RestorableTextEditingController`).
+- Opt-in `showCounter` renders a `current/max` character counter when
+  `maxLength` is set. The length is always exposed to screen readers
+  (`maxValueLength`/`currentValueLength`) regardless of the visible counter.
+
 ## 0.7.0
 
 Production-readiness pass, part 2 (P1/P2 hardening).

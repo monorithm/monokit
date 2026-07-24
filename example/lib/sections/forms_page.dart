@@ -73,6 +73,8 @@ class _FormsPageState extends State<FormsPage> {
               placeholder: 'Condition, pickup area, anything useful…',
               minLines: 3,
               maxLines: 6,
+              maxLength: 180,
+              showCounter: true,
             ),
           ),
         ),
