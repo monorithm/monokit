@@ -67,6 +67,19 @@ class NavigationPage extends StatelessWidget {
           ),
         ),
         ComponentSection(
+          title: 'Navigation menu',
+          widgetName: 'MonoNavigationMenu',
+          child: MonoNavigationMenu(
+            defaultValue: 'feed',
+            onChanged: (_) {},
+            items: <MonoNavigationMenuItem>[
+              MonoNavigationMenuItem.text(value: 'feed', label: 'For you'),
+              MonoNavigationMenuItem.text(value: 'nearby', label: 'Nearby'),
+              MonoNavigationMenuItem.text(value: 'saved', label: 'Saved'),
+            ],
+          ),
+        ),
+        ComponentSection(
           title: 'Breadcrumb',
           widgetName: 'MonoBreadcrumb',
           child: MonoBreadcrumb(

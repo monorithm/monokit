@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
@@ -256,6 +257,19 @@ class MonoButton extends StatefulWidget {
 
   @override
   State<MonoButton> createState() => _MonoButtonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<MonoButtonVariant>('variant', variant))
+      ..add(EnumProperty<MonoButtonSize>('size', size))
+      ..add(
+        FlagProperty('enabled', value: onPressed != null, ifFalse: 'disabled'),
+      )
+      ..add(FlagProperty('isLoading', value: isLoading, ifTrue: 'loading'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _MonoButtonState extends State<MonoButton> {

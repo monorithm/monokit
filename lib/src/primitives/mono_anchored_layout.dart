@@ -214,7 +214,9 @@ class MonoAnchoredOverlay extends StatelessWidget {
         margin: margin,
         matchAnchorWidth: matchAnchorWidth,
       ),
-      child: child,
+      // Contain overlay repaints (highlight/hover ticks) so they don't dirty
+      // the page painted behind the overlay.
+      child: RepaintBoundary(child: child),
     );
   }
 }

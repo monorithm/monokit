@@ -1,3 +1,24 @@
+## 0.7.0
+
+Production-readiness pass, part 2 (P1/P2 hardening).
+
+### Performance
+- `RepaintBoundary` around all anchored-overlay content, so a menu's hover/
+  highlight ticks no longer repaint the page behind it.
+
+### API & keyboard
+- `MonoSelect` gains `open` / `defaultOpen` / `onOpenChange`, matching the
+  controlled-open contract of dropdown, combobox, and popover.
+- `MonoCombobox` supports Home / End / Page Up / Page Down; the command palette
+  supports Home / End (both were arrow-only).
+
+### Diagnostics
+- `debugFillProperties` on `MonoButton`, `MonoSelect`, `MonoInput`, and
+  `MonoTabs`, so they expose their state in the Flutter DevTools inspector.
+
+### Example
+- Added `MonoCombobox` and `MonoNavigationMenu` gallery demos.
+
 ## 0.6.0
 
 Production-readiness pass (audited against the Material reference).

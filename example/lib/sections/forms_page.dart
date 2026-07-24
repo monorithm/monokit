@@ -132,6 +132,35 @@ class _FormsPageState extends State<FormsPage> {
           ),
         ),
         ComponentSection(
+          title: 'Combobox',
+          widgetName: 'MonoCombobox',
+          description: 'Searchable select — filters as you type.',
+          child: SizedBox(
+            width: 280,
+            child: MonoCombobox<String>(
+              defaultValue: 'accra',
+              onChanged: (_) {},
+              placeholder: 'Pick a city',
+              searchPlaceholder: 'Search cities…',
+              options: <MonoComboboxOption<String>>[
+                MonoComboboxOption<String>.text(value: 'accra', label: 'Accra'),
+                MonoComboboxOption<String>.text(
+                  value: 'kumasi',
+                  label: 'Kumasi',
+                ),
+                MonoComboboxOption<String>.text(
+                  value: 'tamale',
+                  label: 'Tamale',
+                ),
+                MonoComboboxOption<String>.text(
+                  value: 'takoradi',
+                  label: 'Takoradi',
+                ),
+              ],
+            ),
+          ),
+        ),
+        ComponentSection(
           title: 'One-time code',
           widgetName: 'MonoInputOtp',
           description: 'Tabular digits — 0/O and 1/l never blur.',

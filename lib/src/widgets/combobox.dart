@@ -584,6 +584,35 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
     return options.indexWhere((option) => option.enabled);
   }
 
+  int _lastEnabled(List<MonoComboboxOption<T>> options) {
+    for (var i = options.length - 1; i >= 0; i--) {
+      if (options[i].enabled) return i;
+    }
+    return -1;
+  }
+
+  /// Moves the highlight up to [delta] enabled rows in the sign's direction,
+  /// clamping at the first/last enabled option (Page Up / Page Down).
+  int _pageMove(List<MonoComboboxOption<T>> options, int delta) {
+    if (options.isEmpty) return -1;
+    var index = _highlightedIndex < 0 ? 0 : _highlightedIndex;
+    final step = delta > 0 ? 1 : -1;
+    for (var moved = 0; moved < delta.abs(); moved++) {
+      var next = index;
+      for (var s = 1; s <= options.length; s++) {
+        final candidate = index + step * s;
+        if (candidate < 0 || candidate >= options.length) break;
+        if (options[candidate].enabled) {
+          next = candidate;
+          break;
+        }
+      }
+      if (next == index) break;
+      index = next;
+    }
+    return index;
+  }
+
   int _nextEnabled(List<MonoComboboxOption<T>> options, int direction) {
     if (options.isEmpty) {
       return -1;
@@ -617,6 +646,22 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
       setState(() => _highlightedIndex = _nextEnabled(options, -1));
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.home) {
+      setState(() => _highlightedIndex = _firstEnabled(options));
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.end) {
+      setState(() => _highlightedIndex = _lastEnabled(options));
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.pageDown) {
+      setState(() => _highlightedIndex = _pageMove(options, 5));
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.pageUp) {
+      setState(() => _highlightedIndex = _pageMove(options, -5));
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.enter &&

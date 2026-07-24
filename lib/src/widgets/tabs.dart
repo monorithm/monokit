@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
@@ -157,6 +158,17 @@ class MonoTabs extends StatefulWidget {
 
   @override
   State<MonoTabs> createState() => _MonoTabsState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
+      ..add(EnumProperty<MonoTabsOrientation>('orientation', orientation))
+      ..add(EnumProperty<MonoTabsVariant>('variant', variant))
+      ..add(IntProperty('tabs', _tabs.length));
+  }
 }
 
 class _MonoTabsState extends State<MonoTabs> {
