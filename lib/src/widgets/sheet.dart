@@ -1,6 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_focus_trap.dart';
+import '../primitives/mono_heading.dart';
+import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
@@ -8,12 +11,12 @@ import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import '../theme/monokit_elevation.dart';
 
-/// Logical edge from which a [MonoDrawer] is revealed.
-enum MonoDrawerSide { start, end }
+/// Edge from which a [MonoSheet] enters the screen.
+enum MonoSheetSide { bottom, top }
 
-/// Makes drawer open/close actions available to descendants.
-class MonoDrawerScope extends InheritedWidget {
-  const MonoDrawerScope({
+/// Makes sheet open/close actions available to triggers and content.
+class MonoSheetScope extends InheritedWidget {
+  const MonoSheetScope({
     super.key,
     required this.isOpen,
     required this.open,
@@ -27,18 +30,18 @@ class MonoDrawerScope extends InheritedWidget {
   final VoidCallback close;
   final VoidCallback toggle;
 
-  static MonoDrawerScope? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<MonoDrawerScope>();
+  static MonoSheetScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MonoSheetScope>();
   }
 
-  static MonoDrawerScope of(BuildContext context) {
-    final MonoDrawerScope? scope = maybeOf(context);
-    assert(scope != null, 'No MonoDrawer found in context.');
+  static MonoSheetScope of(BuildContext context) {
+    final MonoSheetScope? scope = maybeOf(context);
+    assert(scope != null, 'No MonoSheet found in context.');
     return scope!;
   }
 
   @override
-  bool updateShouldNotify(MonoDrawerScope oldWidget) {
+  bool updateShouldNotify(MonoSheetScope oldWidget) {
     return isOpen != oldWidget.isOpen ||
         open != oldWidget.open ||
         close != oldWidget.close ||
@@ -46,24 +49,27 @@ class MonoDrawerScope extends InheritedWidget {
   }
 }
 
-/// Keyboard-accessible trigger for the nearest [MonoDrawer].
-class MonoDrawerTrigger extends StatelessWidget {
-  const MonoDrawerTrigger({
+/// Keyboard-accessible trigger for the nearest [MonoSheet].
+class MonoSheetTrigger extends StatelessWidget {
+  const MonoSheetTrigger({
     super.key,
     required this.child,
     this.enabled = true,
-    this.semanticLabel = 'Open drawer',
+    this.semanticLabel,
   });
 
   final Widget child;
   final bool enabled;
-  final String semanticLabel;
+
+  /// Accessible name for the trigger. Falls back to
+  /// `MonokitTheme.of(context).labels.openSheet` when null.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final MonoDrawerScope? scope = MonoDrawerScope.maybeOf(context);
+    final MonoSheetScope? scope = MonoSheetScope.maybeOf(context);
     return MonoPressable(
-      semanticLabel: semanticLabel,
+      semanticLabel: semanticLabel ?? MonokitTheme.of(context).labels.openSheet,
       enabled: enabled && scope != null,
       onPressed: scope?.toggle,
       child: (BuildContext context, Set<MonoState> states) =>
@@ -72,22 +78,22 @@ class MonoDrawerTrigger extends StatelessWidget {
   }
 }
 
-/// Keyboard-accessible close action for drawer content.
-class MonoDrawerClose extends StatelessWidget {
-  const MonoDrawerClose({
-    super.key,
-    required this.child,
-    this.semanticLabel = 'Close drawer',
-  });
+/// Keyboard-accessible close action for sheet content.
+class MonoSheetClose extends StatelessWidget {
+  const MonoSheetClose({super.key, required this.child, this.semanticLabel});
 
   final Widget child;
-  final String semanticLabel;
+
+  /// Accessible name for the close action. Falls back to
+  /// `MonokitTheme.of(context).labels.closeSheet` when null.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final MonoDrawerScope? scope = MonoDrawerScope.maybeOf(context);
+    final MonoSheetScope? scope = MonoSheetScope.maybeOf(context);
     return MonoPressable(
-      semanticLabel: semanticLabel,
+      semanticLabel:
+          semanticLabel ?? MonokitTheme.of(context).labels.closeSheet,
       enabled: scope != null,
       onPressed: scope?.close,
       child: (BuildContext context, Set<MonoState> states) => child,
@@ -95,9 +101,9 @@ class MonoDrawerClose extends StatelessWidget {
   }
 }
 
-/// Padded drawer content slot.
-class MonoDrawerContent extends StatelessWidget {
-  const MonoDrawerContent({super.key, required this.child, this.padding});
+/// Padded body slot for a [MonoSheet].
+class MonoSheetContent extends StatelessWidget {
+  const MonoSheetContent({super.key, required this.child, this.padding});
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -117,9 +123,9 @@ class MonoDrawerContent extends StatelessWidget {
   }
 }
 
-/// Standard title/description slot for a [MonoDrawer].
-class MonoDrawerHeader extends StatelessWidget {
-  const MonoDrawerHeader({super.key, this.title, this.description, this.child})
+/// Standard title/description slot for a [MonoSheet].
+class MonoSheetHeader extends StatelessWidget {
+  const MonoSheetHeader({super.key, this.title, this.description, this.child})
     : assert(child != null || title != null || description != null);
 
   final Widget? title;
@@ -137,11 +143,13 @@ class MonoDrawerHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         if (title != null)
-          DefaultTextStyle.merge(
-            style: theme.typography.titleLarge.copyWith(
-              color: theme.colors.popoverForeground,
+          MonoHeading(
+            DefaultTextStyle.merge(
+              style: theme.typography.titleLarge.copyWith(
+                color: theme.colors.popoverForeground,
+              ),
+              child: title!,
             ),
-            child: title!,
           ),
         if (title != null && description != null)
           SizedBox(height: theme.spacing.sm),
@@ -157,9 +165,9 @@ class MonoDrawerHeader extends StatelessWidget {
   }
 }
 
-/// Standard trailing action slot for a [MonoDrawer].
-class MonoDrawerFooter extends StatelessWidget {
-  const MonoDrawerFooter({super.key, required this.child, this.padding});
+/// Standard trailing action slot for a [MonoSheet].
+class MonoSheetFooter extends StatelessWidget {
+  const MonoSheetFooter({super.key, required this.child, this.padding});
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -174,53 +182,53 @@ class MonoDrawerFooter extends StatelessWidget {
   }
 }
 
-/// A modal side drawer with controlled and uncontrolled open state.
-class MonoDrawer extends StatefulWidget {
-  const MonoDrawer({
+/// A modal edge sheet with controlled and uncontrolled open state.
+class MonoSheet extends StatefulWidget {
+  const MonoSheet({
     super.key,
     this.trigger,
     required this.child,
     this.open,
     this.defaultOpen = false,
     this.onOpenChange,
-    this.side = MonoDrawerSide.start,
+    this.side = MonoSheetSide.bottom,
     this.dismissible = true,
     this.requestFocus = true,
     this.semanticLabel,
-    this.width,
+    this.constraints,
+    this.showHandle = true,
     this.statesController,
-  }) : assert(width == null || width > 0);
+  });
 
   final Widget? trigger;
   final Widget child;
   final bool? open;
   final bool defaultOpen;
   final ValueChanged<bool>? onOpenChange;
-  final MonoDrawerSide side;
+  final MonoSheetSide side;
   final bool dismissible;
   final bool requestFocus;
   final String? semanticLabel;
-  final double? width;
+  final BoxConstraints? constraints;
+  final bool showHandle;
   final MonoStatesController? statesController;
 
-  static MonoDrawerScope? maybeOf(BuildContext context) =>
-      MonoDrawerScope.maybeOf(context);
+  static MonoSheetScope? maybeOf(BuildContext context) =>
+      MonoSheetScope.maybeOf(context);
 
   @override
-  State<MonoDrawer> createState() => _MonoDrawerState();
+  State<MonoSheet> createState() => _MonoSheetState();
 }
 
-class _MonoDrawerState extends State<MonoDrawer> {
+class _MonoSheetState extends State<MonoSheet> {
   OverlayEntry? _entry;
-  FocusNode? _previousFocus;
+  final MonoOverlayFocusController _overlayFocus = MonoOverlayFocusController();
   late bool _uncontrolledOpen;
   late MonoStatesController _statesController;
   late bool _ownsStatesController;
   MonokitThemeData? _overlayTheme;
-  TextDirection _textDirection = TextDirection.ltr;
   bool _disableAnimations = false;
   bool _overlaySyncScheduled = false;
-  bool _restoreFocusOnNextOverlaySync = false;
 
   bool get _isControlled => widget.open != null;
   bool get _isOpen => widget.open ?? _uncontrolledOpen;
@@ -243,7 +251,7 @@ class _MonoDrawerState extends State<MonoDrawer> {
   }
 
   @override
-  void didUpdateWidget(covariant MonoDrawer oldWidget) {
+  void didUpdateWidget(covariant MonoSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
     final bool wasOpen = oldWidget.open ?? _uncontrolledOpen;
     if (oldWidget.open != null && widget.open == null) {
@@ -265,6 +273,7 @@ class _MonoDrawerState extends State<MonoDrawer> {
 
   @override
   void dispose() {
+    _overlayFocus.cancelRestore();
     _removeOverlayNow();
     _statesController.removeListener(_handleStatesChanged);
     if (_ownsStatesController) {
@@ -296,7 +305,9 @@ class _MonoDrawerState extends State<MonoDrawer> {
   }
 
   void _scheduleOverlaySync({bool restoreFocus = false}) {
-    _restoreFocusOnNextOverlaySync |= restoreFocus;
+    if (restoreFocus) {
+      _overlayFocus.requestRestoreOnClose();
+    }
     if (_overlaySyncScheduled || !mounted) {
       return;
     }
@@ -306,18 +317,15 @@ class _MonoDrawerState extends State<MonoDrawer> {
       if (!mounted) {
         return;
       }
-      final bool restoreFocusOnRemove = _restoreFocusOnNextOverlaySync;
-      _restoreFocusOnNextOverlaySync = false;
       if (_isOpen) {
         _showOrRefreshOverlayNow();
       } else {
-        _beginClose(restoreFocus: restoreFocusOnRemove);
+        _beginClose();
       }
     });
   }
 
   bool _overlayVisible = false;
-  bool _pendingRestoreFocus = false;
 
   void _showOrRefreshOverlayNow() {
     if (!mounted) {
@@ -325,7 +333,6 @@ class _MonoDrawerState extends State<MonoDrawer> {
     }
     _overlayVisible = true;
     _overlayTheme = MonokitTheme.of(context);
-    _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final OverlayEntry? entry = _entry;
@@ -337,7 +344,7 @@ class _MonoDrawerState extends State<MonoDrawer> {
     if (overlay == null) {
       return;
     }
-    _previousFocus = FocusManager.instance.primaryFocus;
+    _overlayFocus.captureForOpen();
     _entry = OverlayEntry(
       maintainState: true,
       builder: (BuildContext context) => _buildOverlay(),
@@ -345,11 +352,10 @@ class _MonoDrawerState extends State<MonoDrawer> {
     overlay.insert(_entry!);
   }
 
-  void _beginClose({bool restoreFocus = false}) {
+  void _beginClose() {
     if (_entry == null) {
       return;
     }
-    _pendingRestoreFocus = restoreFocus;
     _overlayVisible = false;
     _entry!.markNeedsBuild();
   }
@@ -358,22 +364,15 @@ class _MonoDrawerState extends State<MonoDrawer> {
     if (_overlayVisible) {
       return;
     }
-    _removeOverlayNow(restoreFocus: _pendingRestoreFocus);
-    _pendingRestoreFocus = false;
+    _removeOverlayNow();
   }
 
-  void _removeOverlayNow({bool restoreFocus = false}) {
+  void _removeOverlayNow() {
     final OverlayEntry? entry = _entry;
     _entry = null;
     entry?.remove();
     entry?.dispose();
-    if (restoreFocus) {
-      final FocusNode? focus = _previousFocus;
-      if (focus != null && focus.canRequestFocus) {
-        focus.requestFocus();
-      }
-    }
-    _previousFocus = null;
+    _overlayFocus.restoreIfRequested(mounted: mounted);
   }
 
   Widget _buildOverlay() {
@@ -383,19 +382,19 @@ class _MonoDrawerState extends State<MonoDrawer> {
     }
     return MonokitTheme(
       data: theme,
-      child: _MonoDrawerOverlay(
+      child: _MonoSheetOverlay(
         theme: theme,
         visible: _overlayVisible,
         onExited: _onOverlayExited,
         side: widget.side,
-        textDirection: _textDirection,
         dismissible: widget.dismissible,
         requestFocus: widget.requestFocus,
         disableAnimations: _disableAnimations,
         semanticLabel: widget.semanticLabel,
-        width: widget.width,
+        constraints: widget.constraints,
+        showHandle: widget.showHandle,
         onDismiss: () => _requestOpen(false),
-        scope: MonoDrawerScope(
+        scope: MonoSheetScope(
           isOpen: _isOpen,
           open: () => _requestOpen(true),
           close: () => _requestOpen(false),
@@ -410,14 +409,14 @@ class _MonoDrawerState extends State<MonoDrawer> {
   Widget build(BuildContext context) {
     final Widget trigger = widget.trigger == null
         ? const SizedBox.shrink()
-        : widget.trigger is MonoDrawerTrigger
+        : widget.trigger is MonoSheetTrigger
         ? widget.trigger!
         : GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => _requestOpen(!_isOpen),
             child: widget.trigger,
           );
-    return MonoDrawerScope(
+    return MonoSheetScope(
       isOpen: _isOpen,
       open: () => _requestOpen(true),
       close: () => _requestOpen(false),
@@ -427,40 +426,40 @@ class _MonoDrawerState extends State<MonoDrawer> {
   }
 }
 
-class _MonoDrawerOverlay extends StatefulWidget {
-  const _MonoDrawerOverlay({
+class _MonoSheetOverlay extends StatefulWidget {
+  const _MonoSheetOverlay({
     required this.theme,
     required this.visible,
     required this.onExited,
     required this.side,
-    required this.textDirection,
     required this.dismissible,
     required this.requestFocus,
     required this.disableAnimations,
     required this.scope,
+    required this.showHandle,
     required this.onDismiss,
     this.semanticLabel,
-    this.width,
+    this.constraints,
   });
 
   final MonokitThemeData theme;
   final bool visible;
   final VoidCallback onExited;
-  final MonoDrawerSide side;
-  final TextDirection textDirection;
+  final MonoSheetSide side;
   final bool dismissible;
   final bool requestFocus;
   final bool disableAnimations;
-  final MonoDrawerScope scope;
+  final MonoSheetScope scope;
+  final bool showHandle;
   final VoidCallback onDismiss;
   final String? semanticLabel;
-  final double? width;
+  final BoxConstraints? constraints;
 
   @override
-  State<_MonoDrawerOverlay> createState() => _MonoDrawerOverlayState();
+  State<_MonoSheetOverlay> createState() => _MonoSheetOverlayState();
 }
 
-class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
+class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final FocusNode _focusNode;
@@ -475,7 +474,7 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
           : widget.theme.motion.base,
     );
     _controller.addStatusListener(_onStatus);
-    _focusNode = FocusNode(debugLabel: 'MonoDrawer');
+    _focusNode = FocusNode(debugLabel: 'MonoSheet');
     if (widget.visible) {
       _controller.forward();
     }
@@ -489,7 +488,7 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
   }
 
   @override
-  void didUpdateWidget(covariant _MonoDrawerOverlay oldWidget) {
+  void didUpdateWidget(covariant _MonoSheetOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.visible != oldWidget.visible) {
       if (widget.visible) {
@@ -520,35 +519,56 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
       parent: _controller,
       curve: widget.theme.motion.curve,
     );
-    final bool startIsLeft = widget.textDirection == TextDirection.ltr;
-    final bool opensLeft = widget.side == MonoDrawerSide.start
-        ? startIsLeft
-        : !startIsLeft;
-    final Alignment alignment = opensLeft
-        ? Alignment.centerLeft
-        : Alignment.centerRight;
-    final Offset begin = Offset(opensLeft ? -1 : 1, 0);
-    final BorderRadius radius = opensLeft
-        ? BorderRadius.horizontal(right: Radius.circular(widget.theme.radii.xl))
-        : BorderRadius.horizontal(left: Radius.circular(widget.theme.radii.xl));
-    final double width = widget.width ?? widget.theme.spacing.giant * 7;
-    final Widget surface = SafeArea(
-      child: SizedBox(
-        width: width,
-        height: double.infinity,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: widget.theme.colors.popover,
-            borderRadius: radius,
-            border: Border.all(color: widget.theme.colors.border),
-            boxShadow: widget.theme.elevation.resolve(MonoElevationTier.e3),
-          ),
-          child: widget.scope,
+    final bool isBottom = widget.side == MonoSheetSide.bottom;
+    final Alignment alignment = isBottom
+        ? Alignment.bottomCenter
+        : Alignment.topCenter;
+    final Offset begin = Offset(0, isBottom ? 1 : -1);
+    final BorderRadius radius = isBottom
+        ? BorderRadius.vertical(top: Radius.circular(widget.theme.radii.xl))
+        : BorderRadius.vertical(bottom: Radius.circular(widget.theme.radii.xl));
+    Widget surface = ConstrainedBox(
+      constraints: widget.constraints ?? const BoxConstraints(maxWidth: 720),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: widget.theme.colors.popover,
+          borderRadius: radius,
+          border: Border.all(color: widget.theme.colors.border),
+          boxShadow: widget.theme.elevation.resolve(MonoElevationTier.e3),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (widget.showHandle)
+              Align(
+                alignment: Alignment.center,
+                child: Container(
+                  margin: EdgeInsets.only(top: widget.theme.spacing.sm),
+                  width: widget.theme.spacing.xxl,
+                  height: widget.theme.spacing.xs,
+                  decoration: BoxDecoration(
+                    color: widget.theme.colors.mutedForeground.withAlpha(120),
+                    borderRadius: BorderRadius.circular(
+                      widget.theme.radii.full,
+                    ),
+                  ),
+                ),
+              ),
+            widget.scope,
+          ],
         ),
       ),
     );
+    surface = SafeArea(
+      top: !isBottom,
+      bottom: isBottom,
+      left: true,
+      right: true,
+      child: surface,
+    );
 
-    return FocusScope(
+    return MonoFocusTrap(
       autofocus: widget.requestFocus,
       child: Focus(
         focusNode: _focusNode,
@@ -583,7 +603,7 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
                   scopesRoute: true,
                   namesRoute: true,
                   explicitChildNodes: true,
-                  label: widget.semanticLabel ?? 'Drawer',
+                  label: widget.semanticLabel ?? widget.theme.labels.sheet,
                   child: surface,
                 ),
               ),

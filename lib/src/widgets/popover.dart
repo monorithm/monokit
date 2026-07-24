@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../primitives/mono_pressable.dart';
 import '../theme/monokit_theme.dart';
@@ -65,19 +66,23 @@ class MonoPopoverTrigger extends StatelessWidget {
   const MonoPopoverTrigger({
     super.key,
     required this.child,
-    this.semanticLabel = 'Toggle popover',
+    this.semanticLabel,
     this.enabled = true,
   });
 
   final Widget child;
-  final String semanticLabel;
+
+  /// Accessible name for the trigger. Falls back to
+  /// `MonokitTheme.of(context).labels.togglePopover` when null.
+  final String? semanticLabel;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final scope = MonoPopoverScope.maybeOf(context);
     return MonoPressable(
-      semanticLabel: semanticLabel,
+      semanticLabel:
+          semanticLabel ?? MonokitTheme.of(context).labels.togglePopover,
       enabled: enabled && scope != null,
       onPressed: scope?.toggle,
       child: (context, states) =>
@@ -88,20 +93,20 @@ class MonoPopoverTrigger extends StatelessWidget {
 
 /// An accessible close action for content inside a [MonoPopover].
 class MonoPopoverClose extends StatelessWidget {
-  const MonoPopoverClose({
-    super.key,
-    required this.child,
-    this.semanticLabel = 'Close popover',
-  });
+  const MonoPopoverClose({super.key, required this.child, this.semanticLabel});
 
   final Widget child;
-  final String semanticLabel;
+
+  /// Accessible name for the close action. Falls back to
+  /// `MonokitTheme.of(context).labels.closePopover` when null.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final scope = MonoPopoverScope.maybeOf(context);
     return MonoPressable(
-      semanticLabel: semanticLabel,
+      semanticLabel:
+          semanticLabel ?? MonokitTheme.of(context).labels.closePopover,
       enabled: scope != null,
       onPressed: scope?.close,
       child: (context, states) => child,
@@ -215,15 +220,13 @@ class MonoPopover extends StatefulWidget {
 class _MonoPopoverState extends State<MonoPopover> {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _entry;
-  FocusNode? _previousFocus;
+  final MonoOverlayFocusController _overlayFocus = MonoOverlayFocusController();
   late bool _uncontrolledOpen;
   MonokitThemeData? _overlayTheme;
   TextDirection _textDirection = TextDirection.ltr;
   bool _disableAnimations = false;
   bool _overlaySyncScheduled = false;
-  bool _restoreFocusOnNextOverlayRemoval = false;
   bool _overlayVisible = false;
-  bool _pendingRestoreFocus = false;
   MonoPopoverPlacement _resolvedPlacement = MonoPopoverPlacement.bottomStart;
 
   bool get _isControlled => widget.open != null;
@@ -256,6 +259,7 @@ class _MonoPopoverState extends State<MonoPopover> {
 
   @override
   void dispose() {
+    _overlayFocus.cancelRestore();
     _removeOverlay();
     super.dispose();
   }
@@ -281,22 +285,22 @@ class _MonoPopoverState extends State<MonoPopover> {
   /// that tree dirty while this widget is building. Coalescing work here also
   /// makes a sequence of controlled updates resolve to its final value.
   void _scheduleOverlaySync({bool restoreFocus = false}) {
-    _restoreFocusOnNextOverlayRemoval |= restoreFocus;
+    if (restoreFocus) {
+      _overlayFocus.requestRestoreOnClose();
+    }
     if (_overlaySyncScheduled) {
       return;
     }
     _overlaySyncScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _overlaySyncScheduled = false;
-      final shouldRestoreFocus = _restoreFocusOnNextOverlayRemoval;
-      _restoreFocusOnNextOverlayRemoval = false;
       if (!mounted) {
         return;
       }
       if (_isOpen) {
         _showOverlay();
       } else {
-        _beginClose(restoreFocus: shouldRestoreFocus);
+        _beginClose();
       }
     });
   }
@@ -311,7 +315,7 @@ class _MonoPopoverState extends State<MonoPopover> {
     if (overlay == null) {
       return;
     }
-    _previousFocus = FocusManager.instance.primaryFocus;
+    _overlayFocus.captureForOpen();
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
     _disableAnimations =
@@ -335,11 +339,10 @@ class _MonoPopoverState extends State<MonoPopover> {
   }
 
   /// Plays the exit animation, then removes the entry from [_onOverlayExited].
-  void _beginClose({bool restoreFocus = false}) {
+  void _beginClose() {
     if (_entry == null) {
       return;
     }
-    _pendingRestoreFocus = restoreFocus;
     _overlayVisible = false;
     _refreshOverlay();
   }
@@ -348,8 +351,7 @@ class _MonoPopoverState extends State<MonoPopover> {
     if (_overlayVisible) {
       return; // Re-opened mid-exit.
     }
-    _removeOverlay(restoreFocus: _pendingRestoreFocus);
-    _pendingRestoreFocus = false;
+    _removeOverlay();
   }
 
   void _refreshOverlay() {
@@ -363,18 +365,12 @@ class _MonoPopoverState extends State<MonoPopover> {
     _entry!.markNeedsBuild();
   }
 
-  void _removeOverlay({bool restoreFocus = false}) {
+  void _removeOverlay() {
     final entry = _entry;
     _entry = null;
     entry?.remove();
     entry?.dispose();
-    if (restoreFocus) {
-      final previousFocus = _previousFocus;
-      if (previousFocus != null && previousFocus.canRequestFocus) {
-        previousFocus.requestFocus();
-      }
-    }
-    _previousFocus = null;
+    _overlayFocus.restoreIfRequested(mounted: mounted);
   }
 
   Widget _buildOverlay() {
@@ -582,7 +578,7 @@ class _MonoPopoverOverlayState extends State<_MonoPopoverOverlay>
                 Positioned.fill(
                   child: Semantics(
                     button: true,
-                    label: 'Dismiss popover',
+                    label: widget.theme.labels.dismissPopover,
                     onTap: widget.onDismiss,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,

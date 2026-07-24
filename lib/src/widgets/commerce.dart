@@ -3,11 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_surfaces.dart';
 import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
-import 'badge.dart';
 import 'button.dart';
 import 'card.dart';
-import '../state/mono_command.dart';
-import 'progress.dart';
 
 class MonoPriceTag extends StatelessWidget {
   const MonoPriceTag({
@@ -176,70 +173,6 @@ class MonoCartBar extends StatelessWidget {
           Expanded(child: summary),
           SizedBox(width: t.spacing.md),
           action,
-        ],
-      ),
-    );
-  }
-}
-
-class MonoOrderStatus extends StatelessWidget {
-  const MonoOrderStatus({
-    super.key,
-    required this.phase,
-    this.label,
-    this.progress,
-    this.onRetry,
-  });
-  final MonoCommandPhase phase;
-  final Widget? label;
-  final double? progress;
-  final VoidCallback? onRetry;
-  @override
-  Widget build(BuildContext context) {
-    final t = MonokitTheme.of(context);
-    final (text, variant) = switch (phase) {
-      MonoCommandPhase.created => ('Created', MonoBadgeVariant.secondary),
-      MonoCommandPhase.queued => ('Pending', MonoBadgeVariant.warning),
-      MonoCommandPhase.sent => ('Sent', MonoBadgeVariant.info),
-      MonoCommandPhase.accepted => ('Processing', MonoBadgeVariant.info),
-      MonoCommandPhase.completed => ('Completed', MonoBadgeVariant.success),
-      MonoCommandPhase.rejected => ('Rejected', MonoBadgeVariant.destructive),
-      MonoCommandPhase.exhausted => (
-        'Needs attention',
-        MonoBadgeVariant.destructive,
-      ),
-    };
-    final failed =
-        phase == MonoCommandPhase.rejected ||
-        phase == MonoCommandPhase.exhausted;
-    return Semantics(
-      container: true,
-      liveRegion: true,
-      label: text,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              MonoBadge(variant: variant, child: Text(text)),
-              if (label != null) ...[
-                SizedBox(width: t.spacing.sm),
-                Expanded(child: label!),
-              ],
-              if (failed && onRetry != null)
-                MonoButton(
-                  variant: MonoButtonVariant.ghost,
-                  size: MonoButtonSize.sm,
-                  onPressed: onRetry,
-                  child: const Text('Retry'),
-                ),
-            ],
-          ),
-          if (progress != null) ...[
-            SizedBox(height: t.spacing.sm),
-            MonoProgress(value: progress),
-          ],
         ],
       ),
     );

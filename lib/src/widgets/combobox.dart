@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../primitives/mono_overlay_fade.dart';
+import '../primitives/mono_overlay_focus.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -119,7 +120,7 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
   Size _targetSize = Size.zero;
   bool _openUpward = false;
   bool _overlaySyncScheduled = false;
-  bool _restoreFocusAfterOverlaySync = false;
+  late final MonoOverlayFocusController _overlayFocus;
   late T? _uncontrolledValue;
   late bool _uncontrolledOpen;
   late FocusNode _focusNode;
@@ -144,6 +145,9 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     _ownsFocusNode = widget.focusNode == null;
     _focusNode = widget.focusNode ?? FocusNode(debugLabel: 'MonoCombobox');
     _focusNode.addListener(_handleFocusChanged);
+    _overlayFocus = MonoOverlayFocusController(
+      triggerFocusNode: () => _focusNode,
+    );
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _statesController.addListener(_handleStatesChanged);
@@ -187,7 +191,8 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
 
   @override
   void dispose() {
-    _removeOverlayNow(restoreFocus: false);
+    _overlayFocus.cancelRestore();
+    _removeOverlayNow();
     _focusNode.removeListener(_handleFocusChanged);
     _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
@@ -253,32 +258,31 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     if (_isOpenControlled) {
       return;
     }
-    _scheduleOverlaySync(restoreFocus: !value);
+    if (!value) {
+      _overlayFocus.requestRestoreOnClose();
+    }
+    _scheduleOverlaySync();
   }
 
-  void _scheduleOverlaySync({bool restoreFocus = false}) {
-    _restoreFocusAfterOverlaySync |= restoreFocus;
+  void _scheduleOverlaySync() {
     if (_overlaySyncScheduled || !mounted) {
       return;
     }
     _overlaySyncScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _overlaySyncScheduled = false;
-      final bool shouldRestoreFocus = _restoreFocusAfterOverlaySync;
-      _restoreFocusAfterOverlaySync = false;
       if (!mounted) {
         return;
       }
       if (_isOpen) {
         _showOrRefreshOverlay();
       } else {
-        _beginClose(restoreFocus: shouldRestoreFocus);
+        _beginClose();
       }
     });
   }
 
   bool _overlayVisible = false;
-  bool _pendingRestoreFocus = true;
 
   void _showOrRefreshOverlay() {
     _overlayVisible = true;
@@ -329,14 +333,14 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
         ),
       ),
     );
+    _overlayFocus.captureForOpen();
     overlay.insert(_entry!);
   }
 
-  void _beginClose({bool restoreFocus = true}) {
+  void _beginClose() {
     if (_entry == null) {
       return;
     }
-    _pendingRestoreFocus = restoreFocus;
     _overlayVisible = false;
     _entry!.markNeedsBuild();
   }
@@ -345,20 +349,14 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     if (_overlayVisible) {
       return;
     }
-    _removeOverlayNow(restoreFocus: _pendingRestoreFocus);
+    _removeOverlayNow();
   }
 
-  void _removeOverlayNow({bool restoreFocus = true}) {
+  void _removeOverlayNow() {
     _entry?.remove();
     _entry?.dispose();
     _entry = null;
-    if (restoreFocus && mounted && _isEnabled) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _focusNode.requestFocus();
-        }
-      });
-    }
+    _overlayFocus.restoreIfRequested(mounted: mounted, enabled: _isEnabled);
   }
 
   void _select(T value) {

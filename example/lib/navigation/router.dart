@@ -15,7 +15,6 @@ import '../sections/commerce_page.dart';
 import '../sections/feedback_page.dart';
 import '../sections/forms_page.dart';
 import '../sections/foundations_page.dart';
-import '../sections/honest_page.dart';
 import '../sections/media_page.dart';
 import '../sections/navigation_page.dart';
 import '../sections/overlays_page.dart';
@@ -42,7 +41,6 @@ final GoRouter router = GoRouter(
         _page('/overlays', const OverlaysPage()),
         _page('/navigation', const NavigationPage()),
         _page('/feedback', const FeedbackPage()),
-        _page('/honest', const HonestPage()),
         _page('/chat', const ChatPage()),
         _page('/media', const MediaPage()),
         _page('/commerce', const CommercePage()),

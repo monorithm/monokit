@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_heading.dart';
 import '../primitives/mono_overlay_layer.dart';
 import '../theme/monokit_theme.dart';
 
@@ -63,9 +64,11 @@ class MonoAlert extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             if (title != null)
-              DefaultTextStyle.merge(
-                style: theme.typography.labelLarge,
-                child: title!,
+              MonoHeading(
+                DefaultTextStyle.merge(
+                  style: theme.typography.labelLarge,
+                  child: title!,
+                ),
               ),
             if (title != null && description != null)
               SizedBox(height: theme.spacing.xs),

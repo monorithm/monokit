@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_heading.dart';
 import '../theme/monokit_theme.dart';
 
 /// A compact, token-aware top region for [MonoScreen].
@@ -32,9 +33,11 @@ class MonoScreenHeader extends StatelessWidget {
             if (leading != null) SizedBox(width: theme.spacing.sm),
             if (title != null)
               Expanded(
-                child: DefaultTextStyle.merge(
-                  style: theme.typography.titleLarge,
-                  child: title!,
+                child: MonoHeading(
+                  DefaultTextStyle.merge(
+                    style: theme.typography.titleLarge,
+                    child: title!,
+                  ),
                 ),
               )
             else
