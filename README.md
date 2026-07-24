@@ -69,22 +69,25 @@ Navigator.of(context).pushNamed('/settings');
 `pushNamed` retains normal Navigator history, so browser and platform Back
 move through previously visited named routes.
 
-The included `example/` is a runnable collection of eight product scenarios:
-creator studio, storefront, checkout, order tracking, workspace, live commerce,
-conversation, and group call. Start it with `cd example && flutter run -d chrome`.
+The included `example/` is a runnable component gallery. Start it with
+`cd example && flutter run -d chrome`.
 
-## Included in v0.2
+## What's included
 
 - Semantic light and dark tokens: mist/emerald colors, status, media, glass,
-  elevation, density, breakpoints, typography, radii, spacing, motion, and haptics.
+  elevation, density, breakpoints, typography, radii, spacing, motion, haptics,
+  focus ring, and overridable labels.
 - `MonokitApp` and `MonoScreen`, including safe-area, keyboard inset, floating, sidebar, and overlay layers.
 - Foundations: buttons, badges, cards, avatars, separators, skeletons, spinners, and keyboard hints.
-- Forms: `EditableText`-based inputs and textareas, fields, checkboxes, radio groups, and switches.
+- Forms: `EditableText`-based inputs and textareas — with selection handles,
+  a copy/paste toolbar, and a magnifier — plus fields, checkboxes, radio groups, and switches.
 - Navigation controls: tabs and accordions.
 - Widgets-first dialog, icon, and sidebar primitives for composable application shells.
-- Honest-state banner, toast host, empty state, and command-phase vocabulary.
+- Viewport-aware anchored overlays (`MonoAnchoredLayout`): select, dropdown,
+  combobox, popover, context menu, tooltip, and hover card stay on-screen.
+- Honest-state banner, toast host, and empty state.
 - Engine-neutral media, communication, call, capture, document, and gallery surfaces.
-- Product, price, quantity, cart, and order-status commerce components.
+- Product, price, quantity, and cart commerce components.
 
 Every component resolves its appearance from `MonokitTheme.of(context)`:
 

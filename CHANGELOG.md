@@ -1,3 +1,39 @@
+## 0.6.0
+
+Production-readiness pass (audited against the Material reference).
+
+### Overlays & layout
+- Added `MonoAnchoredLayout` / `MonoAnchoredLayoutDelegate`, a viewport-aware
+  `CustomSingleChildLayout` that replaces `CompositedTransformFollower` in
+  select, dropdown, combobox, popover, context menu, tooltip, and hover card.
+  Overlays now flip on their measured size, clamp to the safe area (padding +
+  keyboard insets), and cap their height to the space actually available, so
+  they can no longer render off-screen. Select and dropdown scroll the selected
+  row into view on open.
+- `MonoDialog` and `MonoSheet` now cap their height to the visible area, scroll
+  overflowing content, and lift clear of the software keyboard.
+
+### Text input
+- `MonoInput` / `MonoTextarea` now have full text selection: engine-neutral
+  drag handles (`MonoTextSelectionControls`), a token-styled cut/copy/paste/
+  select-all toolbar (`monoContextMenuBuilder`), a `RawMagnifier` loupe, and the
+  standard selection gestures. **Selection requires an `Overlay` ancestor**
+  (as every `EditableText` does); `MonokitApp` provides one.
+
+### Accessibility & feel
+- Fixed-height controls (button, badge, bottom nav, input) grow with the OS
+  text scale via `monoScaledExtent`, clamped at 2x, so labels no longer clip.
+- `MonokitHaptics` is now actually invoked on activation (was a dead token,
+  still disabled by default).
+- Reduced-motion is honored by the dialog entrance and radio group; the
+  accordion chevron mirrors in RTL; select and dropdown menus show a token
+  `RawScrollbar` on desktop/web.
+- A missing `Overlay` ancestor now asserts (was a silent no-op).
+
+### Buttons
+- Intrinsic-safe layout (removed the `Flexible` label wrapper) and the pressed
+  state is cleared when a button is disabled mid-gesture.
+
 ## 0.5.0
 
 ### Accessibility — focus & semantics
