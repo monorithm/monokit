@@ -32,6 +32,7 @@ class MonokitApp extends StatelessWidget {
     this.onUnknownRoute,
     this.pageRouteBuilder,
     this.debugShowCheckedModeBanner = false,
+    this.restorationScopeId,
   }) : routerConfig = null,
        routerDelegate = null,
        routeInformationParser = null,
@@ -59,6 +60,7 @@ class MonokitApp extends StatelessWidget {
     this.routeInformationProvider,
     this.backButtonDispatcher,
     this.debugShowCheckedModeBanner = false,
+    this.restorationScopeId,
   }) : home = null,
        routes = const <String, WidgetBuilder>{},
        initialRoute = null,
@@ -95,6 +97,13 @@ class MonokitApp extends StatelessWidget {
   final RouteInformationParser<Object>? routeInformationParser;
   final RouteInformationProvider? routeInformationProvider;
   final BackButtonDispatcher? backButtonDispatcher;
+
+  /// Establishes the root restoration scope and, for the router constructor,
+  /// the [Router]'s `restorationScopeId` — so a declarative router (e.g.
+  /// go_router with its own `restorationScopeId`) can restore the current
+  /// location after the OS kills and relaunches a backgrounded app. Null
+  /// (the default) leaves state restoration off, as before.
+  final String? restorationScopeId;
 
   MonokitThemeData _resolveTheme(BuildContext context) {
     if (themeMode == MonokitThemeMode.light || darkTheme == null) {
@@ -156,6 +165,7 @@ class MonokitApp extends StatelessWidget {
         routeInformationParser: routeInformationParser,
         routeInformationProvider: routeInformationProvider,
         backButtonDispatcher: backButtonDispatcher,
+        restorationScopeId: restorationScopeId,
         title: title,
         locale: locale,
         supportedLocales: supportedLocales,
@@ -187,6 +197,7 @@ class MonokitApp extends StatelessWidget {
       localizationsDelegates: localizationsDelegates,
       navigatorKey: navigatorKey,
       navigatorObservers: navigatorObservers,
+      restorationScopeId: restorationScopeId,
       debugShowCheckedModeBanner: debugShowCheckedModeBanner,
       builder: (context, child) => _wrapTheme(context, child),
     );

@@ -31,6 +31,9 @@ class _MonokitGalleryState extends State<MonokitGallery> {
         listenable: _theme,
         builder: (context, _) => MonokitApp.router(
           title: 'Monokit',
+          // Demonstrates the restoration hook: pairs with a router that sets
+          // its own restorationScopeId to restore location across process death.
+          restorationScopeId: 'gallery',
           theme: MonokitThemeData.light(),
           darkTheme: MonokitThemeData.dark(),
           themeMode: _theme.isDark

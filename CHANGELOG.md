@@ -1,3 +1,12 @@
+## 0.4.0
+
+- Added a `restorationScopeId` to `MonokitApp` and `MonokitApp.router`,
+  forwarded to `WidgetsApp` / `WidgetsApp.router`. Setting it establishes the
+  root restoration scope and the `Router`'s restoration id, so a declarative
+  router (e.g. go_router with its own `restorationScopeId`) can restore the
+  current location after the OS kills and relaunches a backgrounded app. Null
+  by default, so existing apps are unaffected.
+
 ## 0.3.1
 
 - Renamed `MonoIcons.user`'s semantic label from Profile to Account
