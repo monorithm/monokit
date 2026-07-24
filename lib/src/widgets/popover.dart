@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../primitives/mono_pressable.dart';
@@ -218,7 +219,7 @@ class MonoPopover extends StatefulWidget {
 }
 
 class _MonoPopoverState extends State<MonoPopover> {
-  final LayerLink _layerLink = LayerLink();
+  Rect _anchorRect = Rect.zero;
   OverlayEntry? _entry;
   final MonoOverlayFocusController _overlayFocus = MonoOverlayFocusController();
   late bool _uncontrolledOpen;
@@ -227,7 +228,6 @@ class _MonoPopoverState extends State<MonoPopover> {
   bool _disableAnimations = false;
   bool _overlaySyncScheduled = false;
   bool _overlayVisible = false;
-  MonoPopoverPlacement _resolvedPlacement = MonoPopoverPlacement.bottomStart;
 
   bool get _isControlled => widget.open != null;
   bool get _isOpen => widget.open ?? _uncontrolledOpen;
@@ -305,6 +305,16 @@ class _MonoPopoverState extends State<MonoPopover> {
     });
   }
 
+  /// Reads the trigger's current global rect, keeping the last known value
+  /// when the render box is not laid out.
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
+    }
+    return _anchorRect;
+  }
+
   void _showOverlay() {
     _overlayVisible = true;
     if (_entry != null || !mounted) {
@@ -312,6 +322,10 @@ class _MonoPopoverState extends State<MonoPopover> {
       return;
     }
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }
@@ -320,17 +334,6 @@ class _MonoPopoverState extends State<MonoPopover> {
     _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    _resolvedPlacement = widget.placement;
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null && renderBox.hasSize) {
-      final MonoPlacement resolved = MonoPlacement.values
-          .byName(widget.placement.name)
-          .resolveWithin(
-            renderBox.localToGlobal(Offset.zero) & renderBox.size,
-            MediaQuery.sizeOf(context),
-          );
-      _resolvedPlacement = MonoPopoverPlacement.values.byName(resolved.name);
-    }
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
@@ -382,8 +385,8 @@ class _MonoPopoverState extends State<MonoPopover> {
       theme: theme,
       visible: _overlayVisible,
       onExited: _onOverlayExited,
-      layerLink: _layerLink,
-      placement: _resolvedPlacement,
+      anchorRect: _resolveAnchorRect(),
+      placement: widget.placement,
       offset: widget.offset,
       gap: widget.gap ?? theme.spacing.sm,
       textDirection: _textDirection,
@@ -415,7 +418,7 @@ class _MonoPopoverState extends State<MonoPopover> {
       open: () => _requestOpen(true),
       close: () => _requestOpen(false),
       toggle: () => _requestOpen(!_isOpen),
-      child: CompositedTransformTarget(link: _layerLink, child: child),
+      child: child,
     );
   }
 }
@@ -425,7 +428,7 @@ class _MonoPopoverOverlay extends StatefulWidget {
     required this.theme,
     required this.visible,
     required this.onExited,
-    required this.layerLink,
+    required this.anchorRect,
     required this.placement,
     required this.offset,
     required this.gap,
@@ -443,7 +446,7 @@ class _MonoPopoverOverlay extends StatefulWidget {
   final MonokitThemeData theme;
   final bool visible;
   final VoidCallback onExited;
-  final LayerLink layerLink;
+  final Rect anchorRect;
   final MonoPopoverPlacement placement;
   final Offset offset;
   final double gap;
@@ -525,12 +528,10 @@ class _MonoPopoverOverlayState extends State<_MonoPopoverOverlay>
       parent: _controller,
       curve: widget.theme.motion.curve,
     );
-    final follower = CompositedTransformFollower(
-      link: widget.layerLink,
-      showWhenUnlinked: false,
-      targetAnchor: anchors.targetAnchor,
-      followerAnchor: anchors.followerAnchor,
-      offset: anchors.offset(widget.gap) + widget.offset,
+    final follower = MonoAnchoredOverlay(
+      anchorRect: widget.anchorRect.shift(widget.offset),
+      placement: MonoPlacement.values.byName(widget.placement.name),
+      gap: widget.gap,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {},

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../theme/monokit_theme.dart';
 import 'mono_focus_ring.dart';
 
 /// A widgets-only interaction primitive with hover, focus, press and keyboard
@@ -122,6 +123,8 @@ class _MonoPressableState extends State<MonoPressable> {
 
   void _activate() {
     if (_enabled) {
+      // Fires only when the app opts into MonokitHaptics (disabled by default).
+      MonokitTheme.of(context).haptics.impactLight();
       widget.onPressed!();
     }
   }

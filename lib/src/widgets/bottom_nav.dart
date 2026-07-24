@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
+import '../primitives/mono_text_scale.dart';
 import '../theme/monokit_theme.dart';
 import 'mono_icon.dart';
 
@@ -108,7 +109,10 @@ class MonoBottomNav extends StatelessWidget {
                 MediaQuery.maybeOf(context)?.disableAnimations ?? false;
             return ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: theme.density.minimumTarget,
+                minHeight: monoScaledExtent(
+                  context,
+                  theme.density.minimumTarget,
+                ),
               ),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: theme.spacing.sm),

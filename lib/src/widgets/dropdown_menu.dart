@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_fade.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
@@ -118,9 +119,8 @@ class MonoDropdownMenu<T> extends StatefulWidget {
 }
 
 class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
-  final LayerLink _layerLink = LayerLink();
+  Rect _anchorRect = Rect.zero;
   OverlayEntry? _entry;
-  Size _triggerSize = Size.zero;
   bool _overlaySyncScheduled = false;
   late final MonoOverlayFocusController _overlayFocus;
   late bool _uncontrolledOpen;
@@ -277,9 +277,6 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     _showOverlayNow();
   }
 
-  MonoDropdownMenuPlacement _resolvedPlacement =
-      MonoDropdownMenuPlacement.bottomStart;
-
   MonoPlacement _monoPlacement(MonoDropdownMenuPlacement p) => switch (p) {
     MonoDropdownMenuPlacement.bottomStart => MonoPlacement.bottomStart,
     MonoDropdownMenuPlacement.bottomEnd => MonoPlacement.bottomEnd,
@@ -287,33 +284,27 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     MonoDropdownMenuPlacement.topEnd => MonoPlacement.topEnd,
   };
 
-  MonoDropdownMenuPlacement _dropdownPlacement(MonoPlacement p) => switch (p) {
-    MonoPlacement.bottomEnd => MonoDropdownMenuPlacement.bottomEnd,
-    MonoPlacement.topStart => MonoDropdownMenuPlacement.topStart,
-    MonoPlacement.topEnd => MonoDropdownMenuPlacement.topEnd,
-    _ => MonoDropdownMenuPlacement.bottomStart,
-  };
+  /// Reads the trigger's current global rect, keeping the last known value
+  /// when the render box is not laid out.
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
+    }
+    return _anchorRect;
+  }
 
   void _showOverlayNow() {
     if (_entry != null || !mounted) {
       return;
     }
     final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
-    }
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    _resolvedPlacement = widget.placement;
-    if (renderBox != null && renderBox.hasSize) {
-      _triggerSize = renderBox.size;
-      final Offset position = renderBox.localToGlobal(Offset.zero);
-      _resolvedPlacement = _dropdownPlacement(
-        _monoPlacement(widget.placement).resolveWithin(
-          position & _triggerSize,
-          MediaQuery.sizeOf(context),
-          estimate: widget.maxHeight,
-        ),
-      );
     }
     final MonokitThemeData theme = MonokitTheme.of(context);
     _entry = OverlayEntry(
@@ -323,10 +314,9 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
           visible: _overlayVisible,
           onExited: _onOverlayExited,
           child: _MonoDropdownOverlay<T>(
-            link: _layerLink,
-            targetSize: _triggerSize,
+            anchorRect: _resolveAnchorRect(),
             items: widget._items,
-            placement: _resolvedPlacement,
+            placement: _monoPlacement(widget.placement),
             width: widget.width,
             maxHeight: widget.maxHeight,
             onDismiss: () => _setOpen(false),
@@ -379,65 +369,62 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: FocusableActionDetector(
+    return FocusableActionDetector(
+      enabled: _isEnabled,
+      focusNode: _focusNode,
+      autofocus: widget.autofocus,
+      includeFocusSemantics: false,
+      mouseCursor: _isEnabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.forbidden,
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowDown):
+            _MonoDropdownOpenIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (ActivateIntent intent) {
+            _setOpen(!_isOpen);
+            return null;
+          },
+        ),
+        _MonoDropdownOpenIntent: CallbackAction<_MonoDropdownOpenIntent>(
+          onInvoke: (_MonoDropdownOpenIntent intent) {
+            _setOpen(true);
+            return null;
+          },
+        ),
+      },
+      onShowFocusHighlight: (bool visible) {
+        _statesController
+          ..update(MonoState.focused, visible)
+          ..update(MonoState.focusVisible, visible);
+      },
+      onShowHoverHighlight: (bool hovered) =>
+          _statesController.update(MonoState.hovered, hovered),
+      child: Semantics(
+        container: true,
+        button: true,
         enabled: _isEnabled,
-        focusNode: _focusNode,
-        autofocus: widget.autofocus,
-        includeFocusSemantics: false,
-        mouseCursor: _isEnabled
-            ? SystemMouseCursors.click
-            : SystemMouseCursors.forbidden,
-        shortcuts: const <ShortcutActivator, Intent>{
-          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.arrowDown):
-              _MonoDropdownOpenIntent(),
-        },
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (ActivateIntent intent) {
-              _setOpen(!_isOpen);
-              return null;
-            },
-          ),
-          _MonoDropdownOpenIntent: CallbackAction<_MonoDropdownOpenIntent>(
-            onInvoke: (_MonoDropdownOpenIntent intent) {
-              _setOpen(true);
-              return null;
-            },
-          ),
-        },
-        onShowFocusHighlight: (bool visible) {
-          _statesController
-            ..update(MonoState.focused, visible)
-            ..update(MonoState.focusVisible, visible);
-        },
-        onShowHoverHighlight: (bool hovered) =>
-            _statesController.update(MonoState.hovered, hovered),
-        child: Semantics(
-          container: true,
-          button: true,
-          enabled: _isEnabled,
-          expanded: _isOpen,
-          focused: _isFocused,
-          label: widget.semanticLabel ?? 'Menu',
+        expanded: _isOpen,
+        focused: _isFocused,
+        label: widget.semanticLabel ?? 'Menu',
+        onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTapDown: _isEnabled
+              ? (_) => _statesController.update(MonoState.pressed, true)
+              : null,
+          onTapUp: _isEnabled
+              ? (_) => _statesController.update(MonoState.pressed, false)
+              : null,
+          onTapCancel: _isEnabled
+              ? () => _statesController.update(MonoState.pressed, false)
+              : null,
           onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTapDown: _isEnabled
-                ? (_) => _statesController.update(MonoState.pressed, true)
-                : null,
-            onTapUp: _isEnabled
-                ? (_) => _statesController.update(MonoState.pressed, false)
-                : null,
-            onTapCancel: _isEnabled
-                ? () => _statesController.update(MonoState.pressed, false)
-                : null,
-            onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-            child: widget._trigger,
-          ),
+          child: widget._trigger,
         ),
       ),
     );
@@ -450,8 +437,7 @@ class _MonoDropdownOpenIntent extends Intent {
 
 class _MonoDropdownOverlay<T> extends StatefulWidget {
   const _MonoDropdownOverlay({
-    required this.link,
-    required this.targetSize,
+    required this.anchorRect,
     required this.items,
     required this.placement,
     required this.width,
@@ -460,10 +446,9 @@ class _MonoDropdownOverlay<T> extends StatefulWidget {
     required this.onSelected,
   });
 
-  final LayerLink link;
-  final Size targetSize;
+  final Rect anchorRect;
   final List<MonoDropdownMenuItem<T>> items;
-  final MonoDropdownMenuPlacement placement;
+  final MonoPlacement placement;
   final double? width;
   final double maxHeight;
   final VoidCallback onDismiss;
@@ -477,7 +462,10 @@ class _MonoDropdownOverlay<T> extends StatefulWidget {
 class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
   late final FocusNode _focusNode;
   late final ScrollController _scrollController;
+  final Map<int, GlobalKey> _itemKeys = <int, GlobalKey>{};
   late int _highlightedIndex;
+
+  GlobalKey _keyFor(int index) => _itemKeys.putIfAbsent(index, GlobalKey.new);
 
   @override
   void initState() {
@@ -488,6 +476,41 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _focusNode.requestFocus();
+      }
+    });
+  }
+
+  /// Scrolls the highlighted item into view using its real laid-out position
+  /// (replaces the previous fixed 44px row estimate).
+  ///
+  /// Rows outside the viewport are not built yet, so when the highlighted
+  /// row's context is missing this first jumps proportionally into the list
+  /// and retries once the row exists.
+  void _revealHighlighted({bool retry = true}) {
+    final BuildContext? itemContext =
+        _itemKeys[_highlightedIndex]?.currentContext;
+    if (itemContext != null) {
+      final MonokitThemeData theme = MonokitTheme.of(context);
+      Scrollable.ensureVisible(
+        itemContext,
+        alignment: 0.5,
+        duration: theme.motion.fast,
+        curve: theme.motion.curve,
+      );
+      return;
+    }
+    if (!retry || !_scrollController.hasClients || widget.items.length < 2) {
+      return;
+    }
+    final double estimate =
+        _scrollController.position.maxScrollExtent *
+        (_highlightedIndex / (widget.items.length - 1));
+    _scrollController.jumpTo(
+      estimate.clamp(0, _scrollController.position.maxScrollExtent),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _revealHighlighted(retry: false);
       }
     });
   }
@@ -524,17 +547,11 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
       return;
     }
     setState(() => _highlightedIndex = next);
-    if (_scrollController.hasClients) {
-      final double target = (next * 44.0).clamp(
-        0,
-        _scrollController.position.maxScrollExtent,
-      );
-      _scrollController.animateTo(
-        target,
-        duration: MonokitTheme.of(context).motion.fast,
-        curve: MonokitTheme.of(context).motion.curve,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _revealHighlighted();
+      }
+    });
   }
 
   void _selectHighlighted() {
@@ -585,22 +602,6 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
   @override
   Widget build(BuildContext context) {
     final MonokitThemeData theme = MonokitTheme.of(context);
-    final bool opensAbove =
-        widget.placement == MonoDropdownMenuPlacement.topStart ||
-        widget.placement == MonoDropdownMenuPlacement.topEnd;
-    final bool alignsEnd =
-        widget.placement == MonoDropdownMenuPlacement.bottomEnd ||
-        widget.placement == MonoDropdownMenuPlacement.topEnd;
-    final Alignment targetAnchor = opensAbove
-        ? (alignsEnd ? Alignment.topRight : Alignment.topLeft)
-        : (alignsEnd ? Alignment.bottomRight : Alignment.bottomLeft);
-    final Alignment followerAnchor = opensAbove
-        ? (alignsEnd ? Alignment.bottomRight : Alignment.bottomLeft)
-        : (alignsEnd ? Alignment.topRight : Alignment.topLeft);
-    final Offset offset = Offset(
-      0,
-      opensAbove ? -theme.spacing.xs : theme.spacing.xs,
-    );
 
     return Stack(
       fit: StackFit.expand,
@@ -612,14 +613,13 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
             child: const SizedBox.expand(),
           ),
         ),
-        CompositedTransformFollower(
-          link: widget.link,
-          showWhenUnlinked: false,
-          targetAnchor: targetAnchor,
-          followerAnchor: followerAnchor,
-          offset: offset,
+        MonoAnchoredOverlay(
+          anchorRect: widget.anchorRect,
+          placement: widget.placement,
+          gap: theme.spacing.xs,
+          matchAnchorWidth: widget.width == null,
           child: SizedBox(
-            width: widget.width ?? widget.targetSize.width,
+            width: widget.width,
             child: Focus(
               focusNode: _focusNode,
               onKeyEvent: _handleKeyEvent,
@@ -641,29 +641,40 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                    child: ListView.builder(
+                    child: RawScrollbar(
                       controller: _scrollController,
-                      padding: EdgeInsets.all(theme.spacing.xs),
-                      shrinkWrap: true,
-                      itemCount: widget.items.length,
-                      itemBuilder: (BuildContext context, int index) =>
-                          _MonoDropdownItemTile<T>(
-                            item: widget.items[index],
-                            highlighted: index == _highlightedIndex,
-                            onHover: widget.items[index].enabled
-                                ? (bool hovering) {
-                                    if (hovering &&
-                                        _highlightedIndex != index) {
-                                      setState(() => _highlightedIndex = index);
-                                    }
-                                  }
-                                : null,
-                            onTap: widget.items[index].enabled
-                                ? () => widget.onSelected(
-                                    widget.items[index].value,
-                                  )
-                                : null,
-                          ),
+                      thumbColor: theme.colors.border,
+                      radius: Radius.circular(theme.radii.full),
+                      thickness: theme.spacing.xs,
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(theme.spacing.xs),
+                        shrinkWrap: true,
+                        itemCount: widget.items.length,
+                        itemBuilder: (BuildContext context, int index) =>
+                            KeyedSubtree(
+                              key: _keyFor(index),
+                              child: _MonoDropdownItemTile<T>(
+                                item: widget.items[index],
+                                highlighted: index == _highlightedIndex,
+                                onHover: widget.items[index].enabled
+                                    ? (bool hovering) {
+                                        if (hovering &&
+                                            _highlightedIndex != index) {
+                                          setState(
+                                            () => _highlightedIndex = index,
+                                          );
+                                        }
+                                      }
+                                    : null,
+                                onTap: widget.items[index].enabled
+                                    ? () => widget.onSelected(
+                                        widget.items[index].value,
+                                      )
+                                    : null,
+                              ),
+                            ),
+                      ),
                     ),
                   ),
                 ),

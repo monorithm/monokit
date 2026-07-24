@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_text_scale.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -178,7 +179,9 @@ class MonoBadge extends StatelessWidget {
     ];
 
     final badge = ConstrainedBox(
-      constraints: BoxConstraints(minHeight: style.minimumHeight),
+      constraints: BoxConstraints(
+        minHeight: monoScaledExtent(context, style.minimumHeight),
+      ),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: style.background,

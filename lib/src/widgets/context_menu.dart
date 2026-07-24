@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_focus.dart';
+import '../primitives/mono_placement.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../theme/monokit_theme.dart';
@@ -72,7 +74,9 @@ class MonoContextMenuContent extends StatelessWidget {
           style: theme.typography.bodyMedium.copyWith(
             color: theme.colors.popoverForeground,
           ),
-          child: child,
+          // Scrolls instead of overflowing when the anchored layout caps the
+          // menu's height to the space available on screen.
+          child: SingleChildScrollView(child: child),
         ),
       ),
     );
@@ -257,7 +261,7 @@ class MonoContextMenu extends StatefulWidget {
 }
 
 class _MonoContextMenuState extends State<MonoContextMenu> {
-  final LayerLink _layerLink = LayerLink();
+  Rect _anchorRect = Rect.zero;
   final FocusNode _focusNode = FocusNode(debugLabel: 'MonoContextMenuTrigger');
   OverlayEntry? _entry;
   late final MonoOverlayFocusController _overlayFocus =
@@ -343,6 +347,18 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     }
   }
 
+  /// Converts the local anchor point (tap position or trigger center) into a
+  /// zero-size global rect for the anchored layout, keeping the last known
+  /// value when the render box is not laid out.
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      final Offset global = box.localToGlobal(_anchorOffset + widget.offset);
+      _anchorRect = global & Size.zero;
+    }
+    return _anchorRect;
+  }
+
   /// Defers overlay mutations until the current widget update has completed.
   void _scheduleOverlaySync({
     bool restoreFocus = false,
@@ -383,6 +399,10 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
       return;
     }
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }
@@ -439,8 +459,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
       theme: theme,
       visible: _overlayVisible,
       onExited: _onOverlayExited,
-      layerLink: _layerLink,
-      anchorOffset: _anchorOffset + widget.offset,
+      anchorRect: _resolveAnchorRect(),
       dismissible: widget.dismissible,
       disableAnimations: _disableAnimations,
       semanticLabel: widget.semanticLabel,
@@ -454,49 +473,46 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     return MonoContextMenuScope(
       isOpen: _isOpen,
       close: () => _requestOpen(false),
-      child: CompositedTransformTarget(
-        link: _layerLink,
-        child: Semantics(
-          container: true,
-          label: widget.semanticLabel,
-          onLongPress: widget.enabled
-              ? () {
-                  _anchorAtCenter();
-                  _requestOpen(true);
-                }
-              : null,
-          child: Focus(
-            focusNode: _focusNode,
-            canRequestFocus: false,
-            skipTraversal: true,
-            onKeyEvent: (_, event) {
-              final isContextMenuKey =
-                  event.logicalKey == LogicalKeyboardKey.contextMenu ||
-                  (event.logicalKey == LogicalKeyboardKey.f10 &&
-                      HardwareKeyboard.instance.isShiftPressed);
-              if (event is KeyDownEvent && isContextMenuKey && widget.enabled) {
+      child: Semantics(
+        container: true,
+        label: widget.semanticLabel,
+        onLongPress: widget.enabled
+            ? () {
                 _anchorAtCenter();
                 _requestOpen(true);
-                return KeyEventResult.handled;
               }
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.escape &&
-                  _isOpen) {
-                _requestOpen(false);
-                return KeyEventResult.handled;
-              }
-              return KeyEventResult.ignored;
-            },
-            child: GestureDetector(
-              behavior: HitTestBehavior.deferToChild,
-              onSecondaryTapDown: widget.enabled
-                  ? (details) => _openAt(details.globalPosition)
-                  : null,
-              onLongPressStart: widget.enabled
-                  ? (details) => _openAt(details.globalPosition)
-                  : null,
-              child: widget.child,
-            ),
+            : null,
+        child: Focus(
+          focusNode: _focusNode,
+          canRequestFocus: false,
+          skipTraversal: true,
+          onKeyEvent: (_, event) {
+            final isContextMenuKey =
+                event.logicalKey == LogicalKeyboardKey.contextMenu ||
+                (event.logicalKey == LogicalKeyboardKey.f10 &&
+                    HardwareKeyboard.instance.isShiftPressed);
+            if (event is KeyDownEvent && isContextMenuKey && widget.enabled) {
+              _anchorAtCenter();
+              _requestOpen(true);
+              return KeyEventResult.handled;
+            }
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.escape &&
+                _isOpen) {
+              _requestOpen(false);
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.deferToChild,
+            onSecondaryTapDown: widget.enabled
+                ? (details) => _openAt(details.globalPosition)
+                : null,
+            onLongPressStart: widget.enabled
+                ? (details) => _openAt(details.globalPosition)
+                : null,
+            child: widget.child,
           ),
         ),
       ),
@@ -509,8 +525,7 @@ class _MonoContextMenuOverlay extends StatefulWidget {
     required this.theme,
     required this.visible,
     required this.onExited,
-    required this.layerLink,
-    required this.anchorOffset,
+    required this.anchorRect,
     required this.dismissible,
     required this.disableAnimations,
     required this.onDismiss,
@@ -521,8 +536,7 @@ class _MonoContextMenuOverlay extends StatefulWidget {
   final MonokitThemeData theme;
   final bool visible;
   final VoidCallback onExited;
-  final LayerLink layerLink;
-  final Offset anchorOffset;
+  final Rect anchorRect;
   final bool dismissible;
   final bool disableAnimations;
   final VoidCallback onDismiss;
@@ -623,12 +637,9 @@ class _MonoContextMenuOverlayState extends State<_MonoContextMenuOverlay>
                     ),
                   ),
                 ),
-              CompositedTransformFollower(
-                link: widget.layerLink,
-                showWhenUnlinked: false,
-                targetAnchor: Alignment.topLeft,
-                followerAnchor: Alignment.topLeft,
-                offset: widget.anchorOffset,
+              MonoAnchoredOverlay(
+                anchorRect: widget.anchorRect,
+                placement: MonoPlacement.bottomStart,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {},

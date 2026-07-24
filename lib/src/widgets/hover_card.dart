@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../theme/monokit_theme.dart';
@@ -161,7 +162,7 @@ class MonoHoverCard extends StatefulWidget {
 }
 
 class _MonoHoverCardState extends State<MonoHoverCard> {
-  final LayerLink _layerLink = LayerLink();
+  Rect _anchorRect = Rect.zero;
   final FocusNode _triggerFocusNode = FocusNode(debugLabel: 'MonoHoverCard');
   OverlayEntry? _entry;
   Timer? _openTimer;
@@ -314,7 +315,6 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
   }
 
   bool _overlayVisible = false;
-  MonoHoverCardPlacement _resolvedPlacement = MonoHoverCardPlacement.bottom;
 
   void _showOverlay() {
     _overlayVisible = true;
@@ -323,6 +323,10 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
       return;
     }
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }
@@ -331,17 +335,6 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     _textDirection = Directionality.of(context);
     _disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    _resolvedPlacement = widget.placement;
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null && renderBox.hasSize) {
-      final MonoPlacement resolved = MonoPlacement.values
-          .byName(widget.placement.name)
-          .resolveWithin(
-            renderBox.localToGlobal(Offset.zero) & renderBox.size,
-            MediaQuery.sizeOf(context),
-          );
-      _resolvedPlacement = MonoHoverCardPlacement.values.byName(resolved.name);
-    }
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
@@ -403,6 +396,16 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     }
   }
 
+  /// Reads the trigger's current global rect, keeping the last known value
+  /// when the render box is not laid out.
+  Rect _resolveAnchorRect() {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.attached && box.hasSize) {
+      _anchorRect = box.localToGlobal(Offset.zero) & box.size;
+    }
+    return _anchorRect;
+  }
+
   Widget _buildOverlay() {
     final theme = _overlayTheme;
     if (theme == null) {
@@ -412,8 +415,8 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
       theme: theme,
       visible: _overlayVisible,
       onExited: _onOverlayExited,
-      layerLink: _layerLink,
-      placement: _resolvedPlacement,
+      anchorRect: _resolveAnchorRect(),
+      placement: widget.placement,
       offset: widget.offset,
       gap: widget.gap ?? theme.spacing.sm,
       textDirection: _textDirection,
@@ -432,65 +435,60 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     return MonoHoverCardScope(
       isOpen: _isOpen,
       close: () => _requestOpen(false),
-      child: CompositedTransformTarget(
-        link: _layerLink,
-        child: Focus(
-          focusNode: _triggerFocusNode,
-          canRequestFocus: false,
-          skipTraversal: true,
-          onFocusChange: (focused) {
-            _hasTriggerFocus = focused;
-            if (focused) {
-              _scheduleOpen(immediately: true);
-            } else {
-              _scheduleClose();
-            }
-          },
-          onKeyEvent: (_, event) {
-            if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.escape &&
-                _isOpen) {
-              _cancelTimers();
-              _requestOpen(false);
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: MouseRegion(
-            cursor: widget.enabled
-                ? MouseCursor.defer
-                : SystemMouseCursors.basic,
-            onEnter: widget.enabled
+      child: Focus(
+        focusNode: _triggerFocusNode,
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (focused) {
+          _hasTriggerFocus = focused;
+          if (focused) {
+            _scheduleOpen(immediately: true);
+          } else {
+            _scheduleClose();
+          }
+        },
+        onKeyEvent: (_, event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.escape &&
+              _isOpen) {
+            _cancelTimers();
+            _requestOpen(false);
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: MouseRegion(
+          cursor: widget.enabled ? MouseCursor.defer : SystemMouseCursors.basic,
+          onEnter: widget.enabled
+              ? (_) {
+                  _isTriggerHovered = true;
+                  _scheduleOpen(immediately: false);
+                }
+              : null,
+          onExit: widget.enabled
+              ? (_) {
+                  _isTriggerHovered = false;
+                  _scheduleClose();
+                }
+              : null,
+          child: GestureDetector(
+            behavior: HitTestBehavior.deferToChild,
+            onLongPressStart: widget.enabled
                 ? (_) {
-                    _isTriggerHovered = true;
-                    _scheduleOpen(immediately: false);
+                    _isLongPressing = true;
+                    _scheduleOpen(immediately: true);
                   }
                 : null,
-            onExit: widget.enabled
+            onLongPressEnd: widget.enabled
                 ? (_) {
-                    _isTriggerHovered = false;
+                    _isLongPressing = false;
                     _scheduleClose();
                   }
                 : null,
-            child: GestureDetector(
-              behavior: HitTestBehavior.deferToChild,
-              onLongPressStart: widget.enabled
-                  ? (_) {
-                      _isLongPressing = true;
-                      _scheduleOpen(immediately: true);
-                    }
-                  : null,
-              onLongPressEnd: widget.enabled
-                  ? (_) {
-                      _isLongPressing = false;
-                      _scheduleClose();
-                    }
-                  : null,
-              child: Semantics(
-                container: true,
-                label: widget.semanticLabel,
-                child: widget.child,
-              ),
+            child: Semantics(
+              container: true,
+              label: widget.semanticLabel,
+              child: widget.child,
             ),
           ),
         ),
@@ -504,7 +502,7 @@ class _MonoHoverCardOverlay extends StatefulWidget {
     required this.theme,
     required this.visible,
     required this.onExited,
-    required this.layerLink,
+    required this.anchorRect,
     required this.placement,
     required this.offset,
     required this.gap,
@@ -521,7 +519,7 @@ class _MonoHoverCardOverlay extends StatefulWidget {
   final MonokitThemeData theme;
   final bool visible;
   final VoidCallback onExited;
-  final LayerLink layerLink;
+  final Rect anchorRect;
   final MonoHoverCardPlacement placement;
   final Offset offset;
   final double gap;
@@ -597,12 +595,10 @@ class _MonoHoverCardOverlayState extends State<_MonoHoverCardOverlay>
       parent: _controller,
       curve: widget.theme.motion.curve,
     );
-    final follower = CompositedTransformFollower(
-      link: widget.layerLink,
-      showWhenUnlinked: false,
-      targetAnchor: anchors.targetAnchor,
-      followerAnchor: anchors.followerAnchor,
-      offset: anchors.offset(widget.gap) + widget.offset,
+    final follower = MonoAnchoredOverlay(
+      anchorRect: widget.anchorRect.shift(widget.offset),
+      placement: MonoPlacement.values.byName(widget.placement.name),
+      gap: widget.gap,
       child: Focus(
         focusNode: _focusNode,
         canRequestFocus: false,

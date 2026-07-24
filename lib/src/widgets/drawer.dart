@@ -342,6 +342,10 @@ class _MonoDrawerState extends State<MonoDrawer> {
       return;
     }
     final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }

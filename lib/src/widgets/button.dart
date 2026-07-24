@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
+import '../primitives/mono_text_scale.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'spinner.dart';
@@ -283,6 +284,14 @@ class _MonoButtonState extends State<MonoButton> {
       _focusNode.addListener(_handleFocusChanged);
       _handleFocusChanged();
     }
+    // If the button became disabled mid-press, clear the transient interaction
+    // states so it can never render disabled *and* pressed/hovered.
+    if (!_isEnabled) {
+      _states
+        ..remove(MonoState.pressed)
+        ..remove(MonoState.hovered)
+        ..remove(MonoState.focusVisible);
+    }
   }
 
   @override
@@ -308,6 +317,8 @@ class _MonoButtonState extends State<MonoButton> {
 
   void _activate() {
     if (_isEnabled) {
+      // Fires only when the app opts into MonokitHaptics (disabled by default).
+      MonokitTheme.of(context).haptics.impactLight();
       widget.onPressed!.call();
     }
   }
@@ -367,6 +378,10 @@ class _MonoButtonState extends State<MonoButton> {
           ),
           SizedBox(width: theme.spacing.sm),
         ],
+        // Flexible lets a long label shrink/ellipsize inside a width-bounded
+        // button (full-width buttons, stretched card columns). Note this means
+        // MonoButton is not intrinsic-safe — do not place it where an ancestor
+        // measures intrinsic width (IntrinsicWidth, some table columns).
         Flexible(child: widget.child),
         if (widget.trailing != null) ...[
           SizedBox(width: theme.spacing.sm),
@@ -391,8 +406,10 @@ class _MonoButtonState extends State<MonoButton> {
           duration: motionDuration,
           curve: theme.motion.curve,
           constraints: BoxConstraints(
-            minWidth: isIconButton ? style.minimumHeight : 0,
-            minHeight: style.minimumHeight,
+            minWidth: isIconButton
+                ? monoScaledExtent(context, style.minimumHeight)
+                : 0,
+            minHeight: monoScaledExtent(context, style.minimumHeight),
           ),
           padding: style.padding,
           decoration: BoxDecoration(

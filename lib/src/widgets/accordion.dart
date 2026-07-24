@@ -665,7 +665,10 @@ class _MonoAccordionChevron extends StatelessWidget {
       turns: expanded ? 0.25 : 0,
       duration: duration,
       curve: curve,
-      child: Text('›', textDirection: TextDirection.ltr, style: textStyle),
+      child: Text(
+        Directionality.of(context) == TextDirection.rtl ? '‹' : '›',
+        style: textStyle,
+      ),
     );
   }
 }

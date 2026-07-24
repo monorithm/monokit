@@ -147,14 +147,19 @@ void main() {
   ) async {
     var presses = 0;
     final textController = TextEditingController();
+    // MonoInput's text selection needs an Overlay ancestor (as every
+    // EditableText does); MonokitApp provides one without pulling in Material.
     await tester.pumpWidget(
-      _host(
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            MonoButton(onPressed: () => presses++, child: const Text('Save')),
-            MonoInput(controller: textController, placeholder: 'Name'),
-          ],
+      MonokitApp(
+        theme: MonokitThemeData.light(),
+        home: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              MonoButton(onPressed: () => presses++, child: const Text('Save')),
+              MonoInput(controller: textController, placeholder: 'Name'),
+            ],
+          ),
         ),
       ),
     );
