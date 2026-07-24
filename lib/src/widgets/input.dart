@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../primitives/mono_text_scale.dart';
+import '../primitives/mono_text_selection.dart';
 import '../theme/monokit_theme.dart';
 
 /// A compact, token-driven text input built directly on [EditableText].
@@ -127,13 +128,29 @@ class MonoInput extends StatefulWidget {
   State<MonoInput> createState() => _MonoInputState();
 }
 
-class _MonoInputState extends State<MonoInput> {
+class _MonoInputState extends State<MonoInput>
+    implements TextSelectionGestureDetectorBuilderDelegate {
   late TextEditingController _controller;
   late FocusNode _focusNode;
   late bool _ownsController;
   late bool _ownsFocusNode;
   late MonoStatesController _statesController;
   late bool _ownsStatesController;
+
+  final GlobalKey<EditableTextState> _editableTextKey =
+      GlobalKey<EditableTextState>();
+  late final TextSelectionGestureDetectorBuilder _selectionGestureBuilder =
+      TextSelectionGestureDetectorBuilder(delegate: this);
+  final MonoTextSelectionControls _selectionControls =
+      MonoTextSelectionControls();
+
+  // TextSelectionGestureDetectorBuilderDelegate.
+  @override
+  GlobalKey<EditableTextState> get editableTextKey => _editableTextKey;
+  @override
+  bool get forcePressEnabled => true;
+  @override
+  bool get selectionEnabled => widget.enableInteractiveSelection && _isEnabled;
 
   bool get _isEnabled => widget.enabled;
   bool get _isFocused => _statesController.contains(MonoState.focused);
@@ -263,6 +280,30 @@ class _MonoInputState extends State<MonoInput> {
     widget.onTap?.call();
   }
 
+  /// Wraps the field body in the text-selection gesture detector (tap to place
+  /// the caret, double-tap/long-press to select, drag to extend, secondary tap
+  /// for the context menu) when selection is enabled; otherwise a plain
+  /// tap-to-focus detector.
+  Widget _wrapWithGestures(Widget child) {
+    if (selectionEnabled) {
+      final Widget detector = _selectionGestureBuilder.buildGestureDetector(
+        behavior: HitTestBehavior.opaque,
+        child: child,
+      );
+      // Route the tap-to-focus side effect (onTap callback) without disturbing
+      // the selection gestures.
+      return Listener(
+        onPointerUp: (_) => widget.onTap?.call(),
+        child: detector,
+      );
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _isEnabled ? _requestFocus : null,
+      child: child,
+    );
+  }
+
   List<TextInputFormatter>? _resolvedInputFormatters() {
     if (widget.maxLength == null) {
       return widget.inputFormatters;
@@ -319,6 +360,7 @@ class _MonoInputState extends State<MonoInput> {
             ),
           ),
         EditableText(
+          key: _editableTextKey,
           controller: _controller,
           focusNode: _focusNode,
           readOnly: widget.readOnly,
@@ -328,6 +370,13 @@ class _MonoInputState extends State<MonoInput> {
           cursorColor: widget.cursorColor ?? theme.colors.foreground,
           backgroundCursorColor: theme.colors.foreground,
           selectionColor: resolvedSelectionColor,
+          selectionControls: widget.enableInteractiveSelection
+              ? _selectionControls
+              : null,
+          contextMenuBuilder: widget.enableInteractiveSelection
+              ? monoContextMenuBuilder
+              : null,
+          magnifierConfiguration: monoMagnifierConfiguration,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           textCapitalization: widget.textCapitalization,
@@ -343,6 +392,7 @@ class _MonoInputState extends State<MonoInput> {
           textAlign: widget.textAlign,
           scrollController: widget.scrollController,
           scrollPhysics: widget.scrollPhysics,
+          rendererIgnoresPointer: true,
           mouseCursor: widget.mouseCursor ?? SystemMouseCursors.text,
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
@@ -365,10 +415,8 @@ class _MonoInputState extends State<MonoInput> {
                 : SystemMouseCursors.forbidden),
         onEnter: _isEnabled ? (_) => _handleHover(true) : null,
         onExit: _isEnabled ? (_) => _handleHover(false) : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _isEnabled ? _requestFocus : null,
-          child: AnimatedContainer(
+        child: _wrapWithGestures(
+          AnimatedContainer(
             duration: theme.motion.duration,
             curve: theme.motion.curve,
             constraints: BoxConstraints(
