@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
@@ -136,6 +137,17 @@ class MonoSelect<T> extends StatefulWidget {
 
   @override
   State<MonoSelect<T>> createState() => _MonoSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T?>('value', value, defaultValue: null))
+      ..add(FlagProperty('open', value: open ?? false, ifTrue: 'open'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(IntProperty('options', _options.length));
+  }
 }
 
 class _MonoSelectState<T> extends State<MonoSelect<T>> {

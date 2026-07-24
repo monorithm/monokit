@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
@@ -126,6 +127,18 @@ class MonoInput extends StatefulWidget {
 
   @override
   State<MonoInput> createState() => _MonoInputState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('placeholder', placeholder, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscured'))
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null));
+  }
 }
 
 class _MonoInputState extends State<MonoInput>
