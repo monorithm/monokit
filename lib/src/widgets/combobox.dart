@@ -308,6 +308,10 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
       return;
     }
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }

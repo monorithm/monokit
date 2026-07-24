@@ -132,6 +132,10 @@ class _MonoDialogState extends State<MonoDialog> {
       return;
     }
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }
@@ -221,7 +225,15 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.theme.motion.base,
+      // Honor the OS "reduce motion" setting for the entrance animation.
+      duration:
+          WidgetsBinding
+              .instance
+              .platformDispatcher
+              .accessibilityFeatures
+              .disableAnimations
+          ? Duration.zero
+          : widget.theme.motion.base,
     );
     _controller.addStatusListener(_onStatus);
     if (widget.visible) {

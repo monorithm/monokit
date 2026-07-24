@@ -304,7 +304,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
         : theme.colors.input;
 
     final Widget marker = AnimatedContainer(
-      duration: theme.motion.duration,
+      duration: theme.motion.reduced(context, theme.motion.duration),
       curve: theme.motion.curve,
       width: theme.spacing.xl,
       height: theme.spacing.xl,
@@ -325,7 +325,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
       ),
       child: AnimatedScale(
         scale: _isSelected ? (_isPressed ? 0.86 : 1) : 0,
-        duration: theme.motion.duration,
+        duration: theme.motion.reduced(context, theme.motion.duration),
         curve: theme.motion.curve,
         child: DecoratedBox(
           decoration: BoxDecoration(

@@ -311,6 +311,10 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
       return;
     }
     final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }
@@ -761,59 +765,67 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
                 ),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                  child: ListView.builder(
+                  child: RawScrollbar(
                     controller: _scrollController,
-                    padding: EdgeInsets.all(theme.spacing.xs),
-                    shrinkWrap: true,
-                    itemCount: widget.options.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final MonoSelectOption<T> option = widget.options[index];
-                      final bool selected =
-                          option.value == widget.selectedValue;
-                      final bool highlighted = index == _highlightedIndex;
-                      final Widget defaultOption = _MonoSelectOptionTile<T>(
-                        option: option,
-                        selected: selected,
-                        highlighted: highlighted,
-                        onTap: option.enabled
-                            ? () => widget.onSelected(option.value)
-                            : null,
-                      );
-                      if (widget.optionBuilder == null) {
-                        return KeyedSubtree(
-                          key: _keyFor(index),
-                          child: defaultOption,
-                        );
-                      }
-                      return KeyedSubtree(
-                        key: _keyFor(index),
-                        child: Semantics(
-                          button: true,
-                          enabled: option.enabled,
+                    thumbColor: theme.colors.border,
+                    radius: Radius.circular(theme.radii.full),
+                    thickness: theme.spacing.xs,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.all(theme.spacing.xs),
+                      shrinkWrap: true,
+                      itemCount: widget.options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final MonoSelectOption<T> option =
+                            widget.options[index];
+                        final bool selected =
+                            option.value == widget.selectedValue;
+                        final bool highlighted = index == _highlightedIndex;
+                        final Widget defaultOption = _MonoSelectOptionTile<T>(
+                          option: option,
                           selected: selected,
-                          label: option.semanticLabel,
+                          highlighted: highlighted,
                           onTap: option.enabled
                               ? () => widget.onSelected(option.value)
                               : null,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
+                        );
+                        if (widget.optionBuilder == null) {
+                          return KeyedSubtree(
+                            key: _keyFor(index),
+                            child: defaultOption,
+                          );
+                        }
+                        return KeyedSubtree(
+                          key: _keyFor(index),
+                          child: Semantics(
+                            button: true,
+                            enabled: option.enabled,
+                            selected: selected,
+                            label: option.semanticLabel,
                             onTap: option.enabled
                                 ? () => widget.onSelected(option.value)
                                 : null,
-                            onTapDown: option.enabled
-                                ? (_) =>
-                                      setState(() => _highlightedIndex = index)
-                                : null,
-                            child: widget.optionBuilder!(
-                              context,
-                              option,
-                              selected,
-                              highlighted,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: option.enabled
+                                  ? () => widget.onSelected(option.value)
+                                  : null,
+                              onTapDown: option.enabled
+                                  ? (_) => setState(
+                                      () => _highlightedIndex = index,
+                                    )
+                                  : null,
+                              child: widget.optionBuilder!(
+                                context,
+                                option,
+                                selected,
+                                highlighted,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),

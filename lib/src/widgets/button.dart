@@ -309,6 +309,8 @@ class _MonoButtonState extends State<MonoButton> {
 
   void _activate() {
     if (_isEnabled) {
+      // Fires only when the app opts into MonokitHaptics (disabled by default).
+      MonokitTheme.of(context).haptics.impactLight();
       widget.onPressed!.call();
     }
   }

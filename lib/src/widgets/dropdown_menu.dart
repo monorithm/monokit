@@ -299,6 +299,10 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
       return;
     }
     final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
+    assert(
+      overlay != null,
+      'MonoOverlay: no Overlay ancestor found. Wrap the app in MonokitApp or a Navigator/Overlay.',
+    );
     if (overlay == null) {
       return;
     }
@@ -637,34 +641,40 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                    child: ListView.builder(
+                    child: RawScrollbar(
                       controller: _scrollController,
-                      padding: EdgeInsets.all(theme.spacing.xs),
-                      shrinkWrap: true,
-                      itemCount: widget.items.length,
-                      itemBuilder: (BuildContext context, int index) =>
-                          KeyedSubtree(
-                            key: _keyFor(index),
-                            child: _MonoDropdownItemTile<T>(
-                              item: widget.items[index],
-                              highlighted: index == _highlightedIndex,
-                              onHover: widget.items[index].enabled
-                                  ? (bool hovering) {
-                                      if (hovering &&
-                                          _highlightedIndex != index) {
-                                        setState(
-                                          () => _highlightedIndex = index,
-                                        );
+                      thumbColor: theme.colors.border,
+                      radius: Radius.circular(theme.radii.full),
+                      thickness: theme.spacing.xs,
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(theme.spacing.xs),
+                        shrinkWrap: true,
+                        itemCount: widget.items.length,
+                        itemBuilder: (BuildContext context, int index) =>
+                            KeyedSubtree(
+                              key: _keyFor(index),
+                              child: _MonoDropdownItemTile<T>(
+                                item: widget.items[index],
+                                highlighted: index == _highlightedIndex,
+                                onHover: widget.items[index].enabled
+                                    ? (bool hovering) {
+                                        if (hovering &&
+                                            _highlightedIndex != index) {
+                                          setState(
+                                            () => _highlightedIndex = index,
+                                          );
+                                        }
                                       }
-                                    }
-                                  : null,
-                              onTap: widget.items[index].enabled
-                                  ? () => widget.onSelected(
-                                      widget.items[index].value,
-                                    )
-                                  : null,
+                                    : null,
+                                onTap: widget.items[index].enabled
+                                    ? () => widget.onSelected(
+                                        widget.items[index].value,
+                                      )
+                                    : null,
+                              ),
                             ),
-                          ),
+                      ),
                     ),
                   ),
                 ),
