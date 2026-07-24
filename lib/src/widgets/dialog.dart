@@ -285,19 +285,30 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
                   child: ColoredBox(color: widget.theme.colors.overlayScrim),
                 ),
               ),
-              Center(
-                child: FadeTransition(
-                  opacity: opacity,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.96, end: 1).animate(opacity),
-                    child: Semantics(
-                      scopesRoute: true,
-                      namesRoute: true,
-                      explicitChildNodes: true,
-                      label: widget.semanticLabel ?? 'Dialog',
-                      child: MonoDialogScope(
-                        close: widget.onDismiss,
-                        child: widget.child,
+              // Lift the surface clear of the software keyboard and keep an
+              // inset margin, so the dialog is height-capped to the visible
+              // area instead of overflowing behind the keyboard.
+              Padding(
+                padding:
+                    MediaQuery.viewInsetsOf(context) +
+                    EdgeInsets.all(widget.theme.spacing.lg),
+                child: Center(
+                  child: FadeTransition(
+                    opacity: opacity,
+                    child: ScaleTransition(
+                      scale: Tween<double>(
+                        begin: 0.96,
+                        end: 1,
+                      ).animate(opacity),
+                      child: Semantics(
+                        scopesRoute: true,
+                        namesRoute: true,
+                        explicitChildNodes: true,
+                        label: widget.semanticLabel ?? 'Dialog',
+                        child: MonoDialogScope(
+                          close: widget.onDismiss,
+                          child: widget.child,
+                        ),
                       ),
                     ),
                   ),
@@ -342,13 +353,17 @@ class MonoDialogContent extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: padding ?? EdgeInsets.all(theme.spacing.xxl),
-          child: DefaultTextStyle(
-            style: theme.typography.body.copyWith(
-              color: theme.colors.popoverForeground,
+        // Scrolls instead of overflowing when the dialog is taller than the
+        // visible area (small screens, open keyboard, long content).
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: padding ?? EdgeInsets.all(theme.spacing.xxl),
+            child: DefaultTextStyle(
+              style: theme.typography.body.copyWith(
+                color: theme.colors.popoverForeground,
+              ),
+              child: child,
             ),
-            child: child,
           ),
         ),
       ),

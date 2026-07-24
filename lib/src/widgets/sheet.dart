@@ -527,8 +527,19 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
     final BorderRadius radius = isBottom
         ? BorderRadius.vertical(top: Radius.circular(widget.theme.radii.xl))
         : BorderRadius.vertical(bottom: Radius.circular(widget.theme.radii.xl));
+    // Cap the sheet to the area left above the keyboard so tall content
+    // scrolls instead of overflowing, and forms stay visible while typing.
+    final MediaQueryData media = MediaQuery.of(context);
+    final double visibleHeight =
+        media.size.height - media.viewInsets.bottom - media.padding.vertical;
+    final double heightCap = visibleHeight * 0.9;
+    final BoxConstraints baseConstraints =
+        widget.constraints ?? const BoxConstraints(maxWidth: 720);
+    final double maxHeight = baseConstraints.maxHeight < heightCap
+        ? baseConstraints.maxHeight
+        : heightCap;
     Widget surface = ConstrainedBox(
-      constraints: widget.constraints ?? const BoxConstraints(maxWidth: 720),
+      constraints: baseConstraints.copyWith(maxHeight: maxHeight),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: widget.theme.colors.popover,
@@ -555,7 +566,7 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
                   ),
                 ),
               ),
-            widget.scope,
+            Flexible(child: SingleChildScrollView(child: widget.scope)),
           ],
         ),
       ),
@@ -592,19 +603,25 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
                 child: ColoredBox(color: widget.theme.colors.overlayScrim),
               ),
             ),
-            Align(
-              alignment: alignment,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: begin,
-                  end: Offset.zero,
-                ).animate(animation),
-                child: Semantics(
-                  scopesRoute: true,
-                  namesRoute: true,
-                  explicitChildNodes: true,
-                  label: widget.semanticLabel ?? widget.theme.labels.sheet,
-                  child: surface,
+            // Keep the sheet above the software keyboard.
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: isBottom ? media.viewInsets.bottom : 0,
+              ),
+              child: Align(
+                alignment: alignment,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: begin,
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: Semantics(
+                    scopesRoute: true,
+                    namesRoute: true,
+                    explicitChildNodes: true,
+                    label: widget.semanticLabel ?? widget.theme.labels.sheet,
+                    child: surface,
+                  ),
                 ),
               ),
             ),
