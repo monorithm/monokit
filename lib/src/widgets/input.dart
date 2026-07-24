@@ -58,6 +58,7 @@ class MonoInput extends StatefulWidget {
     this.onFocusChanged,
     this.statesController,
     this.restorationId,
+    this.showCounter = false,
   }) : assert(
          controller == null || initialValue == null,
          'Specify either controller or initialValue, not both.',
@@ -129,6 +130,11 @@ class MonoInput extends StatefulWidget {
   /// Restoration id. When set (and no external [controller] is supplied), the
   /// field's text and selection survive the app being killed and relaunched.
   final String? restorationId;
+
+  /// Shows a `current/max` character counter below the field. Requires
+  /// [maxLength]. The count is always exposed to screen readers via
+  /// `maxValueLength`/`currentValueLength` regardless of this flag.
+  final bool showCounter;
 
   @override
   State<MonoInput> createState() => _MonoInputState();
@@ -458,12 +464,17 @@ class _MonoInputState extends State<MonoInput>
       ],
     );
 
-    return Semantics(
+    final int? currentLength = widget.maxLength == null
+        ? null
+        : _controller.text.characters.length;
+    final Widget field = Semantics(
       container: true,
       textField: true,
       enabled: _isEnabled,
       readOnly: widget.readOnly,
       label: widget.semanticLabel ?? widget.placeholder,
+      maxValueLength: widget.maxLength,
+      currentValueLength: currentLength,
       child: MouseRegion(
         cursor:
             widget.mouseCursor ??
@@ -521,6 +532,31 @@ class _MonoInputState extends State<MonoInput>
           ),
         ),
       ),
+    );
+
+    if (!widget.showCounter || widget.maxLength == null) {
+      return field;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        field,
+        Padding(
+          padding: EdgeInsets.only(top: theme.spacing.xs),
+          child: Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: ExcludeSemantics(
+              child: Text(
+                '$currentLength/${widget.maxLength}',
+                style: theme.typography.labelMedium.copyWith(
+                  color: theme.colors.mutedForeground,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
