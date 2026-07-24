@@ -17,25 +17,26 @@ Widget _host(Widget child) {
 }
 
 void main() {
-  testWidgets('button is intrinsic-safe inside IntrinsicWidth', (tester) async {
+  testWidgets('a full-width button ellipsizes a long label without overflow', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _host(
         Center(
-          child: IntrinsicWidth(
-            child: Column(
-              children: <Widget>[
-                MonoButton(onPressed: () {}, child: const Text('Short')),
-                MonoButton(
-                  onPressed: () {},
-                  child: const Text('A longer label'),
-                ),
-              ],
+          child: SizedBox(
+            width: 120,
+            child: MonoButton(
+              onPressed: () {},
+              child: const Text(
+                'A very long button label that exceeds the width',
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
         ),
       ),
     );
-    // Previously the Flexible child threw a "cannot compute intrinsics" error.
+    // The Flexible label shrinks to fit the bounded button — no overflow throw.
     expect(tester.takeException(), isNull);
   });
 

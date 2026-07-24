@@ -378,10 +378,11 @@ class _MonoButtonState extends State<MonoButton> {
           ),
           SizedBox(width: theme.spacing.sm),
         ],
-        // The label is passed directly (not wrapped in Flexible) so the button
-        // reports valid intrinsic dimensions inside IntrinsicWidth, tables, and
-        // button bars. The Row is already mainAxisSize.min, so it shrink-wraps.
-        widget.child,
+        // Flexible lets a long label shrink/ellipsize inside a width-bounded
+        // button (full-width buttons, stretched card columns). Note this means
+        // MonoButton is not intrinsic-safe — do not place it where an ancestor
+        // measures intrinsic width (IntrinsicWidth, some table columns).
+        Flexible(child: widget.child),
         if (widget.trailing != null) ...[
           SizedBox(width: theme.spacing.sm),
           IconTheme.merge(
