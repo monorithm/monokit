@@ -284,6 +284,14 @@ class _MonoButtonState extends State<MonoButton> {
       _focusNode.addListener(_handleFocusChanged);
       _handleFocusChanged();
     }
+    // If the button became disabled mid-press, clear the transient interaction
+    // states so it can never render disabled *and* pressed/hovered.
+    if (!_isEnabled) {
+      _states
+        ..remove(MonoState.pressed)
+        ..remove(MonoState.hovered)
+        ..remove(MonoState.focusVisible);
+    }
   }
 
   @override
@@ -370,7 +378,10 @@ class _MonoButtonState extends State<MonoButton> {
           ),
           SizedBox(width: theme.spacing.sm),
         ],
-        Flexible(child: widget.child),
+        // The label is passed directly (not wrapped in Flexible) so the button
+        // reports valid intrinsic dimensions inside IntrinsicWidth, tables, and
+        // button bars. The Row is already mainAxisSize.min, so it shrink-wraps.
+        widget.child,
         if (widget.trailing != null) ...[
           SizedBox(width: theme.spacing.sm),
           IconTheme.merge(
