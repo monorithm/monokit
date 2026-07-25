@@ -1,6 +1,26 @@
-## 0.9.0
+## 0.10.0
 
-Interaction-rebuild scoping (P1 performance).
+Interaction-rebuild scoping, part 2 — the remaining stateful widgets.
+
+### Performance
+- Extends the 0.9.0 `ListenableBuilder` scoping to every widget that still
+  rebuilt its whole subtree on each hover / press / focus tick:
+  - **Toggles** (`MonoCheckbox`, `MonoSwitch`, `MonoRadio`): the empty
+    `setState(() {})` states listener is gone; the visual and its
+    `Semantics(focused:)` node build inside a `ListenableBuilder` on the
+    states controller, so a pointer frame rebuilds only that leaf, not the
+    `FocusableActionDetector` above it.
+  - **Trigger widgets** (`MonoSelect`, `MonoCombobox`, `MonoDropdownMenu`,
+    `MonoInput`): same treatment on the trigger/field. `MonoInput` passes its
+    `EditableText` through as the builder's `child`, so hover/focus never
+    rebuilds the text field — only the bordered container's decoration.
+  - **Item collections** (`MonoTabs`, `MonoAccordion`): each trigger now scopes
+    to its **own** per-item states controller, so hovering one tab/section
+    rebuilds only that trigger — siblings and the (accordion) expandable
+    content stay put.
+- Open/close, selection, and keyboard-highlight `setState` calls are unchanged;
+  only the interaction-tick rebuilds were scoped. Behavior is preserved
+  (existing widget/semantics suites stay green).
 
 ### Performance
 - `MonoPressable` now delivers hover / press / focus ticks to a

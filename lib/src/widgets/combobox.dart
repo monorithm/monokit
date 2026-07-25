@@ -150,7 +150,6 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     );
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
-    _statesController.addListener(_handleStatesChanged);
     _syncStates();
     if (_isOpen) {
       _scheduleOverlaySync();
@@ -174,13 +173,11 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
-      _statesController.addListener(_handleStatesChanged);
     }
     if (!_isEnabled && _isOpen) {
       _setOpen(false);
@@ -194,7 +191,6 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     _overlayFocus.cancelRestore();
     _removeOverlayNow();
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -220,12 +216,6 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     _statesController.update(MonoState.focused, _focusNode.hasFocus);
     if (!_focusNode.hasFocus) {
       _statesController.update(MonoState.focusVisible, false);
-    }
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
     }
   }
 
@@ -380,15 +370,6 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final selected = _selectedOption();
-    final focused = _statesController.contains(MonoState.focused);
-    final hovered = _statesController.contains(MonoState.hovered);
-    final borderColor = widget.invalid
-        ? theme.colors.destructive
-        : focused || _isOpen
-        ? theme.colors.ring
-        : hovered
-        ? theme.colors.foreground
-        : theme.colors.input;
     final foreground = _isEnabled
         ? theme.colors.foreground
         : theme.colors.mutedForeground;
@@ -435,69 +416,89 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
           },
         ),
       },
-      child: Semantics(
-        container: true,
-        button: true,
-        enabled: _isEnabled,
-        expanded: _isOpen,
-        focused: focused,
-        label: widget.semanticLabel ?? widget.placeholder,
-        value: selected?.semanticLabel ?? selected?.searchText,
-        onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTapCancel: _isEnabled
-              ? () => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-          child: AnimatedContainer(
-            duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
-                ? Duration.zero
-                : theme.motion.duration,
-            curve: theme.motion.curve,
-            constraints: BoxConstraints(minHeight: theme.spacing.huge),
-            padding: EdgeInsets.symmetric(
-              horizontal: theme.spacing.md,
-              vertical: theme.spacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: _isEnabled
-                  ? theme.colors.background.withValues(alpha: 0)
-                  : theme.colors.muted.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: borderColor),
-              boxShadow: _statesController.contains(MonoState.focusVisible)
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.ring.withValues(alpha: 0.28),
-                        spreadRadius: theme.components.input.focusRingWidth,
-                      ),
-                    ]
+      // Only this state-consuming leaf rebuilds on hover/press/focus ticks; the
+      // FocusableActionDetector above is untouched. The Semantics node lives
+      // inside because it carries the interaction-driven `focused` flag.
+      child: ListenableBuilder(
+        listenable: _statesController,
+        builder: (BuildContext context, Widget? _) {
+          final focused = _statesController.contains(MonoState.focused);
+          final hovered = _statesController.contains(MonoState.hovered);
+          final borderColor = widget.invalid
+              ? theme.colors.destructive
+              : focused || _isOpen
+              ? theme.colors.ring
+              : hovered
+              ? theme.colors.foreground
+              : theme.colors.input;
+          return Semantics(
+            container: true,
+            button: true,
+            enabled: _isEnabled,
+            expanded: _isOpen,
+            focused: focused,
+            label: widget.semanticLabel ?? widget.placeholder,
+            value: selected?.semanticLabel ?? selected?.searchText,
+            onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, true)
                   : null,
-            ),
-            child: DefaultTextStyle.merge(
-              style: theme.typography.bodyMedium.copyWith(color: foreground),
-              child: Row(
-                children: <Widget>[
-                  Expanded(child: display),
-                  SizedBox(width: theme.spacing.sm),
-                  Text(
-                    _isOpen ? '⌃' : '⌄',
-                    style: theme.typography.labelLarge.copyWith(
-                      color: theme.colors.mutedForeground,
-                    ),
+              onTapUp: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTapCancel: _isEnabled
+                  ? () => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+              child: AnimatedContainer(
+                duration:
+                    MediaQuery.maybeOf(context)?.disableAnimations ?? false
+                    ? Duration.zero
+                    : theme.motion.duration,
+                curve: theme.motion.curve,
+                constraints: BoxConstraints(minHeight: theme.spacing.huge),
+                padding: EdgeInsets.symmetric(
+                  horizontal: theme.spacing.md,
+                  vertical: theme.spacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: _isEnabled
+                      ? theme.colors.background.withValues(alpha: 0)
+                      : theme.colors.muted.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  border: Border.all(color: borderColor),
+                  boxShadow: _statesController.contains(MonoState.focusVisible)
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: theme.colors.ring.withValues(alpha: 0.28),
+                            spreadRadius: theme.components.input.focusRingWidth,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: DefaultTextStyle.merge(
+                  style: theme.typography.bodyMedium.copyWith(
+                    color: foreground,
                   ),
-                ],
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(child: display),
+                      SizedBox(width: theme.spacing.sm),
+                      Text(
+                        _isOpen ? '⌃' : '⌄',
+                        style: theme.typography.labelLarge.copyWith(
+                          color: theme.colors.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

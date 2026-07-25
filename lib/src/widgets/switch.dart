@@ -62,7 +62,6 @@ class _MonoSwitchState extends State<MonoSwitch> {
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _syncFixedStates();
-    _statesController.addListener(_handleStatesChanged);
   }
 
   @override
@@ -78,14 +77,12 @@ class _MonoSwitchState extends State<MonoSwitch> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
       _syncFixedStates();
-      _statesController.addListener(_handleStatesChanged);
     }
     if (!_isEnabled && _focusNode.hasFocus) {
       _focusNode.unfocus();
@@ -96,7 +93,6 @@ class _MonoSwitchState extends State<MonoSwitch> {
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -109,12 +105,6 @@ class _MonoSwitchState extends State<MonoSwitch> {
   void _syncFixedStates() {
     _statesController.update(MonoState.disabled, !_isEnabled);
     _statesController.update(MonoState.checked, widget.value);
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   void _handleFocusChanged() {
@@ -134,101 +124,6 @@ class _MonoSwitchState extends State<MonoSwitch> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final Widget? resolvedLabel = widget.label ?? widget.child;
-    final Color foreground = _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.mutedForeground;
-    final Color trackColor = widget.value
-        ? theme.colors.primary
-        : _isEnabled
-        ? theme.colors.muted
-        : theme.colors.muted.withAlpha(150);
-    final Color trackBorder = widget.value
-        ? theme.colors.primary
-        : _isHovered && _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.input;
-    final Color thumbColor = widget.value
-        ? theme.colors.primaryForeground
-        : theme.colors.card;
-
-    final Widget toggle = AnimatedContainer(
-      duration: theme.motion.reduced(context, theme.motion.base),
-      curve: theme.motion.curve,
-      width: theme.spacing.huge,
-      height: theme.spacing.xl,
-      decoration: BoxDecoration(
-        color: trackColor,
-        border: Border.all(color: trackBorder),
-        borderRadius: BorderRadius.circular(theme.radii.full),
-        boxShadow: _isFocusVisible
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: theme.colors.ring.withAlpha(72),
-                  blurRadius: 0,
-                  spreadRadius: 3,
-                ),
-              ]
-            : null,
-      ),
-      child: AnimatedAlign(
-        duration: theme.motion.reduced(context, theme.motion.base),
-        curve: theme.motion.curve,
-        alignment: widget.value
-            ? AlignmentDirectional.centerEnd
-            : AlignmentDirectional.centerStart,
-        child: Padding(
-          padding: EdgeInsets.all(theme.spacing.xs / 2),
-          child: Transform.scale(
-            scale: _isPressed ? 0.9 : 1,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: thumbColor,
-                borderRadius: BorderRadius.circular(theme.radii.full),
-              ),
-              child: SizedBox(
-                width: theme.spacing.lg,
-                height: theme.spacing.lg,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final Widget content = Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        toggle,
-        if (resolvedLabel != null || widget.description != null) ...<Widget>[
-          SizedBox(width: theme.spacing.sm),
-          Flexible(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (resolvedLabel != null)
-                  DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: foreground,
-                    ),
-                    child: resolvedLabel,
-                  ),
-                if (widget.description != null) ...<Widget>[
-                  if (resolvedLabel != null) SizedBox(height: theme.spacing.xs),
-                  DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: theme.colors.mutedForeground,
-                    ),
-                    child: widget.description!,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
 
     return FocusableActionDetector(
       enabled: _isEnabled,
@@ -254,32 +149,138 @@ class _MonoSwitchState extends State<MonoSwitch> {
           _statesController.update(MonoState.focusVisible, visible),
       onShowHoverHighlight: (bool hovered) =>
           _statesController.update(MonoState.hovered, hovered),
-      child: Semantics(
-        container: true,
-        enabled: _isEnabled,
-        toggled: widget.value,
-        focusable: _isEnabled,
-        focused: _isFocused,
-        label: widget.semanticLabel,
-        onTap: _isEnabled ? _toggle : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTapCancel: _isEnabled
-              ? () => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTap: _isEnabled ? _toggle : null,
-          child: AnimatedOpacity(
-            duration: theme.motion.fast,
-            opacity: _isEnabled ? 1 : 0.55,
-            child: content,
-          ),
-        ),
+      // Only this state-consuming leaf rebuilds on hover/press/focus ticks; the
+      // FocusableActionDetector above is untouched. The Semantics node lives
+      // inside because it carries the interaction-driven `focused` flag.
+      child: ListenableBuilder(
+        listenable: _statesController,
+        builder: (BuildContext context, Widget? _) {
+          final Color foreground = _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.mutedForeground;
+          final Color trackColor = widget.value
+              ? theme.colors.primary
+              : _isEnabled
+              ? theme.colors.muted
+              : theme.colors.muted.withAlpha(150);
+          final Color trackBorder = widget.value
+              ? theme.colors.primary
+              : _isHovered && _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.input;
+          final Color thumbColor = widget.value
+              ? theme.colors.primaryForeground
+              : theme.colors.card;
+
+          final Widget toggle = AnimatedContainer(
+            duration: theme.motion.reduced(context, theme.motion.base),
+            curve: theme.motion.curve,
+            width: theme.spacing.huge,
+            height: theme.spacing.xl,
+            decoration: BoxDecoration(
+              color: trackColor,
+              border: Border.all(color: trackBorder),
+              borderRadius: BorderRadius.circular(theme.radii.full),
+              boxShadow: _isFocusVisible
+                  ? <BoxShadow>[
+                      BoxShadow(
+                        color: theme.colors.ring.withAlpha(72),
+                        blurRadius: 0,
+                        spreadRadius: 3,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: AnimatedAlign(
+              duration: theme.motion.reduced(context, theme.motion.base),
+              curve: theme.motion.curve,
+              alignment: widget.value
+                  ? AlignmentDirectional.centerEnd
+                  : AlignmentDirectional.centerStart,
+              child: Padding(
+                padding: EdgeInsets.all(theme.spacing.xs / 2),
+                child: Transform.scale(
+                  scale: _isPressed ? 0.9 : 1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: thumbColor,
+                      borderRadius: BorderRadius.circular(theme.radii.full),
+                    ),
+                    child: SizedBox(
+                      width: theme.spacing.lg,
+                      height: theme.spacing.lg,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+
+          final Widget content = Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              toggle,
+              if (resolvedLabel != null ||
+                  widget.description != null) ...<Widget>[
+                SizedBox(width: theme.spacing.sm),
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      if (resolvedLabel != null)
+                        DefaultTextStyle.merge(
+                          style: theme.typography.bodyMedium.copyWith(
+                            color: foreground,
+                          ),
+                          child: resolvedLabel,
+                        ),
+                      if (widget.description != null) ...<Widget>[
+                        if (resolvedLabel != null)
+                          SizedBox(height: theme.spacing.xs),
+                        DefaultTextStyle.merge(
+                          style: theme.typography.bodyMedium.copyWith(
+                            color: theme.colors.mutedForeground,
+                          ),
+                          child: widget.description!,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+
+          return Semantics(
+            container: true,
+            enabled: _isEnabled,
+            toggled: widget.value,
+            focusable: _isEnabled,
+            focused: _isFocused,
+            label: widget.semanticLabel,
+            onTap: _isEnabled ? _toggle : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, true)
+                  : null,
+              onTapUp: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTapCancel: _isEnabled
+                  ? () => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTap: _isEnabled ? _toggle : null,
+              child: AnimatedOpacity(
+                duration: theme.motion.fast,
+                opacity: _isEnabled ? 1 : 0.55,
+                child: content,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

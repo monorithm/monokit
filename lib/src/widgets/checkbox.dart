@@ -73,7 +73,6 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _syncFixedStates();
-    _statesController.addListener(_handleStatesChanged);
   }
 
   @override
@@ -89,14 +88,12 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
       _syncFixedStates();
-      _statesController.addListener(_handleStatesChanged);
     }
     if (!_isEnabled && _focusNode.hasFocus) {
       _focusNode.unfocus();
@@ -107,7 +104,6 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -120,12 +116,6 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
   void _syncFixedStates() {
     _statesController.update(MonoState.disabled, !_isEnabled);
     _statesController.update(MonoState.checked, widget.value == true);
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   void _handleFocusChanged() {
@@ -158,18 +148,6 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
     final Widget? resolvedLabel = widget.label ?? widget.child;
     final bool isChecked = widget.value == true;
     final bool isMixed = widget.value == null;
-    final Color foreground = _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.mutedForeground;
-    final Color borderColor = isChecked || isMixed
-        ? theme.colors.primary
-        : _isHovered && _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.input;
-    final Color fillColor = isChecked || isMixed
-        ? theme.colors.primary
-        : theme.colors.background.withAlpha(0);
-
     final Widget mark = isChecked
         ? CustomPaint(
             painter: _MonoCheckPainter(color: theme.colors.primaryForeground),
@@ -181,63 +159,6 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
             child: const SizedBox.expand(),
           )
         : const SizedBox.expand();
-
-    final Widget checkbox = AnimatedContainer(
-      duration: theme.motion.reduced(context, theme.motion.base),
-      curve: theme.motion.curve,
-      width: theme.spacing.xl,
-      height: theme.spacing.xl,
-      decoration: BoxDecoration(
-        color: fillColor,
-        border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(theme.radii.sm),
-        boxShadow: _isFocusVisible
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: theme.colors.ring.withAlpha(72),
-                  blurRadius: 0,
-                  spreadRadius: 3,
-                ),
-              ]
-            : null,
-      ),
-      child: mark,
-    );
-
-    final Widget content = Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Transform.scale(scale: _isPressed ? 0.94 : 1, child: checkbox),
-        if (resolvedLabel != null || widget.description != null) ...<Widget>[
-          SizedBox(width: theme.spacing.sm),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                if (resolvedLabel != null)
-                  DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: foreground,
-                    ),
-                    child: resolvedLabel,
-                  ),
-                if (widget.description != null) ...<Widget>[
-                  if (resolvedLabel != null) SizedBox(height: theme.spacing.xs),
-                  DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: theme.colors.mutedForeground,
-                    ),
-                    child: widget.description!,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
 
     return FocusableActionDetector(
       enabled: _isEnabled,
@@ -263,33 +184,112 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
           _statesController.update(MonoState.focusVisible, visible),
       onShowHoverHighlight: (bool hovered) =>
           _statesController.update(MonoState.hovered, hovered),
-      child: Semantics(
-        container: true,
-        enabled: _isEnabled,
-        checked: isChecked,
-        mixed: isMixed,
-        focusable: _isEnabled,
-        focused: _isFocused,
-        label: widget.semanticLabel,
-        onTap: _isEnabled ? _toggle : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTapCancel: _isEnabled
-              ? () => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTap: _isEnabled ? _toggle : null,
-          child: AnimatedOpacity(
-            duration: theme.motion.fast,
-            opacity: _isEnabled ? 1 : 0.55,
-            child: content,
-          ),
-        ),
+      // Only this state-consuming leaf rebuilds on hover/press/focus ticks; the
+      // FocusableActionDetector above is untouched. The Semantics node lives
+      // inside because it carries the interaction-driven `focused` flag.
+      child: ListenableBuilder(
+        listenable: _statesController,
+        builder: (BuildContext context, Widget? _) {
+          final Color foreground = _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.mutedForeground;
+          final Color borderColor = isChecked || isMixed
+              ? theme.colors.primary
+              : _isHovered && _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.input;
+          final Color fillColor = isChecked || isMixed
+              ? theme.colors.primary
+              : theme.colors.background.withAlpha(0);
+
+          final Widget checkbox = AnimatedContainer(
+            duration: theme.motion.reduced(context, theme.motion.base),
+            curve: theme.motion.curve,
+            width: theme.spacing.xl,
+            height: theme.spacing.xl,
+            decoration: BoxDecoration(
+              color: fillColor,
+              border: Border.all(color: borderColor),
+              borderRadius: BorderRadius.circular(theme.radii.sm),
+              boxShadow: _isFocusVisible
+                  ? <BoxShadow>[
+                      BoxShadow(
+                        color: theme.colors.ring.withAlpha(72),
+                        blurRadius: 0,
+                        spreadRadius: 3,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: mark,
+          );
+
+          final Widget content = Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Transform.scale(scale: _isPressed ? 0.94 : 1, child: checkbox),
+              if (resolvedLabel != null ||
+                  widget.description != null) ...<Widget>[
+                SizedBox(width: theme.spacing.sm),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (resolvedLabel != null)
+                        DefaultTextStyle.merge(
+                          style: theme.typography.bodyMedium.copyWith(
+                            color: foreground,
+                          ),
+                          child: resolvedLabel,
+                        ),
+                      if (widget.description != null) ...<Widget>[
+                        if (resolvedLabel != null)
+                          SizedBox(height: theme.spacing.xs),
+                        DefaultTextStyle.merge(
+                          style: theme.typography.bodyMedium.copyWith(
+                            color: theme.colors.mutedForeground,
+                          ),
+                          child: widget.description!,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+
+          return Semantics(
+            container: true,
+            enabled: _isEnabled,
+            checked: isChecked,
+            mixed: isMixed,
+            focusable: _isEnabled,
+            focused: _isFocused,
+            label: widget.semanticLabel,
+            onTap: _isEnabled ? _toggle : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, true)
+                  : null,
+              onTapUp: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTapCancel: _isEnabled
+                  ? () => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTap: _isEnabled ? _toggle : null,
+              child: AnimatedOpacity(
+                duration: theme.motion.fast,
+                opacity: _isEnabled ? 1 : 0.55,
+                child: content,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

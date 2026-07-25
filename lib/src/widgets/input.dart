@@ -229,7 +229,6 @@ class _MonoInputState extends State<MonoInput>
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _syncFixedStates();
-    _statesController.addListener(_handleStatesChanged);
   }
 
   @override
@@ -273,14 +272,12 @@ class _MonoInputState extends State<MonoInput>
     }
 
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
       _syncFixedStates();
-      _statesController.addListener(_handleStatesChanged);
     }
 
     if (!_isEnabled && _focusNode.hasFocus) {
@@ -293,7 +290,6 @@ class _MonoInputState extends State<MonoInput>
   void dispose() {
     _controller.removeListener(_handleTextChanged);
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     _localController?.dispose();
     if (_ownsFocusNode) {
       _focusNode.dispose();
@@ -314,12 +310,6 @@ class _MonoInputState extends State<MonoInput>
     _setState(MonoState.focused, _focusNode.hasFocus);
     _setState(MonoState.focusVisible, _focusNode.hasFocus);
     widget.onFocusChanged?.call(_focusNode.hasFocus);
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   void _syncFixedStates() {
@@ -380,13 +370,6 @@ class _MonoInputState extends State<MonoInput>
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final bool hasText = _controller.text.isNotEmpty;
-    final Color borderColor = widget.invalid
-        ? theme.colors.destructive
-        : _isFocused
-        ? theme.colors.ring
-        : _isHovered && _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.input;
     final Color foreground = _isEnabled
         ? theme.colors.foreground
         : theme.colors.mutedForeground;
@@ -483,27 +466,12 @@ class _MonoInputState extends State<MonoInput>
                 : SystemMouseCursors.forbidden),
         onEnter: _isEnabled ? (_) => _handleHover(true) : null,
         onExit: _isEnabled ? (_) => _handleHover(false) : null,
+        // Only the bordered container's decoration reads interaction state, so
+        // hover/focus ticks rebuild just that box — the EditableText and its Row
+        // are passed through untouched as the builder's `child`.
         child: _wrapWithGestures(
-          AnimatedContainer(
-            duration: theme.motion.duration,
-            curve: theme.motion.curve,
-            constraints: BoxConstraints(
-              minHeight: monoScaledExtent(context, theme.spacing.huge),
-            ),
-            decoration: BoxDecoration(
-              color: background,
-              borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: borderColor),
-              boxShadow: _isFocused
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.ring.withAlpha(72),
-                        blurRadius: 0,
-                        spreadRadius: 3,
-                      ),
-                    ]
-                  : null,
-            ),
+          ListenableBuilder(
+            listenable: _statesController,
             child: Padding(
               padding: resolvedPadding,
               child: Row(
@@ -529,6 +497,37 @@ class _MonoInputState extends State<MonoInput>
                 ],
               ),
             ),
+            builder: (BuildContext context, Widget? child) {
+              final Color borderColor = widget.invalid
+                  ? theme.colors.destructive
+                  : _isFocused
+                  ? theme.colors.ring
+                  : _isHovered && _isEnabled
+                  ? theme.colors.foreground
+                  : theme.colors.input;
+              return AnimatedContainer(
+                duration: theme.motion.duration,
+                curve: theme.motion.curve,
+                constraints: BoxConstraints(
+                  minHeight: monoScaledExtent(context, theme.spacing.huge),
+                ),
+                decoration: BoxDecoration(
+                  color: background,
+                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  border: Border.all(color: borderColor),
+                  boxShadow: _isFocused
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: theme.colors.ring.withAlpha(72),
+                            blurRadius: 0,
+                            spreadRadius: 3,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: child,
+              );
+            },
           ),
         ),
       ),

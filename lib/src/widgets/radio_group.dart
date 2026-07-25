@@ -202,7 +202,6 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
 
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
-    _statesController.addListener(_handleStatesChanged);
   }
 
   @override
@@ -225,13 +224,11 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
-      _statesController.addListener(_handleStatesChanged);
     }
     if (!_isEnabled && _focusNode.hasFocus) {
       _focusNode.unfocus();
@@ -242,7 +239,6 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -255,12 +251,6 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
   void _syncFixedStates() {
     _statesController.update(MonoState.disabled, !_isEnabled);
     _statesController.update(MonoState.checked, _isSelected);
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   void _handleFocusChanged() {
@@ -294,82 +284,6 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final Widget? resolvedLabel = widget.label ?? widget.child;
-    final Color foreground = _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.mutedForeground;
-    final Color borderColor = _isSelected
-        ? theme.colors.primary
-        : _isHovered && _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.input;
-
-    final Widget marker = AnimatedContainer(
-      duration: theme.motion.reduced(context, theme.motion.duration),
-      curve: theme.motion.curve,
-      width: theme.spacing.xl,
-      height: theme.spacing.xl,
-      padding: EdgeInsets.all(theme.spacing.xs),
-      decoration: BoxDecoration(
-        color: theme.colors.background.withAlpha(0),
-        border: Border.all(color: borderColor),
-        shape: BoxShape.circle,
-        boxShadow: _isFocusVisible
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: theme.colors.ring.withAlpha(72),
-                  blurRadius: 0,
-                  spreadRadius: 3,
-                ),
-              ]
-            : null,
-      ),
-      child: AnimatedScale(
-        scale: _isSelected ? (_isPressed ? 0.86 : 1) : 0,
-        duration: theme.motion.reduced(context, theme.motion.duration),
-        curve: theme.motion.curve,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.colors.primary,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ),
-    );
-
-    final Widget content = Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        marker,
-        if (resolvedLabel != null || widget.description != null) ...<Widget>[
-          SizedBox(width: theme.spacing.sm),
-          Flexible(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (resolvedLabel != null)
-                  DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: foreground,
-                    ),
-                    child: resolvedLabel,
-                  ),
-                if (widget.description != null) ...<Widget>[
-                  if (resolvedLabel != null) SizedBox(height: theme.spacing.xs),
-                  DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: theme.colors.mutedForeground,
-                    ),
-                    child: widget.description!,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
 
     return FocusableActionDetector(
       enabled: _isEnabled,
@@ -412,33 +326,120 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
           _statesController.update(MonoState.focusVisible, visible),
       onShowHoverHighlight: (bool hovered) =>
           _statesController.update(MonoState.hovered, hovered),
-      child: Semantics(
-        container: true,
-        enabled: _isEnabled,
-        checked: _isSelected,
-        inMutuallyExclusiveGroup: true,
-        focusable: _isEnabled,
-        focused: _isFocused,
-        label: widget.semanticLabel,
-        onTap: _isEnabled ? _select : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTapCancel: _isEnabled
-              ? () => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTap: _isEnabled ? _select : null,
-          child: AnimatedOpacity(
-            duration: theme.motion.fast,
-            opacity: _isEnabled ? 1 : 0.55,
-            child: content,
-          ),
-        ),
+      // Only this state-consuming leaf rebuilds on hover/press/focus ticks; the
+      // FocusableActionDetector above is untouched. The Semantics node lives
+      // inside because it carries the interaction-driven `focused` flag.
+      child: ListenableBuilder(
+        listenable: _statesController,
+        builder: (BuildContext context, Widget? _) {
+          final Color foreground = _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.mutedForeground;
+          final Color borderColor = _isSelected
+              ? theme.colors.primary
+              : _isHovered && _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.input;
+
+          final Widget marker = AnimatedContainer(
+            duration: theme.motion.reduced(context, theme.motion.duration),
+            curve: theme.motion.curve,
+            width: theme.spacing.xl,
+            height: theme.spacing.xl,
+            padding: EdgeInsets.all(theme.spacing.xs),
+            decoration: BoxDecoration(
+              color: theme.colors.background.withAlpha(0),
+              border: Border.all(color: borderColor),
+              shape: BoxShape.circle,
+              boxShadow: _isFocusVisible
+                  ? <BoxShadow>[
+                      BoxShadow(
+                        color: theme.colors.ring.withAlpha(72),
+                        blurRadius: 0,
+                        spreadRadius: 3,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: AnimatedScale(
+              scale: _isSelected ? (_isPressed ? 0.86 : 1) : 0,
+              duration: theme.motion.reduced(context, theme.motion.duration),
+              curve: theme.motion.curve,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colors.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          );
+
+          final Widget content = Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              marker,
+              if (resolvedLabel != null ||
+                  widget.description != null) ...<Widget>[
+                SizedBox(width: theme.spacing.sm),
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      if (resolvedLabel != null)
+                        DefaultTextStyle.merge(
+                          style: theme.typography.bodyMedium.copyWith(
+                            color: foreground,
+                          ),
+                          child: resolvedLabel,
+                        ),
+                      if (widget.description != null) ...<Widget>[
+                        if (resolvedLabel != null)
+                          SizedBox(height: theme.spacing.xs),
+                        DefaultTextStyle.merge(
+                          style: theme.typography.bodyMedium.copyWith(
+                            color: theme.colors.mutedForeground,
+                          ),
+                          child: widget.description!,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+
+          return Semantics(
+            container: true,
+            enabled: _isEnabled,
+            checked: _isSelected,
+            inMutuallyExclusiveGroup: true,
+            focusable: _isEnabled,
+            focused: _isFocused,
+            label: widget.semanticLabel,
+            onTap: _isEnabled ? _select : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, true)
+                  : null,
+              onTapUp: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTapCancel: _isEnabled
+                  ? () => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTap: _isEnabled ? _select : null,
+              child: AnimatedOpacity(
+                duration: theme.motion.fast,
+                opacity: _isEnabled ? 1 : 0.55,
+                child: content,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

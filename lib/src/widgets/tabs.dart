@@ -257,11 +257,7 @@ class _MonoTabsState extends State<MonoTabs> {
         tab.value,
         () => FocusNode(debugLabel: 'MonoTabs:${tab.value}'),
       );
-      _stateControllers.putIfAbsent(tab.value, () {
-        final controller = MonoStatesController();
-        controller.addListener(_handleStateChange);
-        return controller;
-      });
+      _stateControllers.putIfAbsent(tab.value, MonoStatesController.new);
     }
   }
 
@@ -327,12 +323,6 @@ class _MonoTabsState extends State<MonoTabs> {
 
   void _updateState(String value, MonoState state, bool enabled) {
     _stateControllers[value]?.update(state, enabled);
-  }
-
-  void _handleStateChange() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   int _nextEnabledIndex(int start, int direction) {
@@ -527,103 +517,118 @@ class _MonoTabsState extends State<MonoTabs> {
     required Curve curve,
   }) {
     final theme = MonokitTheme.of(context);
-    final states = _stateControllers[tab.value]?.states ?? const <MonoState>{};
+    final controller = _stateControllers[tab.value]!;
     final focusNode = _focusNodes[tab.value]!;
-    final style = _MonoTabsTriggerStyle.resolve(
-      theme: theme,
-      orientation: widget.orientation,
-      textDirection: Directionality.of(context),
-      variant: widget.variant,
-      selected: selected,
-      enabled: tab.enabled,
-      states: states,
-    );
+    // Only this trigger rebuilds on its own hover/press/focus ticks; sibling
+    // tabs and the panel stay put. Semantics lives inside because `focused`
+    // tracks this tab's focus node, updated through the states controller.
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (BuildContext context, Widget? _) {
+        final states = controller.states;
+        final style = _MonoTabsTriggerStyle.resolve(
+          theme: theme,
+          orientation: widget.orientation,
+          textDirection: Directionality.of(context),
+          variant: widget.variant,
+          selected: selected,
+          enabled: tab.enabled,
+          states: states,
+        );
 
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        if (tab.icon != null) ...<Widget>[
-          IconTheme.merge(
-            data: IconThemeData(color: style.foreground, size: 16),
-            child: tab.icon!,
-          ),
-          SizedBox(width: theme.spacing.xs),
-        ],
-        DefaultTextStyle.merge(
-          style: theme.typography.labelMedium.copyWith(color: style.foreground),
-          child: tab.label,
-        ),
-      ],
-    );
+        final content = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            if (tab.icon != null) ...<Widget>[
+              IconTheme.merge(
+                data: IconThemeData(color: style.foreground, size: 16),
+                child: tab.icon!,
+              ),
+              SizedBox(width: theme.spacing.xs),
+            ],
+            DefaultTextStyle.merge(
+              style: theme.typography.labelMedium.copyWith(
+                color: style.foreground,
+              ),
+              child: tab.label,
+            ),
+          ],
+        );
 
-    final trigger = Semantics(
-      button: true,
-      inMutuallyExclusiveGroup: true,
-      enabled: tab.enabled,
-      selected: selected,
-      focusable: tab.enabled,
-      focused: focusNode.hasFocus,
-      label: tab.semanticLabel,
-      tooltip: tab.tooltip,
-      onTap: tab.enabled ? () => _selectIndex(index) : null,
-      child: FocusTraversalOrder(
-        order: NumericFocusOrder(index.toDouble()),
-        child: Focus(
-          focusNode: focusNode,
-          canRequestFocus: tab.enabled,
-          onFocusChange: (focused) {
-            _updateState(tab.value, MonoState.focused, focused);
-            _updateState(
-              tab.value,
-              MonoState.focusVisible,
-              focused &&
-                  FocusManager.instance.highlightMode ==
-                      FocusHighlightMode.traditional,
-            );
-          },
-          onKeyEvent: (_, event) => _handleKeyEvent(index, event),
-          child: MouseRegion(
-            cursor: tab.enabled
-                ? SystemMouseCursors.click
-                : SystemMouseCursors.forbidden,
-            onEnter: (_) => _updateState(tab.value, MonoState.hovered, true),
-            onExit: (_) {
-              _updateState(tab.value, MonoState.hovered, false);
-              _updateState(tab.value, MonoState.pressed, false);
-            },
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTapDown: tab.enabled
-                  ? (_) {
-                      focusNode.requestFocus();
-                      _updateState(tab.value, MonoState.pressed, true);
-                    }
-                  : null,
-              onTapUp: tab.enabled
-                  ? (_) => _updateState(tab.value, MonoState.pressed, false)
-                  : null,
-              onTapCancel: tab.enabled
-                  ? () => _updateState(tab.value, MonoState.pressed, false)
-                  : null,
-              onTap: tab.enabled ? () => _selectIndex(index) : null,
-              child: AnimatedContainer(
-                duration: duration,
-                curve: curve,
-                padding: EdgeInsets.symmetric(
-                  horizontal: theme.spacing.sm,
-                  vertical: theme.spacing.xs,
+        final trigger = Semantics(
+          button: true,
+          inMutuallyExclusiveGroup: true,
+          enabled: tab.enabled,
+          selected: selected,
+          focusable: tab.enabled,
+          focused: focusNode.hasFocus,
+          label: tab.semanticLabel,
+          tooltip: tab.tooltip,
+          onTap: tab.enabled ? () => _selectIndex(index) : null,
+          child: FocusTraversalOrder(
+            order: NumericFocusOrder(index.toDouble()),
+            child: Focus(
+              focusNode: focusNode,
+              canRequestFocus: tab.enabled,
+              onFocusChange: (focused) {
+                _updateState(tab.value, MonoState.focused, focused);
+                _updateState(
+                  tab.value,
+                  MonoState.focusVisible,
+                  focused &&
+                      FocusManager.instance.highlightMode ==
+                          FocusHighlightMode.traditional,
+                );
+              },
+              onKeyEvent: (_, event) => _handleKeyEvent(index, event),
+              child: MouseRegion(
+                cursor: tab.enabled
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.forbidden,
+                onEnter: (_) =>
+                    _updateState(tab.value, MonoState.hovered, true),
+                onExit: (_) {
+                  _updateState(tab.value, MonoState.hovered, false);
+                  _updateState(tab.value, MonoState.pressed, false);
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  excludeFromSemantics: true,
+                  onTapDown: tab.enabled
+                      ? (_) {
+                          focusNode.requestFocus();
+                          _updateState(tab.value, MonoState.pressed, true);
+                        }
+                      : null,
+                  onTapUp: tab.enabled
+                      ? (_) => _updateState(tab.value, MonoState.pressed, false)
+                      : null,
+                  onTapCancel: tab.enabled
+                      ? () => _updateState(tab.value, MonoState.pressed, false)
+                      : null,
+                  onTap: tab.enabled ? () => _selectIndex(index) : null,
+                  child: AnimatedContainer(
+                    duration: duration,
+                    curve: curve,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: theme.spacing.sm,
+                      vertical: theme.spacing.xs,
+                    ),
+                    decoration: style.decoration,
+                    child: Opacity(
+                      opacity: tab.enabled ? 1 : 0.5,
+                      child: content,
+                    ),
+                  ),
                 ),
-                decoration: style.decoration,
-                child: Opacity(opacity: tab.enabled ? 1 : 0.5, child: content),
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
 
-    return trigger;
+        return trigger;
+      },
+    );
   }
 }
 
