@@ -1,0 +1,38 @@
+name: Goldens
+
+# Regenerates the golden baselines in the Linux CI environment (the platform the
+# ordinary `flutter test` gate verifies against) and uploads them as an artifact.
+# Anti-aliasing differs across platforms, so baselines must be produced here, not
+# on a maintainer's machine. Run this manually after an intentional visual change
+# (Actions ▸ Goldens ▸ Run workflow), download the `golden-baselines` artifact,
+# and commit it under test/goldens/images/.
+on:
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: "3.44.5"
+
+jobs:
+  update:
+    name: Regenerate golden baselines
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Update goldens
+        run: flutter test --update-goldens test/goldens
+
+      - name: Upload baselines
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-baselines
+          path: test/goldens/images/**
+          if-no-files-found: error
