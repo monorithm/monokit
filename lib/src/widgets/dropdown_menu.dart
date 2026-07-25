@@ -148,7 +148,6 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _syncFixedStates();
-    _statesController.addListener(_handleStatesChanged);
     if (_isOpen) {
       _scheduleOverlaySync();
     }
@@ -168,14 +167,12 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
       _syncFixedStates();
-      _statesController.addListener(_handleStatesChanged);
     }
     if (!_isEnabled && _isOpen) {
       _setOpen(false);
@@ -189,7 +186,6 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     _overlayFocus.cancelRestore();
     _removeOverlayNow();
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -217,12 +213,6 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
     _statesController.update(MonoState.focused, _focusNode.hasFocus);
     if (!_focusNode.hasFocus) {
       _statesController.update(MonoState.focusVisible, false);
-    }
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
     }
   }
 
@@ -404,28 +394,36 @@ class _MonoDropdownMenuState<T> extends State<MonoDropdownMenu<T>> {
       },
       onShowHoverHighlight: (bool hovered) =>
           _statesController.update(MonoState.hovered, hovered),
-      child: Semantics(
-        container: true,
-        button: true,
-        enabled: _isEnabled,
-        expanded: _isOpen,
-        focused: _isFocused,
-        label: widget.semanticLabel ?? 'Menu',
-        onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTapDown: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTapCancel: _isEnabled
-              ? () => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-          child: widget._trigger,
-        ),
+      // Only this state-consuming leaf rebuilds on hover/press/focus ticks; the
+      // FocusableActionDetector above is untouched. The Semantics node lives
+      // inside because it carries the interaction-driven `focused` flag.
+      child: ListenableBuilder(
+        listenable: _statesController,
+        builder: (BuildContext context, Widget? _) {
+          return Semantics(
+            container: true,
+            button: true,
+            enabled: _isEnabled,
+            expanded: _isOpen,
+            focused: _isFocused,
+            label: widget.semanticLabel ?? 'Menu',
+            onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTapDown: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, true)
+                  : null,
+              onTapUp: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTapCancel: _isEnabled
+                  ? () => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+              child: widget._trigger,
+            ),
+          );
+        },
       ),
     );
   }

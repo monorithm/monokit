@@ -277,11 +277,7 @@ class _MonoAccordionState extends State<MonoAccordion> {
         item.value,
         () => FocusNode(debugLabel: 'MonoAccordion:${item.value}'),
       );
-      _stateControllers.putIfAbsent(item.value, () {
-        final controller = MonoStatesController();
-        controller.addListener(_handleStateChange);
-        return controller;
-      });
+      _stateControllers.putIfAbsent(item.value, MonoStatesController.new);
     }
   }
 
@@ -364,12 +360,6 @@ class _MonoAccordionState extends State<MonoAccordion> {
 
   void _updateState(String value, MonoState state, bool enabled) {
     _stateControllers[value]?.update(state, enabled);
-  }
-
-  void _handleStateChange() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   int _nextEnabledIndex(int start, int direction) {
@@ -488,11 +478,6 @@ class _MonoAccordionState extends State<MonoAccordion> {
     required Curve curve,
   }) {
     final theme = MonokitTheme.of(context);
-    final itemStates = <MonoState>{
-      ...?_stateControllers[item.value]?.states,
-      if (expanded) MonoState.expanded,
-      if (!item.enabled) MonoState.disabled,
-    };
     final triggerSlot = item.trigger is MonoAccordionTrigger
         ? item.trigger as MonoAccordionTrigger
         : null;
@@ -504,107 +489,125 @@ class _MonoAccordionState extends State<MonoAccordion> {
     final semanticLabel = item.semanticLabel ?? triggerSlot?.semanticLabel;
     final trailing = item.trailing ?? triggerSlot?.trailing;
     final focusNode = _focusNodes[item.value]!;
-    final style = _MonoAccordionTriggerStyle.resolve(
-      theme: theme,
-      expanded: expanded,
-      enabled: item.enabled,
-      states: itemStates,
-    );
 
-    final trigger = Semantics(
-      button: true,
-      enabled: item.enabled,
-      expanded: expanded,
-      focusable: item.enabled,
-      focused: focusNode.hasFocus,
-      label: semanticLabel,
-      onTap: item.enabled ? () => _toggle(item.value) : null,
-      child: FocusTraversalOrder(
-        order: NumericFocusOrder(index.toDouble()),
-        child: Focus(
-          focusNode: focusNode,
-          canRequestFocus: item.enabled,
-          onFocusChange: (focused) {
-            _updateState(item.value, MonoState.focused, focused);
-            _updateState(
-              item.value,
-              MonoState.focusVisible,
-              focused &&
-                  FocusManager.instance.highlightMode ==
-                      FocusHighlightMode.traditional,
-            );
-          },
-          onKeyEvent: (_, event) => _handleKeyEvent(index, event),
-          child: MouseRegion(
-            cursor: item.enabled
-                ? SystemMouseCursors.click
-                : SystemMouseCursors.forbidden,
-            onEnter: (_) => _updateState(item.value, MonoState.hovered, true),
-            onExit: (_) {
-              _updateState(item.value, MonoState.hovered, false);
-              _updateState(item.value, MonoState.pressed, false);
-            },
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTapDown: item.enabled
-                  ? (_) {
-                      focusNode.requestFocus();
-                      _updateState(item.value, MonoState.pressed, true);
-                    }
-                  : null,
-              onTapUp: item.enabled
-                  ? (_) => _updateState(item.value, MonoState.pressed, false)
-                  : null,
-              onTapCancel: item.enabled
-                  ? () => _updateState(item.value, MonoState.pressed, false)
-                  : null,
-              onTap: item.enabled ? () => _toggle(item.value) : null,
-              child: AnimatedContainer(
-                duration: duration,
-                curve: curve,
-                color: style.background,
-                padding: EdgeInsets.symmetric(
-                  horizontal: theme.spacing.md,
-                  vertical: theme.spacing.sm,
-                ),
-                child: Opacity(
-                  opacity: item.enabled ? 1 : 0.5,
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: DefaultTextStyle.merge(
-                          style: theme.typography.labelMedium.copyWith(
-                            color: style.foreground,
-                          ),
-                          child: triggerChild,
-                        ),
-                      ),
-                      SizedBox(width: theme.spacing.sm),
-                      trailing ??
-                          _MonoAccordionChevron(
-                            expanded: expanded,
-                            textStyle: theme.typography.labelLarge.copyWith(
-                              color: style.foreground,
+    // Only this item's trigger rebuilds on its own hover/press/focus ticks;
+    // sibling items and the expandable content stay put. Semantics is inside
+    // because `focused` tracks this item's focus node via the states controller.
+    final Widget triggerSection = ListenableBuilder(
+      listenable: _stateControllers[item.value]!,
+      builder: (BuildContext context, Widget? _) {
+        final itemStates = <MonoState>{
+          ...?_stateControllers[item.value]?.states,
+          if (expanded) MonoState.expanded,
+          if (!item.enabled) MonoState.disabled,
+        };
+        final style = _MonoAccordionTriggerStyle.resolve(
+          theme: theme,
+          expanded: expanded,
+          enabled: item.enabled,
+          states: itemStates,
+        );
+
+        final trigger = Semantics(
+          button: true,
+          enabled: item.enabled,
+          expanded: expanded,
+          focusable: item.enabled,
+          focused: focusNode.hasFocus,
+          label: semanticLabel,
+          onTap: item.enabled ? () => _toggle(item.value) : null,
+          child: FocusTraversalOrder(
+            order: NumericFocusOrder(index.toDouble()),
+            child: Focus(
+              focusNode: focusNode,
+              canRequestFocus: item.enabled,
+              onFocusChange: (focused) {
+                _updateState(item.value, MonoState.focused, focused);
+                _updateState(
+                  item.value,
+                  MonoState.focusVisible,
+                  focused &&
+                      FocusManager.instance.highlightMode ==
+                          FocusHighlightMode.traditional,
+                );
+              },
+              onKeyEvent: (_, event) => _handleKeyEvent(index, event),
+              child: MouseRegion(
+                cursor: item.enabled
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.forbidden,
+                onEnter: (_) =>
+                    _updateState(item.value, MonoState.hovered, true),
+                onExit: (_) {
+                  _updateState(item.value, MonoState.hovered, false);
+                  _updateState(item.value, MonoState.pressed, false);
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  excludeFromSemantics: true,
+                  onTapDown: item.enabled
+                      ? (_) {
+                          focusNode.requestFocus();
+                          _updateState(item.value, MonoState.pressed, true);
+                        }
+                      : null,
+                  onTapUp: item.enabled
+                      ? (_) =>
+                            _updateState(item.value, MonoState.pressed, false)
+                      : null,
+                  onTapCancel: item.enabled
+                      ? () => _updateState(item.value, MonoState.pressed, false)
+                      : null,
+                  onTap: item.enabled ? () => _toggle(item.value) : null,
+                  child: AnimatedContainer(
+                    duration: duration,
+                    curve: curve,
+                    color: style.background,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: theme.spacing.md,
+                      vertical: theme.spacing.sm,
+                    ),
+                    child: Opacity(
+                      opacity: item.enabled ? 1 : 0.5,
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: DefaultTextStyle.merge(
+                              style: theme.typography.labelMedium.copyWith(
+                                color: style.foreground,
+                              ),
+                              child: triggerChild,
                             ),
-                            duration: duration,
-                            curve: curve,
                           ),
-                    ],
+                          SizedBox(width: theme.spacing.sm),
+                          trailing ??
+                              _MonoAccordionChevron(
+                                expanded: expanded,
+                                textStyle: theme.typography.labelLarge.copyWith(
+                                  color: style.foreground,
+                                ),
+                                duration: duration,
+                                curve: curve,
+                              ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+
+        return DecoratedBox(decoration: style.focusDecoration, child: trigger);
+      },
     );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        DecoratedBox(decoration: style.focusDecoration, child: trigger),
+        triggerSection,
         ClipRect(
           child: AnimatedSize(
             duration: duration,

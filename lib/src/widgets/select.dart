@@ -191,7 +191,6 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
     _syncFixedStates();
-    _statesController.addListener(_handleStatesChanged);
   }
 
   @override
@@ -216,14 +215,12 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
-      _statesController.removeListener(_handleStatesChanged);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
       _syncFixedStates();
-      _statesController.addListener(_handleStatesChanged);
     }
     if (!_isEnabled && _isOpen) {
       _setOpen(false);
@@ -244,7 +241,6 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     _overlayFocus.cancelRestore();
     _removeOverlayNow();
     _focusNode.removeListener(_handleFocusChanged);
-    _statesController.removeListener(_handleStatesChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
     }
@@ -270,12 +266,6 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     _statesController.update(MonoState.focused, _focusNode.hasFocus);
     if (!_focusNode.hasFocus) {
       _statesController.update(MonoState.focusVisible, false);
-    }
-  }
-
-  void _handleStatesChanged() {
-    if (mounted) {
-      setState(() {});
     }
   }
 
@@ -430,13 +420,6 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
   Widget build(BuildContext context) {
     final MonokitThemeData theme = MonokitTheme.of(context);
     final MonoSelectOption<T>? selected = _selectedOption();
-    final Color borderColor = widget.invalid
-        ? theme.colors.destructive
-        : _isFocused || _isOpen
-        ? theme.colors.ring
-        : _isHovered && _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.input;
     final Color foreground = _isEnabled
         ? theme.colors.foreground
         : theme.colors.mutedForeground;
@@ -483,82 +466,98 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
           _statesController.update(MonoState.focusVisible, visible),
       onShowHoverHighlight: (bool hovered) =>
           _statesController.update(MonoState.hovered, hovered),
-      child: Semantics(
-        container: true,
-        button: true,
-        enabled: _isEnabled,
-        expanded: _isOpen,
-        focusable: _isEnabled,
-        focused: _isFocused,
-        label: widget.semanticLabel ?? widget.placeholder ?? 'Select',
-        value: selected?.semanticLabel,
-        onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTapCancel: _isEnabled
-              ? () => _statesController.update(MonoState.pressed, false)
-              : null,
-          onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-          child: AnimatedContainer(
-            duration: theme.motion.duration,
-            curve: theme.motion.curve,
-            constraints: BoxConstraints(minHeight: theme.spacing.huge),
-            padding: EdgeInsets.symmetric(
-              horizontal: theme.spacing.md,
-              vertical: theme.spacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: _isEnabled
-                  ? theme.colors.background.withAlpha(0)
-                  : theme.colors.muted.withAlpha(150),
-              borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: borderColor),
-              boxShadow: _isFocusVisible || _isOpen
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.ring.withAlpha(72),
-                        blurRadius: 0,
-                        spreadRadius: 3,
-                      ),
-                    ]
+      // Only this state-consuming leaf rebuilds on hover/press/focus ticks; the
+      // FocusableActionDetector above is untouched. The Semantics node lives
+      // inside because it carries the interaction-driven `focused` flag.
+      child: ListenableBuilder(
+        listenable: _statesController,
+        builder: (BuildContext context, Widget? _) {
+          final Color borderColor = widget.invalid
+              ? theme.colors.destructive
+              : _isFocused || _isOpen
+              ? theme.colors.ring
+              : _isHovered && _isEnabled
+              ? theme.colors.foreground
+              : theme.colors.input;
+
+          return Semantics(
+            container: true,
+            button: true,
+            enabled: _isEnabled,
+            expanded: _isOpen,
+            focusable: _isEnabled,
+            focused: _isFocused,
+            label: widget.semanticLabel ?? widget.placeholder ?? 'Select',
+            value: selected?.semanticLabel,
+            onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, true)
                   : null,
-            ),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: DefaultTextStyle.merge(
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: foreground,
+              onTapUp: _isEnabled
+                  ? (_) => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTapCancel: _isEnabled
+                  ? () => _statesController.update(MonoState.pressed, false)
+                  : null,
+              onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
+              child: AnimatedContainer(
+                duration: theme.motion.duration,
+                curve: theme.motion.curve,
+                constraints: BoxConstraints(minHeight: theme.spacing.huge),
+                padding: EdgeInsets.symmetric(
+                  horizontal: theme.spacing.md,
+                  vertical: theme.spacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: _isEnabled
+                      ? theme.colors.background.withAlpha(0)
+                      : theme.colors.muted.withAlpha(150),
+                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  border: Border.all(color: borderColor),
+                  boxShadow: _isFocusVisible || _isOpen
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: theme.colors.ring.withAlpha(72),
+                            blurRadius: 0,
+                            spreadRadius: 3,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: DefaultTextStyle.merge(
+                        style: theme.typography.bodyMedium.copyWith(
+                          color: foreground,
+                        ),
+                        child: value,
+                      ),
                     ),
-                    child: value,
-                  ),
+                    SizedBox(width: theme.spacing.sm),
+                    AnimatedRotation(
+                      turns: _isOpen ? 0.5 : 0,
+                      duration: theme.motion.duration,
+                      curve: theme.motion.curve,
+                      child: MonoIcon(
+                        MonoIcons.chevronDown,
+                        size: theme.spacing.lg,
+                        color: _isEnabled
+                            ? theme.colors.mutedForeground
+                            : theme.colors.mutedForeground.withAlpha(150),
+                        semanticLabel: _isOpen
+                            ? theme.labels.closeOptions
+                            : theme.labels.openOptions,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: theme.spacing.sm),
-                AnimatedRotation(
-                  turns: _isOpen ? 0.5 : 0,
-                  duration: theme.motion.duration,
-                  curve: theme.motion.curve,
-                  child: MonoIcon(
-                    MonoIcons.chevronDown,
-                    size: theme.spacing.lg,
-                    color: _isEnabled
-                        ? theme.colors.mutedForeground
-                        : theme.colors.mutedForeground.withAlpha(150),
-                    semanticLabel: _isOpen
-                        ? theme.labels.closeOptions
-                        : theme.labels.openOptions,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
