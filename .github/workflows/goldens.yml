@@ -3,14 +3,11 @@ name: Goldens
 # Regenerates the golden baselines in the Linux CI environment (the platform the
 # ordinary `flutter test` gate verifies against) and uploads them as an artifact.
 # Anti-aliasing differs across platforms, so baselines must be produced here, not
-# on a maintainer's machine. After merge this is a manual (workflow_dispatch)
-# maintainer tool; the `push` trigger below only seeds the initial baselines on
-# the golden-suite branch and is removed before merge.
+# on a maintainer's machine. Run this manually after an intentional visual change
+# (Actions ▸ Goldens ▸ Run workflow), download the `golden-baselines` artifact,
+# and commit it under test/goldens/images/.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - test/golden-suite
 
 env:
   FLUTTER_VERSION: "3.44.5"
