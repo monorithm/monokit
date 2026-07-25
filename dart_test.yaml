@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: Reference-image (golden) tests. Baselines are Linux-generated.
