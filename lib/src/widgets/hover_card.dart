@@ -262,6 +262,12 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
   }
 
   void _scheduleClose() {
+    // The overlay notifies us it is no longer hovered from its own dispose(),
+    // which can run while this state is being unmounted (e.g. the whole subtree
+    // is torn down at once). Never read context after that.
+    if (!mounted) {
+      return;
+    }
     if (_shouldRemainOpen) {
       return;
     }
