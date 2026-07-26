@@ -1,6 +1,6 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
+import '../kit/responsive/viewport_controller.dart';
 import '../navigation/router.dart';
 import 'app_scope.dart';
 
@@ -16,17 +16,20 @@ class MonokitGallery extends StatefulWidget {
 
 class _MonokitGalleryState extends State<MonokitGallery> {
   final AppThemeController _theme = AppThemeController();
+  final ViewportController _viewport = ViewportController();
 
   @override
   void dispose() {
     _theme.dispose();
+    _viewport.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AppScope(
-      controller: _theme,
+      theme: _theme,
+      viewport: _viewport,
       child: ListenableBuilder(
         listenable: _theme,
         builder: (context, _) => MonokitApp.router(

@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
 import '../kit/component_section.dart';
+import '../kit/page_hero.dart';
 
 class FeedbackPage extends StatelessWidget {
   const FeedbackPage({super.key});
@@ -12,6 +12,15 @@ class FeedbackPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Feedback',
+          title: 'Honest system states',
+          tagline:
+              'Alerts, banners, progress, skeletons, and empty states — offline '
+              'is a condition, not an error, and loading is shown, not hidden.',
+          child: const _FeedbackHero(),
+        ),
+        const SectionDivider(),
         ComponentSection(
           title: 'Alerts',
           widgetName: 'MonoAlert',
@@ -94,6 +103,39 @@ class FeedbackPage extends StatelessWidget {
               child: const Text('Post what you need'),
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A composed sync panel for the hero.
+class _FeedbackHero extends StatelessWidget {
+  const _FeedbackHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text('Publishing listing', style: theme.typography.titleMedium),
+            ),
+            const MonoBadge(
+              variant: MonoBadgeVariant.info,
+              child: Text('Syncing'),
+            ),
+          ],
+        ),
+        SizedBox(height: theme.spacing.md),
+        const MonoProgress(value: 0.72),
+        SizedBox(height: theme.spacing.lg),
+        const MonoBanner(
+          variant: MonoAlertVariant.warning,
+          child: Text('You are offline — your post is queued and will send.'),
         ),
       ],
     );

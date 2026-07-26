@@ -1,8 +1,9 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
+import '../kit/app_image.dart';
+import '../kit/asset_catalog.dart';
 import '../kit/component_section.dart';
-import '../kit/sample.dart';
+import '../kit/page_hero.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -13,6 +14,15 @@ class ChatPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Chat',
+          title: 'Conversations',
+          tagline:
+              'Bubbles, messages with avatars and reactions, honest receipts, '
+              'attachments, typing indicators, and a composer.',
+          child: const _ChatHero(),
+        ),
+        const SectionDivider(),
         ComponentSection(
           title: 'Bubble variants',
           widgetName: 'MonoBubble',
@@ -69,7 +79,7 @@ class ChatPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const MonoAttachment.image(
-                thumbnail: SamplePhoto(seed: 1),
+                thumbnail: AppImage(asset: AppAssets.phone, seed: 'phone'),
                 caption: Text('iPhone 13 — back, showing the frame'),
               ),
               SizedBox(height: theme.spacing.md),
@@ -85,7 +95,7 @@ class ChatPage extends StatelessWidget {
                 description: const Text(
                   'Clean, battery 89%. Meet at Nima or delivery in Accra.',
                 ),
-                thumbnail: const SamplePhoto(seed: 3),
+                thumbnail: const AppImage(asset: AppAssets.phone, seed: 'phone'),
                 onPressed: () {},
               ),
             ],
@@ -115,6 +125,49 @@ class ChatPage extends StatelessWidget {
               onPressed: () {},
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A short conversation for the hero.
+class _ChatHero extends StatelessWidget {
+  const _ChatHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Column(
+      children: <Widget>[
+        MonoMessage(
+          align: MonoMessageAlign.start,
+          avatar: const MonoAvatar(initials: 'EA'),
+          child: const MonoBubble(
+            variant: MonoBubbleVariant.muted,
+            child: MonoBubbleContent(
+              child: Text('Is the chair still available?'),
+            ),
+          ),
+        ),
+        SizedBox(height: theme.spacing.sm),
+        const MonoMessage(
+          align: MonoMessageAlign.end,
+          child: MonoBubble(
+            variant: MonoBubbleVariant.primary,
+            child: MonoBubbleContent(
+              child: Text('Yes! Free delivery in Accra today.'),
+            ),
+          ),
+        ),
+        const MonoMessage(
+          align: MonoMessageAlign.end,
+          child: MonoReceipt(state: MonoReceiptState.read),
+        ),
+        SizedBox(height: theme.spacing.sm),
+        const MonoMessage(
+          align: MonoMessageAlign.start,
+          child: MonoTypingIndicator(),
         ),
       ],
     );

@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
 import '../kit/component_section.dart';
+import '../kit/page_hero.dart';
 
 class FormsPage extends StatefulWidget {
   const FormsPage({super.key});
@@ -32,6 +32,25 @@ class _FormsPageState extends State<FormsPage> {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Forms',
+          title: 'Inputs & selection',
+          tagline:
+              'EditableText-based fields with selection handles and a copy/paste '
+              'toolbar, plus checkboxes, radios, switches, selects, and OTP — '
+              'validated live.',
+          child: const _FormsHero(),
+        ),
+        const SectionDivider(),
+        const StageBlock(
+          title: 'A form that reflows',
+          description:
+              'One column on compact; two columns once there is room. The fields '
+              'never overflow — labels wrap and inputs stretch.',
+          stageHeight: 360,
+          child: _ResponsiveForm(),
+        ),
+        const SectionDivider(),
         ComponentSection(
           title: 'Field, input & validation',
           widgetName: 'MonoField',
@@ -169,6 +188,109 @@ class _FormsPageState extends State<FormsPage> {
           child: MonoInputOtp(length: 6, onCompleted: (_) {}),
         ),
       ],
+    );
+  }
+}
+
+/// A composed, uncontrolled profile form for the hero.
+class _FormsHero extends StatelessWidget {
+  const _FormsHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text('Complete your profile', style: theme.typography.titleMedium),
+        SizedBox(height: theme.spacing.lg),
+        MonoField(
+          label: const Text('Display name'),
+          description: const Text('Shown on your posts.'),
+          child: const MonoInput(placeholder: 'e.g. Ama'),
+        ),
+        SizedBox(height: theme.spacing.md),
+        MonoField(
+          label: const Text('Phone'),
+          child: const MonoInput(placeholder: '024 000 0000'),
+        ),
+        SizedBox(height: theme.spacing.md),
+        const MonoCheckbox(
+          value: true,
+          onChanged: null,
+          label: Text('Notify me about strong matches'),
+        ),
+        SizedBox(height: theme.spacing.lg),
+        MonoButton(onPressed: () {}, child: const Text('Save profile')),
+      ],
+    );
+  }
+}
+
+/// A listing form that lays fields in one or two columns by width.
+class _ResponsiveForm extends StatelessWidget {
+  const _ResponsiveForm();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final twoCol = constraints.maxWidth >= theme.breakpoints.medium;
+        final title = MonoField(
+          label: const Text('Title'),
+          child: const MonoInput(placeholder: 'Linen lounge chair'),
+        );
+        final price = MonoField(
+          label: const Text('Price (GH₵)'),
+          child: const MonoInput(placeholder: '4,800'),
+        );
+        final city = MonoField(
+          label: const Text('City'),
+          child: const MonoInput(placeholder: 'Accra'),
+        );
+        final condition = MonoField(
+          label: const Text('Condition'),
+          child: const MonoInput(placeholder: 'Like new'),
+        );
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(theme.spacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              title,
+              SizedBox(height: theme.spacing.md),
+              if (twoCol)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(child: price),
+                    SizedBox(width: theme.spacing.lg),
+                    Expanded(child: city),
+                  ],
+                )
+              else ...<Widget>[
+                price,
+                SizedBox(height: theme.spacing.md),
+                city,
+              ],
+              SizedBox(height: theme.spacing.md),
+              condition,
+              SizedBox(height: theme.spacing.lg),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IntrinsicWidth(
+                  child: MonoButton(
+                    onPressed: () {},
+                    leading: const MonoIcon(MonoIcons.check, size: 16),
+                    child: const Text('Publish listing'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

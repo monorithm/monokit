@@ -1,5 +1,5 @@
 name: monokit_example
-description: The Monokit gallery — a self-documenting widget showcase with production-style blocks.
+description: The Monokit showcase — a self-documenting widget gallery with full-fidelity product scenarios.
 publish_to: none
 version: 0.1.0+1
 
@@ -19,3 +19,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter:
+  assets:
+    - assets/images/products/
+    - assets/images/media/
+    - assets/images/scenarios/

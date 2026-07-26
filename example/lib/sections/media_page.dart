@@ -1,8 +1,9 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
+import '../kit/app_image.dart';
+import '../kit/asset_catalog.dart';
 import '../kit/component_section.dart';
-import '../kit/sample.dart';
+import '../kit/page_hero.dart';
 
 class MediaPage extends StatelessWidget {
   const MediaPage({super.key});
@@ -13,6 +14,15 @@ class MediaPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Media',
+          title: 'Immersive surfaces',
+          tagline:
+              'Full-bleed media on the always-dark canvas, glass controls, live '
+              'badges, action rails, waveforms, and call controls.',
+          child: const _MediaHero(),
+        ),
+        const SectionDivider(),
         ComponentSection(
           title: 'Immersive surface',
           widgetName: 'MonoMediaSurface',
@@ -53,7 +63,11 @@ class MediaPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const SamplePhoto(seed: 2),
+                  child: const AppImage(
+                    asset: AppAssets.food,
+                    seed: 'waakye',
+                    onMediaCanvas: true,
+                  ),
                 ),
               ),
             ),
@@ -190,6 +204,92 @@ class _Facts extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A pair of immersive media tiles for the hero.
+class _MediaHero extends StatelessWidget {
+  const _MediaHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return SizedBox(
+      height: 200,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: _MediaTile(
+              asset: AppAssets.live,
+              seed: 'live',
+              title: 'Live: market run',
+              live: true,
+            ),
+          ),
+          SizedBox(width: theme.spacing.lg),
+          Expanded(
+            child: _MediaTile(
+              asset: AppAssets.travel,
+              seed: 'travel',
+              title: 'Cape Coast weekend',
+              live: false,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MediaTile extends StatelessWidget {
+  const _MediaTile({
+    required this.asset,
+    required this.seed,
+    required this.title,
+    required this.live,
+  });
+
+  final String asset;
+  final String seed;
+  final String title;
+  final bool live;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(theme.radii.lg),
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          AppImage(asset: asset, seed: seed, onMediaCanvas: true),
+          if (live)
+            PositionedDirectional(
+              top: theme.spacing.sm,
+              start: theme.spacing.sm,
+              child: const MonoLiveBadge(),
+            ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: MonoScrim(
+              child: Padding(
+                padding: EdgeInsets.all(theme.spacing.sm),
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.typography.mediaCaption.copyWith(
+                    color: theme.colors.onMedia,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

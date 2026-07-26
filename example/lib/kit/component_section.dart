@@ -1,7 +1,4 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
-
-import 'availability.dart';
 
 /// The self-documentation engine. Every component demo is a [ComponentSection]:
 /// a titled preview inside a card, the widget name as a badge, and an optional
@@ -179,17 +176,4 @@ class CodePeek extends StatelessWidget {
       ),
     );
   }
-}
-
-/// A visually-distinct availability badge, driven by the library's
-/// [DemoAvailability] extension.
-class AvailabilityBadge extends StatelessWidget {
-  const AvailabilityBadge(this.availability, {super.key});
-  final DemoAvailability availability;
-
-  @override
-  Widget build(BuildContext context) => MonoBadge(
-    variant: availability.badgeVariant,
-    child: Text(availability.label),
-  );
 }

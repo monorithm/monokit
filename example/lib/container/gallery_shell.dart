@@ -1,13 +1,15 @@
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:monokit/monokit.dart';
 
+import '../kit/responsive/device_canvas.dart';
+import '../kit/responsive/viewport_controller.dart';
 import '../navigation/sections.dart';
 import 'app_scope.dart';
 
-/// The persistent gallery chrome: a responsive Monokit sidebar of sections, a
-/// header with a working command-palette search and a theme toggle, and the
-/// routed page as the body.
+/// The persistent gallery chrome: on wide viewports a pinned Monokit sidebar; on
+/// compact viewports a modal [MonoDrawer] (scrim, rounded panel, focus trap)
+/// opened from the header. Plus a command-palette search, device switcher, and
+/// theme toggle, with the routed page as the body.
 class GalleryShell extends StatelessWidget {
   const GalleryShell({super.key, required this.child});
 
@@ -16,7 +18,7 @@ class GalleryShell extends StatelessWidget {
   GallerySection get _fallback => gallerySections.first;
 
   GallerySection _activeSection(String location) {
-    final path = location.startsWith('/blocks') ? '/blocks' : location;
+    final path = location.startsWith('/scenarios') ? '/scenarios' : location;
     for (final section in gallerySections) {
       if (section.path == path) return section;
     }
@@ -29,58 +31,152 @@ class GalleryShell extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     final active = _activeSection(location);
 
-    return MonoScreen(
-      sidebar: MonoSidebar(
-        header: _SidebarHeader(),
-        child: _NavList(activePath: active.path),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Below the compact breakpoint the sidebar becomes a modal drawer; at or
+        // above it, MonoScreen pins the sidebar.
+        final compact = constraints.maxWidth < theme.breakpoints.compact;
+        return MonoScreen(
+          sidebar: compact
+              ? null
+              : MonoSidebar(
+                  header: _SidebarHeader(),
+                  child: _NavList(activePath: active.path),
+                ),
+          header: _GalleryHeader(active: active, compact: compact),
+          body: DeviceCanvas(child: child),
+        );
+      },
+    );
+  }
+}
+
+class _GalleryHeader extends StatelessWidget {
+  const _GalleryHeader({required this.active, required this.compact});
+
+  final GallerySection active;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: theme.colors.border)),
       ),
-      header: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: theme.colors.border)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: theme.spacing.lg,
+          vertical: theme.spacing.md,
         ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: theme.spacing.lg,
-            vertical: theme.spacing.md,
-          ),
-          child: Row(
-            children: <Widget>[
-              Builder(
-                builder: (context) => MonoButton(
+        child: Row(
+          children: <Widget>[
+            if (compact) ...<Widget>[
+              MonoDrawer(
+                side: MonoDrawerSide.start,
+                width: 288,
+                semanticLabel: 'Navigation',
+                trigger: MonoButton(
                   variant: MonoButtonVariant.ghost,
                   size: MonoButtonSize.iconSm,
-                  semanticLabel: 'Toggle navigation',
-                  onPressed: () =>
-                      MonoScreen.of(context).sidebarController.toggle(),
+                  semanticLabel: 'Open navigation',
                   child: const MonoIcon(MonoIcons.menu),
                 ),
+                child: _DrawerNav(activePath: active.path),
               ),
               SizedBox(width: theme.spacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(active.title, style: theme.typography.titleMedium),
-                    Text(
-                      active.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.typography.labelMedium.copyWith(
-                        color: theme.colors.mutedForeground,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const _SearchButton(),
-              SizedBox(width: theme.spacing.sm),
-              const _ThemeToggle(),
             ],
-          ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(active.title, style: theme.typography.titleMedium),
+                  Text(
+                    active.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.typography.labelMedium.copyWith(
+                      color: theme.colors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const _ViewportSwitcher(),
+            const _SearchButton(),
+            SizedBox(width: theme.spacing.sm),
+            const _ThemeToggle(),
+          ],
         ),
       ),
-      body: child,
+    );
+  }
+}
+
+/// The nav content inside the compact [MonoDrawer]: the branded header plus the
+/// scrollable section list.
+class _DrawerNav extends StatelessWidget {
+  const _DrawerNav({required this.activePath});
+  final String activePath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _SidebarHeader(),
+        Expanded(child: _NavList(activePath: activePath)),
+      ],
+    );
+  }
+}
+
+/// The global device switcher: pins the routed page to a framed viewport (or
+/// `Fluid` to let the real window drive layout). Hidden on compact headers,
+/// where there's no room and the window is already phone-sized.
+class _ViewportSwitcher extends StatelessWidget {
+  const _ViewportSwitcher();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    if (MonoScreenScope.of(context).isCompact) return const SizedBox.shrink();
+    final controller = AppScope.viewportOf(context);
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        return Padding(
+          padding: EdgeInsets.only(right: theme.spacing.sm),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colors.muted,
+              borderRadius: BorderRadius.circular(theme.radii.md),
+              border: Border.all(color: theme.colors.border),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(theme.spacing.xs / 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  for (final mode in ViewportMode.values)
+                    IntrinsicWidth(
+                      child: MonoButton(
+                        variant: controller.mode == mode
+                            ? MonoButtonVariant.secondary
+                            : MonoButtonVariant.ghost,
+                        size: MonoButtonSize.xs,
+                        semanticLabel: '${mode.label} viewport',
+                        onPressed: () => controller.set(mode),
+                        child: Text(mode.label),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -89,11 +185,19 @@ class _SidebarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
+    // Inset below the status bar / Dynamic Island when shown at the screen edge
+    // (compact drawer). On a pinned sidebar the top inset is 0.
+    final topInset = MediaQuery.of(context).padding.top;
     return LayoutBuilder(
       builder: (context, constraints) {
         final rail = constraints.maxWidth < 140;
         return Padding(
-          padding: EdgeInsets.all(theme.spacing.md),
+          padding: EdgeInsets.fromLTRB(
+            theme.spacing.md,
+            theme.spacing.md + topInset,
+            theme.spacing.md,
+            theme.spacing.md,
+          ),
           child: Row(
             children: <Widget>[
               Container(
@@ -188,7 +292,9 @@ class _NavItem extends StatelessWidget {
         size: MonoButtonSize.sm,
         semanticLabel: section.title,
         onPressed: () {
-          MonoScreen.of(context).sidebarController.close();
+          // Close the drawer when navigating from the compact modal nav; a
+          // no-op when the sidebar is pinned (no enclosing drawer).
+          MonoDrawer.maybeOf(context)?.close();
           context.go(section.path);
         },
         child: Row(
@@ -216,10 +322,13 @@ class _SearchButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MonoCommandPalette(
       trigger: MonoButton(
-        variant: MonoButtonVariant.outline,
-        size: MonoButtonSize.iconSm,
+        // Ghost + a full-size glyph so it reads as a balanced icon action rather
+        // than a large, near-empty outlined box on touch (where the tap target
+        // clamps to 48).
+        variant: MonoButtonVariant.ghost,
+        size: MonoButtonSize.icon,
         semanticLabel: 'Search sections',
-        child: const MonoIcon(MonoIcons.search),
+        child: const MonoIcon(MonoIcons.search, size: 20),
       ),
       placeholder: 'Jump to a section…',
       commands: <MonoCommand>[

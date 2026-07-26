@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
 import '../kit/component_section.dart';
+import '../kit/page_hero.dart';
 
 class OverlaysPage extends StatelessWidget {
   const OverlaysPage({super.key});
@@ -12,6 +12,15 @@ class OverlaysPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Overlays',
+          title: 'Layered surfaces',
+          tagline:
+              'Dialogs, sheets, drawers, popovers, tooltips, menus, and hover '
+              'cards — viewport-aware, focus-trapping, and animated in and out.',
+          child: const _OverlaysHero(),
+        ),
+        const SectionDivider(),
         MonoBanner(
           variant: MonoAlertVariant.info,
           child: const Text(
@@ -298,6 +307,72 @@ class OverlaysPage extends StatelessWidget {
             ],
             onSelected: (_) {},
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A composed row-actions surface for the hero.
+class _OverlaysHero extends StatelessWidget {
+  const _OverlaysHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text('Manage listing', style: theme.typography.titleMedium),
+        SizedBox(height: theme.spacing.lg),
+        Wrap(
+          spacing: theme.spacing.sm,
+          runSpacing: theme.spacing.sm,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            IntrinsicWidth(
+              child: MonoButton(
+                onPressed: () {},
+                leading: const MonoIcon(MonoIcons.send, size: 16),
+                child: const Text('Share'),
+              ),
+            ),
+            IntrinsicWidth(
+              child: MonoTooltip(
+                message: 'Save for later',
+                child: MonoButton(
+                  variant: MonoButtonVariant.outline,
+                  size: MonoButtonSize.icon,
+                  onPressed: () {},
+                  child: const MonoIcon(MonoIcons.bookmark),
+                ),
+              ),
+            ),
+            // MonoDropdownMenu sizes its menu to the trigger's width, so a tiny
+            // icon trigger near the screen edge collapses the menu to a sliver.
+            // A labelled, intrinsic-width trigger keeps the menu readable.
+            IntrinsicWidth(
+              child: MonoDropdownMenu<String>(
+                onSelected: (_) {},
+                items: <MonoDropdownMenuItem<String>>[
+                  MonoDropdownMenuItem<String>(
+                    value: 'edit',
+                    label: const Text('Edit'),
+                  ),
+                  MonoDropdownMenuItem<String>(
+                    value: 'archive',
+                    label: const Text('Archive'),
+                  ),
+                ],
+                trigger: MonoButton(
+                  variant: MonoButtonVariant.outline,
+                  size: MonoButtonSize.sm,
+                  trailing: const MonoIcon(MonoIcons.chevronDown, size: 14),
+                  child: const Text('More'),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

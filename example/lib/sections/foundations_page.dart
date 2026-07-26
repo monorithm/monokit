@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
 import '../kit/component_section.dart';
+import '../kit/page_hero.dart';
 
 class FoundationsPage extends StatelessWidget {
   const FoundationsPage({super.key});
@@ -12,6 +12,16 @@ class FoundationsPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Foundations',
+          title: 'The design language',
+          tagline:
+              'Emerald on mist, IBM Plex across three registers, elevation from '
+              'borders and light, and calm motion — the tokens every widget '
+              'resolves from MonokitTheme.of(context).',
+          child: const _MotionDemo(),
+        ),
+        const SectionDivider(),
         ComponentSection(
           title: 'Palette — emerald on mist',
           widgetName: 'MonokitColors',
@@ -98,46 +108,14 @@ class FoundationsPage extends StatelessWidget {
             ],
           ),
         ),
-        ComponentSection(
+        const ComponentSection(
           title: 'Motion tokens',
           widgetName: 'MonokitMotion',
           description:
               'Physics for moments, curves for chrome. monoOut is the signature '
-              'deceleration; springs are rationed to genuine moments.',
-          child: Wrap(
-            spacing: theme.spacing.sm,
-            runSpacing: theme.spacing.sm,
-            children: const <Widget>[
-              MonoBadge(
-                variant: MonoBadgeVariant.secondary,
-                child: Text('fast 100ms'),
-              ),
-              MonoBadge(
-                variant: MonoBadgeVariant.secondary,
-                child: Text('base 150ms'),
-              ),
-              MonoBadge(
-                variant: MonoBadgeVariant.secondary,
-                child: Text('moderate 220ms'),
-              ),
-              MonoBadge(
-                variant: MonoBadgeVariant.secondary,
-                child: Text('slow 300ms'),
-              ),
-              MonoBadge(
-                variant: MonoBadgeVariant.outline,
-                child: Text('monoOut'),
-              ),
-              MonoBadge(
-                variant: MonoBadgeVariant.outline,
-                child: Text('spatialSpring'),
-              ),
-              MonoBadge(
-                variant: MonoBadgeVariant.outline,
-                child: Text('celebrateSpring'),
-              ),
-            ],
-          ),
+              'deceleration — press Play to watch the curves run, not just read '
+              'their names.',
+          child: _MotionDemo(),
         ),
         ComponentSection(
           title: 'Icons',
@@ -291,4 +269,143 @@ class _IconTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       DemoTile(label: label, child: MonoIcon(icon, size: 22));
+}
+
+/// An animated motion demo — dots ride each curve on a loop so the tokens are
+/// felt, not just named.
+class _MotionDemo extends StatefulWidget {
+  const _MotionDemo();
+
+  @override
+  State<_MotionDemo> createState() => _MotionDemoState();
+}
+
+class _MotionDemoState extends State<_MotionDemo>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2200),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    final tracks = <(String, Curve)>[
+      ('linear', theme.motion.linear),
+      ('standard', theme.motion.standard),
+      ('monoOut', theme.motion.monoOut),
+      ('emphasized', theme.motion.emphasized),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        for (final (label, curve) in tracks)
+          Padding(
+            padding: EdgeInsets.only(bottom: theme.spacing.md),
+            child: _Track(label: label, curve: curve, controller: _controller),
+          ),
+        SizedBox(height: theme.spacing.xs),
+        Wrap(
+          spacing: theme.spacing.sm,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            MonoButton(
+              variant: MonoButtonVariant.outline,
+              size: MonoButtonSize.sm,
+              onPressed: () => _controller
+                ..reset()
+                ..repeat(),
+              leading: const MonoIcon(MonoIcons.play, size: 14),
+              child: const Text('Replay'),
+            ),
+            const MonoBadge(
+              variant: MonoBadgeVariant.secondary,
+              child: Text('150–300ms'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _Track extends StatelessWidget {
+  const _Track({
+    required this.label,
+    required this.curve,
+    required this.controller,
+  });
+
+  final String label;
+  final Curve curve;
+  final AnimationController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Row(
+      children: <Widget>[
+        SizedBox(
+          width: 96,
+          child: Text(
+            label,
+            style: theme.typography.mono.copyWith(
+              color: theme.colors.mutedForeground,
+            ),
+          ),
+        ),
+        SizedBox(width: theme.spacing.sm),
+        Expanded(
+          child: SizedBox(
+            height: 20,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const dot = 16.0;
+                final travel = constraints.maxWidth - dot;
+                return AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    // Ease the first half out, hold, then return — so the curve
+                    // shape is legible on a loop.
+                    final t = controller.value;
+                    final phase = t < 0.5 ? t * 2 : (1 - t) * 2;
+                    final v = curve.transform(phase.clamp(0.0, 1.0));
+                    return Stack(
+                      children: <Widget>[
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            height: 2,
+                            color: theme.colors.border,
+                          ),
+                        ),
+                        Positioned(
+                          left: v * travel,
+                          top: 2,
+                          child: Container(
+                            width: dot,
+                            height: dot,
+                            decoration: BoxDecoration(
+                              color: theme.colors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

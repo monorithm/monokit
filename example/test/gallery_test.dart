@@ -52,7 +52,7 @@ void main() {
     }
   });
 
-  testWidgets('every block renders without exceptions', (tester) async {
+  testWidgets('every scenario renders without exceptions', (tester) async {
     tester.view.physicalSize = const Size(1280, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -62,12 +62,14 @@ void main() {
     await _flush(tester);
 
     for (final path in const <String>[
-      '/blocks/signin',
-      '/blocks/for-you',
-      '/blocks/search',
-      '/blocks/post',
-      '/blocks/post-detail',
-      '/blocks/interest',
+      '/scenarios/storefront',
+      '/scenarios/checkout',
+      '/scenarios/order-tracking',
+      '/scenarios/conversation',
+      '/scenarios/live-studio',
+      '/scenarios/creator-studio',
+      '/scenarios/team-workspace',
+      '/scenarios/group-call',
     ]) {
       router.go(path);
       await _flush(tester);

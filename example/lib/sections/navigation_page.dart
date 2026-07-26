@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
 import '../kit/component_section.dart';
+import '../kit/page_hero.dart';
 
 class NavigationPage extends StatelessWidget {
   const NavigationPage({super.key});
@@ -12,6 +12,24 @@ class NavigationPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(theme.spacing.giant),
       children: <Widget>[
+        PageHero(
+          eyebrow: 'Navigation',
+          title: 'Getting around',
+          tagline:
+              'Bottom nav, tabs, accordions, menus, breadcrumbs, and pagination '
+              '— the wayfinding surfaces, each adapting to the space it is given.',
+          child: const _NavHero(),
+        ),
+        const SectionDivider(),
+        const StageBlock(
+          title: 'A navigation shell that adapts',
+          description:
+              'A side rail with content on wide viewports; a top bar plus bottom '
+              'nav on compact — the same destinations, re-placed for the device.',
+          stageHeight: 460,
+          child: _NavShellDemo(),
+        ),
+        const SectionDivider(),
         const ComponentSection(
           title: 'Bottom nav',
           widgetName: 'MonoBottomNav',
@@ -152,6 +170,173 @@ class NavigationPage extends StatelessWidget {
       text,
       style: theme.typography.bodyMedium.copyWith(
         color: theme.colors.mutedForeground,
+      ),
+    );
+  }
+}
+
+/// A composed wayfinding header for the hero.
+class _NavHero extends StatelessWidget {
+  const _NavHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        MonoBreadcrumb(
+          children: <Widget>[
+            MonoBreadcrumbLink(onPressed: () {}, child: const Text('Home')),
+            const MonoBreadcrumbSeparator(),
+            MonoBreadcrumbLink(onPressed: () {}, child: const Text('Furniture')),
+            const MonoBreadcrumbSeparator(),
+            const MonoBreadcrumbPage(child: Text('Chairs')),
+          ],
+        ),
+        SizedBox(height: theme.spacing.lg),
+        MonoNavigationMenu(
+          defaultValue: 'feed',
+          onChanged: (_) {},
+          items: <MonoNavigationMenuItem>[
+            MonoNavigationMenuItem.text(value: 'feed', label: 'For you'),
+            MonoNavigationMenuItem.text(value: 'nearby', label: 'Nearby'),
+            MonoNavigationMenuItem.text(value: 'saved', label: 'Saved'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// A list/detail shell that becomes a side rail on wide viewports and a top-bar
+/// + bottom-nav layout on compact — the headline navigation reflow.
+class _NavShellDemo extends StatefulWidget {
+  const _NavShellDemo();
+
+  @override
+  State<_NavShellDemo> createState() => _NavShellDemoState();
+}
+
+class _NavShellDemoState extends State<_NavShellDemo> {
+  int _selected = 0;
+
+  static const List<(MonoIconData, String)> _dests = <(MonoIconData, String)>[
+    (MonoIcons.grid, 'For you'),
+    (MonoIcons.location, 'Nearby'),
+    (MonoIcons.bookmark, 'Saved'),
+    (MonoIcons.message, 'Inbox'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    final content = _Content(label: _dests[_selected].$2);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= theme.breakpoints.medium;
+        if (wide) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              SizedBox(
+                width: 200,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(color: theme.colors.border),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(theme.spacing.sm),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        for (var i = 0; i < _dests.length; i++)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: theme.spacing.xs),
+                            child: MonoButton(
+                              variant: i == _selected
+                                  ? MonoButtonVariant.secondary
+                                  : MonoButtonVariant.ghost,
+                              size: MonoButtonSize.sm,
+                              onPressed: () => setState(() => _selected = i),
+                              leading: MonoIcon(_dests[i].$1, size: 16),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(_dests[i].$2),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(child: content),
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: theme.colors.border)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(theme.spacing.md),
+                child: Row(
+                  children: <Widget>[
+                    const MonoIcon(MonoIcons.menu, size: 18),
+                    SizedBox(width: theme.spacing.sm),
+                    Text(
+                      _dests[_selected].$2,
+                      style: theme.typography.titleMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(child: content),
+            MonoBottomNav(
+              selectedIndex: _selected,
+              onSelected: (i) => setState(() => _selected = i),
+              items: <MonoBottomNavItem>[
+                for (final (icon, label) in _dests)
+                  MonoBottomNavItem(icon: icon, label: label),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _Content extends StatelessWidget {
+  const _Content({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Padding(
+      padding: EdgeInsets.all(theme.spacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(label, style: theme.typography.titleLarge),
+          SizedBox(height: theme.spacing.sm),
+          Text(
+            'The $label destination. On wide viewports this sits beside a side '
+            'rail; on compact it fills the screen with a bottom nav below.',
+            style: theme.typography.bodyMedium.copyWith(
+              color: theme.colors.mutedForeground,
+            ),
+          ),
+        ],
       ),
     );
   }
