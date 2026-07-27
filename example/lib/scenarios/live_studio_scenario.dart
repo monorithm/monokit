@@ -41,7 +41,10 @@ class LiveStudioScenario extends StatelessWidget {
                   size: MonoButtonSize.iconSm,
                   semanticLabel: 'Back',
                   onPressed: () => context.go('/scenarios'),
-                  child: MonoIcon(MonoIcons.chevronLeft, color: theme.colors.onMedia),
+                  child: MonoIcon(
+                    MonoIcons.chevronLeft,
+                    color: theme.colors.onMedia,
+                  ),
                 ),
                 SizedBox(width: theme.spacing.sm),
                 const MonoLiveBadge(),
@@ -50,7 +53,11 @@ class LiveStudioScenario extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      MonoIcon(MonoIcons.user, size: 14, color: theme.colors.onMedia),
+                      MonoIcon(
+                        MonoIcons.user,
+                        size: 14,
+                        color: theme.colors.onMedia,
+                      ),
                       SizedBox(width: theme.spacing.xs),
                       Text(
                         '1.2k',

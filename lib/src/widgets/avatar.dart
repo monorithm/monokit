@@ -154,7 +154,8 @@ class MonoAvatar extends StatelessWidget {
           color: backgroundColor ?? theme.colors.muted,
           borderRadius: borderRadius,
           border: Border.all(
-            color: borderColor ?? theme.colors.foreground.withValues(alpha: 0.1),
+            color:
+                borderColor ?? theme.colors.foreground.withValues(alpha: 0.1),
           ),
         ),
         child: ClipRRect(

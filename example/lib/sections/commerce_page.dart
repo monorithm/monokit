@@ -18,7 +18,13 @@ class _Product {
 const List<_Product> _products = <_Product>[
   _Product(AppAssets.phone, 'phone', 'iPhone 13 · 128GB', 'Nima', '4,800'),
   _Product(AppAssets.sneakers, 'sneakers', 'Retro sneakers', 'Osu', '320'),
-  _Product(AppAssets.chair, 'chair', 'Linen lounge chair', 'East Legon', '2,100'),
+  _Product(
+    AppAssets.chair,
+    'chair',
+    'Linen lounge chair',
+    'East Legon',
+    '2,100',
+  ),
   _Product(AppAssets.lamp, 'lamp', 'Arc floor lamp', 'Cantonments', '540'),
   _Product(AppAssets.plant, 'plant', 'Monstera, large', 'Labone', '180'),
 ];

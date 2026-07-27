@@ -122,7 +122,10 @@ class _FeedbackHero extends StatelessWidget {
         Row(
           children: <Widget>[
             Expanded(
-              child: Text('Publishing listing', style: theme.typography.titleMedium),
+              child: Text(
+                'Publishing listing',
+                style: theme.typography.titleMedium,
+              ),
             ),
             const MonoBadge(
               variant: MonoBadgeVariant.info,

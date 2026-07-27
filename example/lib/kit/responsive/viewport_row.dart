@@ -41,7 +41,11 @@ class ViewportRow extends StatelessWidget {
           for (final viewport in viewports)
             Padding(
               padding: EdgeInsets.only(right: theme.spacing.lg),
-              child: _Pane(viewport: viewport, height: height, builder: builder),
+              child: _Pane(
+                viewport: viewport,
+                height: height,
+                builder: builder,
+              ),
             ),
         ],
       ),

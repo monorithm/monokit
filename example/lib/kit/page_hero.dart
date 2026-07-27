@@ -46,10 +46,7 @@ class PageHero extends StatelessWidget {
           ),
         ),
         SizedBox(height: theme.spacing.xl),
-        MonoSurface(
-          padding: EdgeInsets.all(theme.spacing.xl),
-          child: child,
-        ),
+        MonoSurface(padding: EdgeInsets.all(theme.spacing.xl), child: child),
       ],
     );
   }
@@ -81,9 +78,7 @@ class StageBlock extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            Expanded(
-              child: Text(title, style: theme.typography.titleLarge),
-            ),
+            Expanded(child: Text(title, style: theme.typography.titleLarge)),
             const MonoBadge(
               variant: MonoBadgeVariant.outline,
               child: Text('Responsive'),

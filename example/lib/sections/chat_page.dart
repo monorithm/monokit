@@ -95,7 +95,10 @@ class ChatPage extends StatelessWidget {
                 description: const Text(
                   'Clean, battery 89%. Meet at Nima or delivery in Accra.',
                 ),
-                thumbnail: const AppImage(asset: AppAssets.phone, seed: 'phone'),
+                thumbnail: const AppImage(
+                  asset: AppAssets.phone,
+                  seed: 'phone',
+                ),
                 onPressed: () {},
               ),
             ],

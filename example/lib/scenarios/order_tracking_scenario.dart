@@ -40,7 +40,10 @@ class OrderTrackingScenario extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Text('Arriving today', style: theme.typography.titleMedium),
+                        Text(
+                          'Arriving today',
+                          style: theme.typography.titleMedium,
+                        ),
                         SizedBox(height: theme.spacing.xs),
                         Text(
                           'Estimated 6:30 – 7:00 pm',
@@ -81,7 +84,10 @@ class OrderTrackingScenario extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Text('Kofi A. · courier', style: theme.typography.labelLarge),
+                        Text(
+                          'Kofi A. · courier',
+                          style: theme.typography.labelLarge,
+                        ),
                         Text(
                           '4.9 ★ · Yamaha',
                           style: theme.typography.labelMedium.copyWith(
@@ -134,7 +140,9 @@ class _StageRow extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final reached = done || active;
     final dotColor = reached ? theme.colors.primary : theme.colors.muted;
-    final fg = reached ? theme.colors.primaryForeground : theme.colors.mutedForeground;
+    final fg = reached
+        ? theme.colors.primaryForeground
+        : theme.colors.mutedForeground;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +152,10 @@ class _StageRow extends StatelessWidget {
               Container(
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
                 child: MonoIcon(stage.icon, size: 16, color: fg),
               ),
               if (!last)

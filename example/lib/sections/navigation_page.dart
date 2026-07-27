@@ -189,7 +189,10 @@ class _NavHero extends StatelessWidget {
           children: <Widget>[
             MonoBreadcrumbLink(onPressed: () {}, child: const Text('Home')),
             const MonoBreadcrumbSeparator(),
-            MonoBreadcrumbLink(onPressed: () {}, child: const Text('Furniture')),
+            MonoBreadcrumbLink(
+              onPressed: () {},
+              child: const Text('Furniture'),
+            ),
             const MonoBreadcrumbSeparator(),
             const MonoBreadcrumbPage(child: Text('Chairs')),
           ],

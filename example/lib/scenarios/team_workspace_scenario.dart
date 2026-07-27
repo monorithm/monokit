@@ -222,7 +222,9 @@ class _Detail extends StatelessWidget {
                 align: MonoMessageAlign.end,
                 child: MonoBubble(
                   variant: MonoBubbleVariant.primary,
-                  child: MonoBubbleContent(child: Text('Yes — around Nima today.')),
+                  child: MonoBubbleContent(
+                    child: Text('Yes — around Nima today.'),
+                  ),
                 ),
               ),
             ],

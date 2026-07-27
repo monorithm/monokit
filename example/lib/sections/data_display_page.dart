@@ -204,10 +204,7 @@ class _AvatarGroup extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: theme.colors.background, width: 2),
                 ),
-                child: MonoAvatar.initials(
-                  _people[i],
-                  size: MonoAvatarSize.sm,
-                ),
+                child: MonoAvatar.initials(_people[i], size: MonoAvatarSize.sm),
               ),
             ),
           Positioned(
@@ -229,11 +226,11 @@ class _StatGrid extends StatelessWidget {
 
   static const List<(MonoIconData, String, String)> _stats =
       <(MonoIconData, String, String)>[
-    (MonoIcons.bag, 'Revenue', 'GH₵ 42,800'),
-    (MonoIcons.receipt, 'Orders', '128'),
-    (MonoIcons.user, 'Buyers', '96'),
-    (MonoIcons.star, 'Rating', '4.9'),
-  ];
+        (MonoIcons.bag, 'Revenue', 'GH₵ 42,800'),
+        (MonoIcons.receipt, 'Orders', '128'),
+        (MonoIcons.user, 'Buyers', '96'),
+        (MonoIcons.star, 'Rating', '4.9'),
+      ];
 
   @override
   Widget build(BuildContext context) {

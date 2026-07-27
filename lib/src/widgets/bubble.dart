@@ -79,11 +79,7 @@ class MonoBubbleStyleResolver {
       MonoBubbleVariant.muted => (colors.muted, colors.foreground, null),
       // Soft primary tint (not the full accent), matching the reference's
       // desaturated-primary tinted bubble; foreground stays legible in both modes.
-      MonoBubbleVariant.tinted => (
-        colors.primarySoft,
-        colors.foreground,
-        null,
-      ),
+      MonoBubbleVariant.tinted => (colors.primarySoft, colors.foreground, null),
       MonoBubbleVariant.outline => (
         colors.background.withValues(alpha: 0),
         colors.foreground,

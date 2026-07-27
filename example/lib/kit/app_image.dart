@@ -103,7 +103,12 @@ class _ProceduralArt extends StatelessWidget {
     final hue = (h % 360).toDouble();
     final base = onMediaCanvas ? 0.32 : 0.62;
     final a = HSLColor.fromAHSL(1, hue, 0.42, base).toColor();
-    final b = HSLColor.fromAHSL(1, (hue + 42) % 360, 0.48, base - 0.16).toColor();
+    final b = HSLColor.fromAHSL(
+      1,
+      (hue + 42) % 360,
+      0.48,
+      base - 0.16,
+    ).toColor();
     final onArt = theme.colors.onMedia;
 
     return DecoratedBox(

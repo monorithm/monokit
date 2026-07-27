@@ -48,8 +48,7 @@ class StorefrontScenario extends StatelessWidget {
           final columns = w < 520 ? 2 : (w < 900 ? 3 : 4);
           final gap = theme.spacing.md;
           final pad = theme.spacing.lg;
-          final tileWidth =
-              (w - pad * 2 - gap * (columns - 1)) / columns;
+          final tileWidth = (w - pad * 2 - gap * (columns - 1)) / columns;
           return ListView(
             padding: EdgeInsets.all(pad),
             children: <Widget>[

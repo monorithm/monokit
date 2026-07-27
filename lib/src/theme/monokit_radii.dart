@@ -75,6 +75,5 @@ class MonokitRadii {
       full == other.full;
 
   @override
-  int get hashCode =>
-      Object.hash(base, sm, md, lg, xl, xxl, xxxl, xxxxl, full);
+  int get hashCode => Object.hash(base, sm, md, lg, xl, xxl, xxxl, xxxxl, full);
 }

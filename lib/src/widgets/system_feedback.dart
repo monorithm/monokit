@@ -133,9 +133,10 @@ class _DashedRRectBorder extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Path path = Path()..addRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
-    );
+    final Path path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
+      );
     final Paint paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke

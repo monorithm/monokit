@@ -58,7 +58,9 @@ class MonoContextMenuContent extends StatelessWidget {
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colors.popover,
-        border: Border.all(color: theme.colors.foreground.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: theme.colors.foreground.withValues(alpha: 0.1),
+        ),
         borderRadius: BorderRadius.circular(theme.radii.lg),
         boxShadow: <BoxShadow>[
           BoxShadow(

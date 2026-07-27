@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:monokit/monokit.dart';
 
 /// Shared test host that installs the Monokit theme plus a Navigator/Overlay

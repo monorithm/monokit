@@ -46,12 +46,11 @@ class MonokitFocus {
     double? ringWidth,
     double? ringOffset,
     double? ringAlpha,
-  }) =>
-      MonokitFocus(
-        ringWidth: ringWidth ?? this.ringWidth,
-        ringOffset: ringOffset ?? this.ringOffset,
-        ringAlpha: ringAlpha ?? this.ringAlpha,
-      );
+  }) => MonokitFocus(
+    ringWidth: ringWidth ?? this.ringWidth,
+    ringOffset: ringOffset ?? this.ringOffset,
+    ringAlpha: ringAlpha ?? this.ringAlpha,
+  );
 
   @override
   bool operator ==(Object other) =>

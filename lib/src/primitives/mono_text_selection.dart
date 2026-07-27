@@ -172,8 +172,10 @@ class MonoTextSelectionToolbar extends StatelessWidget {
     // contextMenuButtonItems — scrolls horizontally instead of overflowing off
     // the screen edge.
     final double maxWidth =
-        (MediaQuery.of(context).size.width - theme.spacing.lg * 2)
-            .clamp(0.0, double.infinity);
+        (MediaQuery.of(context).size.width - theme.spacing.lg * 2).clamp(
+          0.0,
+          double.infinity,
+        );
     final Widget toolbar = ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: DecoratedBox(

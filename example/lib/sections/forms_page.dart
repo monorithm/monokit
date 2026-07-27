@@ -269,11 +269,7 @@ class _ResponsiveForm extends StatelessWidget {
                     Expanded(child: city),
                   ],
                 )
-              else ...<Widget>[
-                price,
-                SizedBox(height: theme.spacing.md),
-                city,
-              ],
+              else ...<Widget>[price, SizedBox(height: theme.spacing.md), city],
               SizedBox(height: theme.spacing.md),
               condition,
               SizedBox(height: theme.spacing.lg),

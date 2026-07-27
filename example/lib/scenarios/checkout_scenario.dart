@@ -52,10 +52,7 @@ class _CheckoutScenarioState extends State<CheckoutScenario> {
             value: _delivery,
             onChanged: (v) => setState(() => _delivery = v),
             options: const <MonoRadioOption<String>>[
-              MonoRadioOption(
-                value: 'pickup',
-                label: Text('Pickup — free'),
-              ),
+              MonoRadioOption(value: 'pickup', label: Text('Pickup — free')),
               MonoRadioOption(
                 value: 'delivery',
                 label: Text('Delivery within Accra — GH₵ 20'),
@@ -73,7 +70,11 @@ class _CheckoutScenarioState extends State<CheckoutScenario> {
             padding: EdgeInsets.symmetric(vertical: theme.spacing.sm),
             child: const MonoSeparator(),
           ),
-          _SummaryRow(label: 'Total', value: 'GH₵ ${_subtotal + _fee}', bold: true),
+          _SummaryRow(
+            label: 'Total',
+            value: 'GH₵ ${_subtotal + _fee}',
+            bold: true,
+          ),
         ],
       ),
       bottom: MonoCartBar(

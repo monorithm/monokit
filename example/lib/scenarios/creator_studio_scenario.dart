@@ -71,10 +71,22 @@ class _CreatorStudioScenarioState extends State<CreatorStudioScenario> {
             spacing: theme.spacing.sm,
             runSpacing: theme.spacing.sm,
             children: const <Widget>[
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('iPhone 13')),
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('128GB')),
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('GH₵ 4,800')),
-              MonoBadge(variant: MonoBadgeVariant.secondary, child: Text('Nima')),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('iPhone 13'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('128GB'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('GH₵ 4,800'),
+              ),
+              MonoBadge(
+                variant: MonoBadgeVariant.secondary,
+                child: Text('Nima'),
+              ),
             ],
           ),
           SizedBox(height: theme.spacing.lg),
@@ -111,13 +123,11 @@ class _CreatorStudioScenarioState extends State<CreatorStudioScenario> {
         leading: _state == _PostState.posted
             ? const MonoIcon(MonoIcons.check, size: 16)
             : const MonoIcon(MonoIcons.send, size: 16),
-        child: Text(
-          switch (_state) {
-            _PostState.draft => 'Publish',
-            _PostState.publishing => 'Publishing…',
-            _PostState.posted => 'Posted',
-          },
-        ),
+        child: Text(switch (_state) {
+          _PostState.draft => 'Publish',
+          _PostState.publishing => 'Publishing…',
+          _PostState.posted => 'Posted',
+        }),
       ),
     );
   }

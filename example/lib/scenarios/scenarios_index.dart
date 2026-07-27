@@ -144,7 +144,11 @@ class _ScenarioCard extends StatelessWidget {
                       color: theme.colors.primarySoft,
                       borderRadius: BorderRadius.circular(theme.radii.md),
                     ),
-                    child: MonoIcon(meta.icon, size: 18, color: theme.colors.primary),
+                    child: MonoIcon(
+                      meta.icon,
+                      size: 18,
+                      color: theme.colors.primary,
+                    ),
                   ),
                   const Spacer(),
                   const MonoIcon(MonoIcons.arrowRight, size: 16),

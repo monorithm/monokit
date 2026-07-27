@@ -123,7 +123,10 @@ class _ResponsiveStageState extends State<ResponsiveStage> {
                       ),
                       _DragHandle(
                         onDrag: (dx) => setState(() {
-                          _width = (width + dx).clamp(widget.minWidth, maxWidth);
+                          _width = (width + dx).clamp(
+                            widget.minWidth,
+                            maxWidth,
+                          );
                         }),
                       ),
                       const Expanded(child: SizedBox.shrink()),

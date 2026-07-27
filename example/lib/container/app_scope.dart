@@ -42,16 +42,14 @@ class AppScope extends StatelessWidget {
   /// The brightness controller. Named [of] for backwards compatibility with the
   /// original single-controller scope.
   static AppThemeController of(BuildContext context) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<_ThemeScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<_ThemeScope>();
     assert(scope != null, 'No AppScope found in context.');
     return scope!.notifier!;
   }
 
   /// The global device-switcher controller.
   static ViewportController viewportOf(BuildContext context) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<_ViewportScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<_ViewportScope>();
     assert(scope != null, 'No AppScope found in context.');
     return scope!.notifier!;
   }

@@ -250,10 +250,7 @@ class _StatusStack extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: <Widget>[
-              MonoBadge(
-                variant: MonoBadgeVariant.success,
-                child: Text('Paid'),
-              ),
+              MonoBadge(variant: MonoBadgeVariant.success, child: Text('Paid')),
               MonoBadge(
                 variant: MonoBadgeVariant.warning,
                 child: Text('Packing'),
@@ -281,8 +278,8 @@ class _StatusStack extends StatelessWidget {
 class _Highlights extends StatelessWidget {
   const _Highlights();
 
-  static const List<(MonoIconData, String, String)> _cards =
-      <(MonoIconData, String, String)>[
+  static const List<(MonoIconData, String, String)>
+  _cards = <(MonoIconData, String, String)>[
     (
       MonoIcons.grid,
       'Responsive by design',

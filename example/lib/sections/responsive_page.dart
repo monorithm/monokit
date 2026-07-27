@@ -188,13 +188,13 @@ class ResponsiveShowpiece extends StatelessWidget {
 
   static const List<(MonoIconData, String, String)> _items =
       <(MonoIconData, String, String)>[
-    (MonoIcons.bag, 'Orders', '128'),
-    (MonoIcons.message, 'Threads', '24'),
-    (MonoIcons.video, 'Live', '3'),
-    (MonoIcons.star, 'Saved', '61'),
-    (MonoIcons.receipt, 'Invoices', '12'),
-    (MonoIcons.user, 'Team', '8'),
-  ];
+        (MonoIcons.bag, 'Orders', '128'),
+        (MonoIcons.message, 'Threads', '24'),
+        (MonoIcons.video, 'Live', '3'),
+        (MonoIcons.star, 'Saved', '61'),
+        (MonoIcons.receipt, 'Invoices', '12'),
+        (MonoIcons.user, 'Team', '8'),
+      ];
 
   @override
   Widget build(BuildContext context) {
