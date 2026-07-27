@@ -3,9 +3,10 @@ import 'package:monokit/monokit.dart';
 
 import '_support/host.dart';
 
-/// Contracts for the 2.1 residuals — the two variant ladders the 2.0 plan
-/// specified but 2.0 shipped without, and the accordion height the motion
-/// doctrine had left on a curve.
+/// Contracts for the residuals cleared after 2.0 — the two variant ladders the
+/// 2.0 plan specified but 2.0 shipped without, the accordion height the motion
+/// doctrine had left on a curve, and the badge status treatment that had
+/// drifted away from every other status-bearing component.
 void main() {
   group('MonoBadgeVariant', () {
     test('is the state vocabulary and nothing else', () {
@@ -44,15 +45,65 @@ void main() {
       expect(neutral.background, isNot(theme.colors.primary));
     });
 
-    test('danger keeps the contrast-safe soft/text pairing', () {
+    test('every semantic status is a soft fill with its own text colour', () {
+      // Through 2.1 only `danger` was soft; success, warning and info were
+      // saturated fills on `onStatus`. A row of status badges came out half
+      // shouting and half whispering, with the quiet one being the alarm.
+      // Asserted per-family rather than as one lump so a failure names the
+      // status that drifted.
+      for (final theme in <MonokitThemeData>[
+        MonokitThemeData.light(),
+        MonokitThemeData.dark(),
+      ]) {
+        final c = theme.colors;
+        final expected = <MonoBadgeVariant, (Color, Color)>{
+          MonoBadgeVariant.success: (c.successSoft, c.successText),
+          MonoBadgeVariant.warning: (c.warningSoft, c.warningText),
+          MonoBadgeVariant.danger: (c.dangerSoft, c.dangerText),
+          MonoBadgeVariant.info: (c.infoSoft, c.infoText),
+        };
+        expected.forEach((variant, pair) {
+          final style = const MonoBadgeStyleResolver().resolve(
+            theme: theme,
+            variant: variant,
+            size: MonoBadgeSize.md,
+          );
+          expect(
+            (style.background, style.foreground),
+            pair,
+            reason:
+                '$variant in ${theme.brightness} must use the soft fill '
+                'and its contrast-safe text, like MonoAlert already does',
+          );
+        });
+      }
+    });
+
+    test('live stays loud — it is a signal, not a status', () {
+      // The one deliberate exception to the soft rule. If someone "unifies"
+      // this too, the live indicator stops reading as live.
       final theme = MonokitThemeData.dark();
-      final danger = const MonoBadgeStyleResolver().resolve(
+      final live = const MonoBadgeStyleResolver().resolve(
         theme: theme,
-        variant: MonoBadgeVariant.danger,
+        variant: MonoBadgeVariant.live,
         size: MonoBadgeSize.md,
       );
-      expect(danger.background, theme.colors.dangerSoft);
-      expect(danger.foreground, theme.colors.dangerText);
+      expect(live.background, theme.colors.live);
+      expect(live.foreground, theme.colors.onLive);
+    });
+
+    test('badges and alerts agree on what a status looks like', () {
+      // The two status-bearing components must not diverge again. MonoAlert
+      // uses the solid role only as a border accent; the badge is borderless,
+      // so it shares just the fill and text.
+      final theme = MonokitThemeData.light();
+      final badge = const MonoBadgeStyleResolver().resolve(
+        theme: theme,
+        variant: MonoBadgeVariant.success,
+        size: MonoBadgeSize.md,
+      );
+      expect(badge.background, theme.colors.successSoft);
+      expect(badge.foreground, theme.colors.successText);
     });
   });
 

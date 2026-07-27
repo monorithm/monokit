@@ -1,3 +1,26 @@
+## 2.2.0
+
+One fix. The badge was the last component whose status treatment disagreed with
+the rest of the system.
+
+No API changes — this is a pure visual correction, so unlike 2.1.0 the version
+number means what it says.
+
+### Fixed
+
+- **Every semantic badge status is now a soft fill with its contrast-safe
+  text.** `success`, `warning` and `info` were saturated fills on `onStatus`
+  while `danger` alone used `dangerSoft`/`dangerText`, so a row of status badges
+  came out half shouting and half whispering — with the quiet one being the
+  alarm. `MonoAlert` has always used soft+text for all four, and the destructive
+  button uses it too; the badge was the outlier, which is what makes this a
+  defect rather than a preference.
+- `live` deliberately stays solid. It is an attention signal rather than a
+  status, and the loudness is the point. `neutral` was already a soft fill.
+
+`onStatus` is now read only by `MonoBubble`. It is still live, but if that call
+site ever changes the role should go with it.
+
 ## 2.1.0
 
 The three things 2.0's plan specified and 2.0 shipped without. Small, but they
