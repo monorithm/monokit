@@ -150,12 +150,12 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
     final bool isMixed = widget.value == null;
     final Widget mark = isChecked
         ? CustomPaint(
-            painter: _MonoCheckPainter(color: theme.colors.primaryForeground),
+            painter: _MonoCheckPainter(color: theme.colors.onPrimary),
             child: const SizedBox.expand(),
           )
         : isMixed
         ? CustomPaint(
-            painter: _MonoMinusPainter(color: theme.colors.primaryForeground),
+            painter: _MonoMinusPainter(color: theme.colors.onPrimary),
             child: const SizedBox.expand(),
           )
         : const SizedBox.expand();
@@ -192,15 +192,15 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
         builder: (BuildContext context, Widget? _) {
           final Color foreground = _isEnabled
               ? theme.colors.foreground
-              : theme.colors.mutedForeground;
+              : theme.colors.foregroundMuted;
           final Color borderColor = isChecked || isMixed
               ? theme.colors.primary
               : _isHovered && _isEnabled
               ? theme.colors.foreground
-              : theme.colors.input;
+              : theme.colors.separator;
           final Color fillColor = isChecked || isMixed
               ? theme.colors.primary
-              : theme.colors.background.withAlpha(0);
+              : theme.colors.page.withAlpha(0);
 
           final Widget checkbox = AnimatedContainer(
             duration: theme.motion.reduced(context, theme.motion.base),
@@ -243,7 +243,7 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
                           SizedBox(height: theme.spacing.xs),
                         DefaultTextStyle.merge(
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                           child: widget.description!,
                         ),

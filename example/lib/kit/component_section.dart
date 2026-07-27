@@ -60,7 +60,7 @@ class ComponentSection extends StatelessWidget {
             Text(
               description!,
               style: theme.typography.bodyMedium.copyWith(
-                color: theme.colors.mutedForeground,
+                color: theme.colors.foregroundMuted,
               ),
             ),
           ],
@@ -110,7 +110,7 @@ class VariantMatrix<R, C> extends StatelessWidget {
               child: Text(
                 rowLabel!(r),
                 style: theme.typography.labelMedium.copyWith(
-                  color: theme.colors.mutedForeground,
+                  color: theme.colors.foregroundMuted,
                 ),
               ),
             ),
@@ -145,7 +145,7 @@ class DemoTile extends StatelessWidget {
         Text(
           label,
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.mutedForeground,
+            color: theme.colors.foregroundMuted,
           ),
         ),
       ],
@@ -163,7 +163,7 @@ class CodePeek extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return MonoSheet(
       trigger: MonoButton(
-        variant: MonoButtonVariant.link,
+        variant: MonoButtonVariant.ghost,
         size: MonoButtonSize.sm,
         leading: const MonoIcon(MonoIcons.grid, size: 14),
         child: const Text('View code'),

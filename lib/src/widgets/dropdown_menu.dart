@@ -7,6 +7,7 @@ import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_fade.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -626,24 +627,15 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
                 label: theme.labels.menuItems,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: theme.colors.popover,
+                    color: theme.colors.elevated,
                     borderRadius: BorderRadius.circular(theme.radii.lg),
-                    border: Border.all(
-                      color: theme.colors.foreground.withValues(alpha: 0.1),
-                    ),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.foreground.withAlpha(38),
-                        blurRadius: theme.spacing.lg,
-                        offset: Offset(0, theme.spacing.sm / 2),
-                      ),
-                    ],
+                    boxShadow: theme.elevation.resolve(MonoElevation.raised),
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: widget.maxHeight),
                     child: RawScrollbar(
                       controller: _scrollController,
-                      thumbColor: theme.colors.border,
+                      thumbColor: theme.colors.separator,
                       radius: Radius.circular(theme.radii.full),
                       thickness: theme.spacing.xs,
                       child: ListView.builder(
@@ -708,12 +700,12 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
     // destructive tint instead, matching the reference.
     final bool isHi = highlighted && item.enabled;
     final Color foreground = !item.enabled
-        ? theme.colors.mutedForeground
+        ? theme.colors.foregroundMuted
         : item.destructive
-        ? (isHi ? theme.colors.destructiveText : theme.colors.destructive)
+        ? (isHi ? theme.colors.dangerText : theme.colors.danger)
         : isHi
-        ? theme.colors.accentForeground
-        : theme.colors.popoverForeground;
+        ? theme.colors.onPrimary
+        : theme.colors.foreground;
     return Semantics(
       button: true,
       enabled: item.enabled,
@@ -735,10 +727,10 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: !isHi
-                  ? theme.colors.popover.withAlpha(0)
+                  ? theme.colors.elevated.withAlpha(0)
                   : item.destructive
-                  ? theme.colors.destructiveSoft
-                  : theme.colors.accent,
+                  ? theme.colors.dangerSoft
+                  : theme.colors.primary,
               borderRadius: BorderRadius.circular(theme.radii.md),
             ),
             child: Row(

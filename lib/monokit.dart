@@ -4,8 +4,13 @@ library;
 // The widget layer monokit builds on, re-exported so `package:monokit/monokit.dart`
 // is the single canonical import — mirroring how `material.dart`/`cupertino.dart`
 // re-export it. Only `widgets.dart` is surfaced; Material and Cupertino are never
-// re-exported, keeping the system Material-free by construction. Safe against name
-// collisions because every Monokit symbol carries the `Mono` prefix.
+// re-exported, keeping the system Material-free by construction.
+//
+// Note the trade-off this makes: every Flutter name in `widgets.dart` becomes
+// part of monokit's exported namespace, so a consumer that defines its own
+// `Page`, `Action`, `Route` (etc.) will see an ambiguous-import error and must
+// `hide` one side. `Mono`-prefixing monokit's own symbols does not help here —
+// the collision is between Flutter's names and the consumer's.
 export 'package:flutter/widgets.dart';
 
 export 'src/app/mono_screen.dart';
@@ -55,6 +60,8 @@ export 'src/widgets/tabs.dart';
 export 'src/widgets/textarea.dart';
 export 'src/widgets/tooltip.dart';
 export 'src/primitives/mono_anchored_layout.dart';
+export 'src/motion/mono_spring_controller.dart';
+export 'src/motion/monokit_scroll_behavior.dart';
 export 'src/primitives/mono_announcer.dart';
 export 'src/primitives/mono_focus_ring.dart';
 export 'src/primitives/mono_focus_trap.dart';

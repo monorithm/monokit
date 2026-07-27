@@ -63,55 +63,65 @@ class MonoEmptyState extends StatelessWidget {
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          // Dashed rounded-xl frame around the empty state, matching the
-          // reference's border-dashed container.
-          child: CustomPaint(
-            painter: _DashedRRectBorder(
-              color: t.colors.foreground.withValues(alpha: 0.1),
-              radius: t.radii.xl,
+          // A card surface, so the panel separates from the page by the
+          // grouped luminance step, plus the dashed frame that says "empty".
+          //
+          // It previously had no fill at all and relied on the page being
+          // white — under the grouped model that rendered mist-on-mist, and
+          // the dashed outline was the only thing separating it.
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: t.colors.card,
+              borderRadius: BorderRadius.circular(t.radii.xl),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(t.spacing.xxl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  if (icon != null) ...[
-                    // Icon media chip (bg-muted rounded-lg) with foreground glyph.
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: t.colors.muted,
-                        borderRadius: BorderRadius.circular(t.radii.lg),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(t.spacing.sm),
-                        child: IconTheme.merge(
-                          data: IconThemeData(color: t.colors.foreground),
-                          child: icon!,
+            child: CustomPaint(
+              painter: _DashedRRectBorder(
+                color: t.colors.foreground.withValues(alpha: 0.1),
+                radius: t.radii.xl,
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(t.spacing.xxl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (icon != null) ...[
+                      // Icon media chip (bg-muted rounded-lg) with foreground glyph.
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: t.colors.fill,
+                          borderRadius: BorderRadius.circular(t.radii.lg),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(t.spacing.sm),
+                          child: IconTheme.merge(
+                            data: IconThemeData(color: t.colors.foreground),
+                            child: icon!,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: t.spacing.md),
-                  ],
-                  DefaultTextStyle.merge(
-                    style: t.typography.titleLarge,
-                    textAlign: TextAlign.center,
-                    child: title,
-                  ),
-                  if (description != null) ...[
-                    SizedBox(height: t.spacing.sm),
+                      SizedBox(height: t.spacing.md),
+                    ],
                     DefaultTextStyle.merge(
-                      style: t.typography.bodyMedium.copyWith(
-                        color: t.colors.mutedForeground,
-                      ),
+                      style: t.typography.titleLarge,
                       textAlign: TextAlign.center,
-                      child: description!,
+                      child: title,
                     ),
+                    if (description != null) ...[
+                      SizedBox(height: t.spacing.sm),
+                      DefaultTextStyle.merge(
+                        style: t.typography.bodyMedium.copyWith(
+                          color: t.colors.foregroundMuted,
+                        ),
+                        textAlign: TextAlign.center,
+                        child: description!,
+                      ),
+                    ],
+                    if (action != null) ...[
+                      SizedBox(height: t.spacing.lg),
+                      action!,
+                    ],
                   ],
-                  if (action != null) ...[
-                    SizedBox(height: t.spacing.lg),
-                    action!,
-                  ],
-                ],
+                ),
               ),
             ),
           ),

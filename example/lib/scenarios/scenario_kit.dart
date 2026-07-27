@@ -30,7 +30,7 @@ class ScenarioShell extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     return ColoredBox(
-      color: backgroundColor ?? theme.colors.background,
+      color: backgroundColor ?? theme.colors.page,
       child: Column(
         children: <Widget>[
           Container(
@@ -41,8 +41,8 @@ class ScenarioShell extends StatelessWidget {
               theme.spacing.sm,
             ),
             decoration: BoxDecoration(
-              color: theme.colors.background,
-              border: Border(bottom: BorderSide(color: theme.colors.border)),
+              color: theme.colors.page,
+              border: Border(bottom: BorderSide(color: theme.colors.separator)),
             ),
             child: Row(
               children: <Widget>[
@@ -51,7 +51,8 @@ class ScenarioShell extends StatelessWidget {
                     padding: EdgeInsets.only(right: theme.spacing.xs),
                     child: MonoButton(
                       variant: MonoButtonVariant.ghost,
-                      size: MonoButtonSize.iconSm,
+                      size: MonoButtonSize.sm,
+                      iconOnly: true,
                       semanticLabel: 'Back',
                       onPressed: () {
                         if (context.canPop()) {
@@ -80,7 +81,7 @@ class ScenarioShell extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.typography.labelMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                         ),
                     ],
@@ -100,8 +101,8 @@ class ScenarioShell extends StatelessWidget {
                 media.padding.bottom + theme.spacing.sm,
               ),
               decoration: BoxDecoration(
-                color: theme.colors.background,
-                border: Border(top: BorderSide(color: theme.colors.border)),
+                color: theme.colors.page,
+                border: Border(top: BorderSide(color: theme.colors.separator)),
               ),
               child: bottom,
             ),
@@ -124,7 +125,7 @@ class ScenarioLabel extends StatelessWidget {
       child: Text(
         text.toUpperCase(),
         style: theme.typography.labelMedium.copyWith(
-          color: theme.colors.mutedForeground,
+          color: theme.colors.foregroundMuted,
         ),
       ),
     );

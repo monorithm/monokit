@@ -1,11 +1,11 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../motion/mono_spring_controller.dart';
 import '../primitives/mono_focus_trap.dart';
 import '../primitives/mono_heading.dart';
 import '../primitives/mono_pressable.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -220,60 +220,65 @@ class _MonoDialogOverlay extends StatefulWidget {
 
 class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  /// Presence: 0 absent, 1 presented. Drives the scale (spatial, so a spring)
+  /// and the scrim/surface opacity (appearance, read straight off the value).
+  late final MonoSpringController _presence;
+  bool _reportedExit = false;
+
+  /// Read through the token rather than
+  /// `platformDispatcher.accessibilityFeatures` — that route bypassed
+  /// MediaQuery entirely, so it also ignored any test or host override.
+  SpringDescription? _spring(BuildContext context) =>
+      widget.theme.motion.reducedSpring(context, widget.theme.motion.spatial);
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      // Honor the OS "reduce motion" setting for the entrance animation.
-      duration:
-          WidgetsBinding
-              .instance
-              .platformDispatcher
-              .accessibilityFeatures
-              .disableAnimations
-          ? Duration.zero
-          : widget.theme.motion.base,
-    );
-    _controller.addStatusListener(_onStatus);
-    if (widget.visible) {
-      _controller.forward();
+    _presence = MonoSpringController(vsync: this)..addListener(_onTick);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.visible && _presence.value == 0 && !_presence.isAnimating) {
+      _presence.animateTo(1, spring: _spring(context));
     }
+  }
+
+  void _onTick() {
+    if (!mounted) return;
+    setState(() {});
+    _maybeReportExit();
+  }
+
+  void _maybeReportExit() {
+    if (_reportedExit || widget.visible) return;
+    if (_presence.isAnimating || _presence.value > 0.001) return;
+    _reportedExit = true;
+    widget.onExited();
   }
 
   @override
   void didUpdateWidget(covariant _MonoDialogOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.visible != oldWidget.visible) {
-      if (widget.visible) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    }
-  }
-
-  void _onStatus(AnimationStatus status) {
-    if (status == AnimationStatus.dismissed && !widget.visible) {
-      widget.onExited();
+      if (widget.visible) _reportedExit = false;
+      _presence.animateTo(widget.visible ? 1 : 0, spring: _spring(context));
+      _maybeReportExit();
     }
   }
 
   @override
   void dispose() {
-    _controller.removeStatusListener(_onStatus);
-    _controller.dispose();
+    _presence.removeListener(_onTick);
+    _presence.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final opacity = CurvedAnimation(
-      parent: _controller,
-      curve: widget.theme.motion.curve,
-    );
+    final double presence = _presence.value;
+    final double opacity = presence.clamp(0.0, 1.0);
     return MonokitTheme(
       data: widget.theme,
       child: MonoFocusTrap(
@@ -291,15 +296,12 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              FadeTransition(
+              Opacity(
                 opacity: opacity,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: widget.dismissible ? widget.onDismiss : null,
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                    child: ColoredBox(color: widget.theme.colors.overlayScrim),
-                  ),
+                  child: ColoredBox(color: widget.theme.colors.scrim),
                 ),
               ),
               // Lift the surface clear of the software keyboard and keep an
@@ -310,13 +312,12 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
                     MediaQuery.viewInsetsOf(context) +
                     EdgeInsets.all(widget.theme.spacing.lg),
                 child: Center(
-                  child: FadeTransition(
+                  child: Opacity(
                     opacity: opacity,
-                    child: ScaleTransition(
-                      scale: Tween<double>(
-                        begin: 0.96,
-                        end: 1,
-                      ).animate(opacity),
+                    child: Transform.scale(
+                      // Spring-driven, so a dialog dismissed while still
+                      // arriving reverses from where it actually is.
+                      scale: 0.96 + 0.04 * presence,
                       child: Semantics(
                         scopesRoute: true,
                         namesRoute: true,
@@ -359,18 +360,13 @@ class MonoDialogContent extends StatelessWidget {
       constraints: constraints,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.popover,
+          color: theme.colors.elevated,
           borderRadius: BorderRadius.circular(theme.radii.xl),
-          border: Border.all(
-            color: theme.colors.foreground.withValues(alpha: 0.1),
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: const Color(0x2609090B),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
+          // No border: in the grouped model `elevated` already steps above the
+          // card behind it, and the shadow carries the rest. The shadow colour
+          // now tracks the theme instead of the hardcoded 0x2609090B, which was
+          // a near-black over an already-dark ground in dark mode.
+          boxShadow: theme.elevation.resolve(MonoElevation.floating),
         ),
         // Scrolls instead of overflowing when the dialog is taller than the
         // visible area (small screens, open keyboard, long content).
@@ -379,7 +375,7 @@ class MonoDialogContent extends StatelessWidget {
             padding: padding ?? EdgeInsets.all(theme.spacing.xxl),
             child: DefaultTextStyle(
               style: theme.typography.body.copyWith(
-                color: theme.colors.popoverForeground,
+                color: theme.colors.foreground,
               ),
               child: child,
             ),
@@ -421,7 +417,7 @@ class MonoDialogHeader extends StatelessWidget {
         if (description != null)
           DefaultTextStyle.merge(
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
             child: description!,
           ),

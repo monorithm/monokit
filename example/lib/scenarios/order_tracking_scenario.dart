@@ -48,7 +48,7 @@ class OrderTrackingScenario extends StatelessWidget {
                         Text(
                           'Estimated 6:30 – 7:00 pm',
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                         ),
                       ],
@@ -91,23 +91,25 @@ class OrderTrackingScenario extends StatelessWidget {
                         Text(
                           '4.9 ★ · Yamaha',
                           style: theme.typography.labelMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                         ),
                       ],
                     ),
                   ),
                   MonoButton(
-                    variant: MonoButtonVariant.outline,
-                    size: MonoButtonSize.iconSm,
+                    variant: MonoButtonVariant.tinted,
+                    size: MonoButtonSize.sm,
+                    iconOnly: true,
                     semanticLabel: 'Call courier',
                     onPressed: () {},
                     child: const MonoIcon(MonoIcons.call),
                   ),
                   SizedBox(width: theme.spacing.xs),
                   MonoButton(
-                    variant: MonoButtonVariant.outline,
-                    size: MonoButtonSize.iconSm,
+                    variant: MonoButtonVariant.tinted,
+                    size: MonoButtonSize.sm,
+                    iconOnly: true,
                     semanticLabel: 'Message courier',
                     onPressed: () {},
                     child: const MonoIcon(MonoIcons.message),
@@ -139,10 +141,8 @@ class _StageRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final reached = done || active;
-    final dotColor = reached ? theme.colors.primary : theme.colors.muted;
-    final fg = reached
-        ? theme.colors.primaryForeground
-        : theme.colors.mutedForeground;
+    final dotColor = reached ? theme.colors.primary : theme.colors.fill;
+    final fg = reached ? theme.colors.onPrimary : theme.colors.foregroundMuted;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +162,7 @@ class _StageRow extends StatelessWidget {
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: done ? theme.colors.primary : theme.colors.border,
+                    color: done ? theme.colors.primary : theme.colors.separator,
                   ),
                 ),
             ],
@@ -183,14 +183,14 @@ class _StageRow extends StatelessWidget {
                           : theme.typography.bodyMedium.copyWith(
                               color: reached
                                   ? theme.colors.foreground
-                                  : theme.colors.mutedForeground,
+                                  : theme.colors.foregroundMuted,
                             ),
                     ),
                   ),
                   Text(
                     stage.time,
                     style: theme.typography.mono.copyWith(
-                      color: theme.colors.mutedForeground,
+                      color: theme.colors.foregroundMuted,
                     ),
                   ),
                 ],

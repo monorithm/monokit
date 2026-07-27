@@ -57,18 +57,33 @@ class MonokitMotion {
   static const Curve _accelerate = Cubic(0.3, 0, 0.8, 0.15);
   static const Curve _emphasized = Curves.easeInOutCubic;
 
-  // --- Springs (expressive moments only) -------------------------------------
-  /// Position/scale for spatial moves (sheets, reveals).
-  SpringDescription get spatialSpring =>
-      SpringDescription.withDampingRatio(mass: 1, stiffness: 700, ratio: 0.9);
+  // --- Springs ---------------------------------------------------------------
+  //
+  // These were previously non-overridable getters with zero call sites — the
+  // doctrine was documented but never implemented. They are now constructor
+  // fields, so a host can retune them, and `MonoSpringController` consumes
+  // them for every spatial animation in the library.
 
-  /// Snappier effect spring (toggles, small pops).
-  SpringDescription get effectSpring =>
-      SpringDescription.withDampingRatio(mass: 1, stiffness: 1600, ratio: 1);
+  /// Position, scale and offset — sheets, drawers, pushes, indicators.
+  /// The default for anything that moves in space.
+  SpringDescription get spatial => _spring(stiffness: 700, ratio: 0.9);
 
-  /// The one bouncy spring — reserved for celebration (a `completed` outcome).
-  SpringDescription get celebrateSpring =>
-      SpringDescription.withDampingRatio(mass: 1, stiffness: 550, ratio: 0.75);
+  /// Snappier, critically damped — toggles and small pops that should land
+  /// without any visible settle.
+  SpringDescription get effect => _spring(stiffness: 1600, ratio: 1);
+
+  /// The one under-damped spring in the system. Reserved for a confirmed
+  /// outcome; it is the only place an overshoot is allowed.
+  SpringDescription get celebrate => _spring(stiffness: 550, ratio: 0.75);
+
+  static SpringDescription _spring({
+    required double stiffness,
+    required double ratio,
+  }) => SpringDescription.withDampingRatio(
+    mass: 1,
+    stiffness: stiffness,
+    ratio: ratio,
+  );
 
   // --- Loop durations --------------------------------------------------------
   Duration get spinnerLoop => const Duration(milliseconds: 800);
@@ -76,13 +91,29 @@ class MonokitMotion {
   Duration get progressLoop => const Duration(milliseconds: 1200);
   Duration get pulseLoop => const Duration(milliseconds: 2000);
 
-  /// Collapses [d] to [Duration.zero] when the platform requests reduced
-  /// motion (`MediaQuery.disableAnimations`). Use for any component animation so
-  /// motion is a five-part accessibility contract, not an afterthought.
+  // --- Reduced motion --------------------------------------------------------
+  //
+  // This is THE accessibility contract, and it must be the only path. It used
+  // to be honoured at 6 sites while ~25 others re-implemented
+  // `MediaQuery.maybeOf(context)?.disableAnimations ?? false` inline, and most
+  // implicit animations ignored it entirely. A source test now fails the build
+  // if `disableAnimations` is referenced anywhere outside this file.
+
+  /// Whether the platform has asked for reduced motion.
+  static bool noAnimation(BuildContext context) =>
+      MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+  /// Collapses [d] to [Duration.zero] under reduced motion.
   Duration reduced(BuildContext context, Duration d) =>
-      (MediaQuery.maybeOf(context)?.disableAnimations ?? false)
-      ? Duration.zero
-      : d;
+      noAnimation(context) ? Duration.zero : d;
+
+  /// Returns `null` under reduced motion. [MonoSpringController] treats a null
+  /// spring as "jump to the target", so passing this through is all a component
+  /// needs to do to honour the setting.
+  SpringDescription? reducedSpring(
+    BuildContext context,
+    SpringDescription spring,
+  ) => noAnimation(context) ? null : spring;
 
   // --- Semantic aliases ------------------------------------------------------
   Duration get pressFeedback => fast;

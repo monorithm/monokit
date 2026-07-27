@@ -81,12 +81,12 @@ Future<void> _pumpScene(
     MonokitApp(
       theme: theme,
       home: ColoredBox(
-        color: theme.colors.background,
+        color: theme.colors.page,
         child: Center(
           child: RepaintBoundary(
             key: _sceneKey,
             child: ColoredBox(
-              color: theme.colors.background,
+              color: theme.colors.page,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: SizedBox(
@@ -130,7 +130,7 @@ Future<void> _pumpOverlayScene(
     MonokitApp(
       theme: theme,
       home: ColoredBox(
-        color: theme.colors.background,
+        color: theme.colors.page,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -472,7 +472,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
     return MonoDialog(
       open: true,
       trigger: MonoButton(
-        variant: MonoButtonVariant.outline,
+        variant: MonoButtonVariant.tinted,
         child: const Text('Delete post'),
       ),
       child: MonoDialogContent(
@@ -489,7 +489,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   MonoButton(
-                    variant: MonoButtonVariant.outline,
+                    variant: MonoButtonVariant.tinted,
                     onPressed: () {},
                     child: const Text('Cancel'),
                   ),
@@ -511,7 +511,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
     return MonoSheet(
       open: true,
       trigger: MonoButton(
-        variant: MonoButtonVariant.outline,
+        variant: MonoButtonVariant.tinted,
         child: const Text('Open sheet'),
       ),
       child: const MonoSheetContent(
@@ -534,7 +534,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
     return MonoDrawer(
       open: true,
       trigger: MonoButton(
-        variant: MonoButtonVariant.outline,
+        variant: MonoButtonVariant.tinted,
         child: const Text('Open drawer'),
       ),
       child: const Padding(
@@ -555,7 +555,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
     return MonoPopover(
       open: true,
       trigger: MonoButton(
-        variant: MonoButtonVariant.outline,
+        variant: MonoButtonVariant.tinted,
         child: const Text('Show details'),
       ),
       child: const Padding(
@@ -573,7 +573,8 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
       message: 'Reaches people near Nima',
       child: MonoButton(
         variant: MonoButtonVariant.ghost,
-        size: MonoButtonSize.icon,
+        size: MonoButtonSize.md,
+        iconOnly: true,
         onPressed: () {},
         child: const MonoIcon(MonoIcons.location),
       ),
@@ -614,7 +615,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
         ),
       ),
       child: MonoButton(
-        variant: MonoButtonVariant.outline,
+        variant: MonoButtonVariant.tinted,
         onPressed: () {},
         child: const Text('Right-click me'),
       ),
@@ -624,7 +625,7 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
     return MonoDropdownMenu<String>(
       open: true,
       trigger: MonoButton(
-        variant: MonoButtonVariant.outline,
+        variant: MonoButtonVariant.tinted,
         child: const Text('Actions'),
       ),
       items: <MonoDropdownMenuItem<String>>[

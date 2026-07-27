@@ -1,6 +1,6 @@
 name: monokit
 description: A compact, token-driven, widgets-first Flutter design system for Monorithm.
-version: 0.10.0
+version: 2.0.0
 homepage: https://github.com/monorithm/monokit
 repository: https://github.com/monorithm/monokit
 topics:

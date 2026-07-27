@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 
 /// Shapes supported by [MonoSkeleton].
@@ -75,8 +76,7 @@ class _MonoSkeletonState extends State<MonoSkeleton>
   void _syncAnimation() {
     final theme = MonokitTheme.of(context);
     _controller.duration = theme.motion.shimmerLoop;
-    final animationsDisabled =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final animationsDisabled = MonokitMotion.noAnimation(context);
     final shouldAnimate =
         widget.animate &&
         !animationsDisabled &&
@@ -93,8 +93,7 @@ class _MonoSkeletonState extends State<MonoSkeleton>
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final animationsDisabled =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final animationsDisabled = MonokitMotion.noAnimation(context);
     final animate = widget.animate && !animationsDisabled;
     final width = widget.width;
     final height = widget.height ?? theme.spacing.lg;
@@ -104,12 +103,8 @@ class _MonoSkeletonState extends State<MonoSkeleton>
       ),
       MonoSkeletonShape.circle => BorderRadius.circular(theme.radii.full),
     };
-    final baseColor = theme.colors.muted;
-    final highlightColor = Color.lerp(
-      baseColor,
-      theme.colors.background,
-      0.62,
-    )!;
+    final baseColor = theme.colors.fill;
+    final highlightColor = Color.lerp(baseColor, theme.colors.page, 0.62)!;
 
     final skeleton = RepaintBoundary(
       child: AnimatedBuilder(

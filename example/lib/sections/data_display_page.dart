@@ -136,13 +136,13 @@ class _ProfileHero extends StatelessWidget {
         Text(
           'Accra · 4.9 ★ · 128 items sold',
           style: theme.typography.bodyMedium.copyWith(
-            color: theme.colors.mutedForeground,
+            color: theme.colors.foregroundMuted,
           ),
         ),
       ],
     );
     final follow = MonoButton(
-      variant: MonoButtonVariant.outline,
+      variant: MonoButtonVariant.tinted,
       size: MonoButtonSize.sm,
       onPressed: () {},
       child: const Text('Follow'),
@@ -202,7 +202,7 @@ class _AvatarGroup extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: theme.colors.background, width: 2),
+                  border: Border.all(color: theme.colors.page, width: 2),
                 ),
                 child: MonoAvatar.initials(_people[i], size: MonoAvatarSize.sm),
               ),
@@ -275,7 +275,7 @@ class _StatGrid extends StatelessWidget {
                           Text(
                             label,
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.mutedForeground,
+                              color: theme.colors.foregroundMuted,
                             ),
                           ),
                         ],
@@ -313,7 +313,7 @@ class _FilledMini extends StatelessWidget {
                   Text(
                     'Replied 2m ago',
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.mutedForeground,
+                      color: theme.colors.foregroundMuted,
                     ),
                   ),
                 ],

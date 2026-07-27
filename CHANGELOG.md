@@ -1,3 +1,79 @@
+## 2.0.0
+
+Monokit stops mirroring the shadcn `base-nova` web reference and becomes its own
+system, built on four decisions: **springs** for anything spatial, **adaptive**
+density, **grouped** surfaces, and **emerald on mist** with a lifted dark mode.
+
+This is a hard break. There are no deprecation shims.
+
+### Breaking
+
+- **Colours: 52 fields → 35 semantic roles.** Named for their job, not a palette
+  position. `background` → `page` (and its value changed: `#FFFFFF` → `#F1F3F3`),
+  `mutedForeground` → `foregroundMuted`, `border`/`input` → `separator`,
+  `popover` → `elevated`, `muted`/`secondary` → `fill`, `destructive*` →
+  `danger*`, `mediaCanvas` → `canvas`, `liveForeground` → `onLive`,
+  `glassFill`/`glassBorder` → `mistFill`/`mistLine`. Added `foregroundSubtle`,
+  `tint`, `onStatus`. **Removed:** all eight `sidebar*`, `accent`/`accentForeground`
+  (the reference already had `accent == primary`), `secondary*`, `popover*`,
+  `input`, `overlayScrim`, and the per-status `*Foreground` family.
+- **`tint` and `primary` are now separate roles.** `tint` colours interactive
+  text and icons; `primary` fills solids. Identical in light, divergent in dark.
+- **Dark no longer bottoms out at black.** `page` is `#161B1D`, `card` `#22292B`,
+  `elevated` `#2E3639`. The media `canvas` is still true black in both modes.
+- **`MonoElevationTier` → `MonoElevation {flat, raised, floating}`.** The old five
+  tiers resolved to three distinct shadows; `shadowColor` is now theme-derived
+  rather than a fixed near-black that was invisible in dark mode.
+- **`MonokitDensityData` → `MonokitDensity`,** with `mode` nullable meaning
+  *adaptive*. `touchTarget` 48 → 44.
+- **`MonoButtonVariant` 6 → 5:** `{filled, tinted, secondary, ghost, destructive}`.
+  `outline` is gone (a bordered button contradicts a borderless surface model);
+  `link` folded into `ghost`, which now takes the tint.
+- **`MonoButtonSize` 8 → 3** `{sm, md, lg}` plus an `iconOnly` flag.
+- **`MonoPopoverPlacement`, `MonoTooltipPlacement` and `MonoHoverCardPlacement`**
+  — three identical 12-member enums — collapsed into `MonoPlacement`.
+- **`MonokitComponentThemes` 17 slots → 3** (`button`, `card`, `screen`), with a
+  `copyWith`. Fourteen were never read by any widget.
+- **`MonoGlassSurface` → `MonoMediaChrome`.** It never contained a
+  `BackdropFilter`, so this is a rename more than a removal.
+- **`MonoCard.showBorder` defaults to `false`,** and its `tier` enum plus
+  deprecated `elevation` double collapse into one `elevation` field.
+
+### Added
+
+- **`MonoSpringController`** — velocity-preserving spring driver, with
+  `monoProject`, `monoRubberBand` and `monoNearest`. The three spring tokens
+  (`spatial`, `effect`, `celebrate`) previously had zero call sites.
+- **Real gestures.** `MonoSheet` and `MonoDrawer` are draggable with velocity
+  projection and rubber-band overdrag; `MonoScreen`'s compact sidebar has
+  edge-swipe; `MonoGalleryViewer` gains drag-to-dismiss via `onDismiss`.
+- **`MonokitScrollBehavior`**, installed by `MonokitApp` — bouncing overscroll
+  on every platform. `WidgetsApp` provides none, so physics previously fell
+  through to Flutter's platform default.
+- **`MonokitThemeData.brightness`, `lerp`, and `MonoAnimatedTheme`** so a theme
+  change cross-fades rather than snapping.
+- **`MonoSurfaceRole`** and a `MonoSurface` that is now the one way a surface is
+  drawn.
+
+### Fixed
+
+- **`MonokitThemeData.light() != MonokitThemeData.light()`.** `MonokitElevation`,
+  `MonokitDensityData`, `MonokitBreakpoints` and `MonokitHaptics` had no
+  `==`/`hashCode` while the theme compared them by field, so
+  `MonokitTheme.updateShouldNotify` fired on every rebuild.
+- **`MonokitColors.==` allocated two 51-entry maps per call,** on that same hot
+  path. It is now a `listEquals` over one declared field list.
+- **Two breakpoint ladders.** `MonoScreen` read `MonoScreenTheme`'s private copy
+  while everything else read `theme.breakpoints`, so overriding one did nothing.
+- **Reduced motion was honoured at 6 sites and bypassed at ~25.** All reads now
+  route through `MonokitMotion`, enforced by a source test.
+- **`MonoEmptyState` had no background** and relied on the page being white; under
+  the grouped model it rendered mist-on-mist.
+- **Shadows.** Ten hand-rolled `boxShadow` blocks consolidated into
+  `elevation.resolve`, removing nine uses of a *spacing* token as a blur radius.
+- **`MonoSheet` drew a drag handle it could not honour** — there was no drag
+  gesture anywhere in the library.
+
 ## Unreleased
 
 Balance the design tokens and components to the shadcn `base-nova` web reference.

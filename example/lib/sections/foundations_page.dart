@@ -16,9 +16,9 @@ class FoundationsPage extends StatelessWidget {
           eyebrow: 'Foundations',
           title: 'The design language',
           tagline:
-              'Emerald on mist, IBM Plex across three registers, elevation from '
-              'borders and light, and calm motion — the tokens every widget '
-              'resolves from MonokitTheme.of(context).',
+              'Emerald on mist, IBM Plex across three registers, depth from a '
+              'luminance step, and spring-driven motion — the tokens every '
+              'widget resolves from MonokitTheme.of(context).',
           child: const _MotionDemo(),
         ),
         const SectionDivider(),
@@ -26,8 +26,9 @@ class FoundationsPage extends StatelessWidget {
           title: 'Palette — emerald on mist',
           widgetName: 'MonokitColors',
           description:
-              'A rationed emerald accent over cool slate neutrals, in light '
-              'and dark. Cards separate by border and light, not luminance.',
+              'A rationed emerald accent over cool mist neutrals, in light and '
+              'dark. Surfaces separate by a luminance step — page, then card, '
+              'then elevated — not by a hairline.',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -74,18 +75,21 @@ class FoundationsPage extends StatelessWidget {
           ),
         ),
         ComponentSection(
-          title: 'Elevation — borders and light, not shadows',
+          title: 'Elevation — reserved for what actually floats',
           widgetName: 'MonoSurface',
-          description: 'Five tiers: flat · raised · overlay · modal · system.',
+          description:
+              'Three tiers: flat · raised · floating. Flat is the common case, '
+              'because the page-to-card step already carries the depth; a '
+              'shadow means something is genuinely above the page.',
           child: Wrap(
             spacing: theme.spacing.lg,
             runSpacing: theme.spacing.lg,
             children: <Widget>[
-              for (final tier in MonoElevationTier.values)
+              for (final tier in MonoElevation.values)
                 DemoTile(
                   label: tier.name,
                   child: MonoSurface(
-                    tier: tier,
+                    elevation: tier,
                     padding: EdgeInsets.all(theme.spacing.lg),
                     child: const SizedBox(width: 56, height: 40),
                   ),
@@ -112,9 +116,9 @@ class FoundationsPage extends StatelessWidget {
           title: 'Motion tokens',
           widgetName: 'MonokitMotion',
           description:
-              'Physics for moments, curves for chrome. monoOut is the signature '
-              'deceleration — press Play to watch the curves run, not just read '
-              'their names.',
+              'If it moves in space it springs; if it only changes appearance '
+              'it eases. Press Play to watch the curves that remain — opacity '
+              'and colour — run rather than just read their names.',
           child: _MotionDemo(),
         ),
         ComponentSection(
@@ -154,20 +158,26 @@ class _PaletteRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
+    // The 2.0 role names. The old labels survived the rename and had started
+    // lying — `secondary` and `muted` both pointed at `fill`, and `accent` at
+    // `primary`, so three swatches were duplicates of two others.
     final entries = <(String, Color)>[
-      ('background', colors.background),
+      ('page', colors.page),
+      ('card', colors.card),
+      ('elevated', colors.elevated),
       ('foreground', colors.foreground),
+      ('foregroundMuted', colors.foregroundMuted),
+      ('foregroundSubtle', colors.foregroundSubtle),
+      ('fill', colors.fill),
+      ('separator', colors.separator),
+      ('tint', colors.tint),
       ('primary', colors.primary),
       ('primarySoft', colors.primarySoft),
-      ('secondary', colors.secondary),
-      ('muted', colors.muted),
-      ('accent', colors.accent),
-      ('destructive', colors.destructive),
+      ('danger', colors.danger),
       ('success', colors.success),
       ('warning', colors.warning),
       ('info', colors.info),
       ('live', colors.live),
-      ('border', colors.border),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +198,7 @@ class _PaletteRow extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(theme.radii.sm),
-                      border: Border.all(color: theme.colors.border),
+                      border: Border.all(color: theme.colors.separator),
                     ),
                   ),
                   SizedBox(height: theme.spacing.xs),
@@ -198,7 +208,7 @@ class _PaletteRow extends StatelessWidget {
                       name,
                       textAlign: TextAlign.center,
                       style: theme.typography.labelMedium.copyWith(
-                        color: theme.colors.mutedForeground,
+                        color: theme.colors.foregroundMuted,
                       ),
                     ),
                   ),
@@ -228,7 +238,7 @@ class _TypeRow extends StatelessWidget {
           Text(
             name,
             style: theme.typography.labelMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
           Text(sample ?? 'The quick brown fox', style: style),
@@ -252,9 +262,9 @@ class _RadiusTile extends StatelessWidget {
         width: 56,
         height: 56,
         decoration: BoxDecoration(
-          color: theme.colors.secondary,
+          color: theme.colors.fill,
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: theme.colors.border),
+          border: Border.all(color: theme.colors.separator),
         ),
       ),
     );
@@ -316,7 +326,7 @@ class _MotionDemoState extends State<_MotionDemo>
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
             MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               size: MonoButtonSize.sm,
               onPressed: () => _controller
                 ..reset()
@@ -356,7 +366,7 @@ class _Track extends StatelessWidget {
           child: Text(
             label,
             style: theme.typography.mono.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
         ),
@@ -382,7 +392,7 @@ class _Track extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: Container(
                             height: 2,
-                            color: theme.colors.border,
+                            color: theme.colors.separator,
                           ),
                         ),
                         Positioned(

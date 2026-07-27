@@ -35,7 +35,8 @@ class StorefrontScenario extends StatelessWidget {
       actions: <Widget>[
         MonoButton(
           variant: MonoButtonVariant.ghost,
-          size: MonoButtonSize.iconSm,
+          size: MonoButtonSize.sm,
+          iconOnly: true,
           semanticLabel: 'Cart',
           onPressed: () {},
           child: const MonoIcon(MonoIcons.bag),
@@ -112,7 +113,7 @@ class _Chips extends StatelessWidget {
           child: MonoButton(
             variant: i == 0
                 ? MonoButtonVariant.secondary
-                : MonoButtonVariant.outline,
+                : MonoButtonVariant.tinted,
             size: MonoButtonSize.sm,
             onPressed: () {},
             child: Text(_labels[i]),

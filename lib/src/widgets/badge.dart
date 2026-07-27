@@ -77,38 +77,22 @@ class MonoBadgeStyleResolver {
       Color foreground,
       Color? borderColor,
     ) = switch (variant) {
-      MonoBadgeVariant.primary => (
-        colors.primary,
-        colors.primaryForeground,
-        null,
-      ),
-      MonoBadgeVariant.secondary => (
-        colors.secondary,
-        colors.secondaryForeground,
-        null,
-      ),
+      MonoBadgeVariant.primary => (colors.primary, colors.onPrimary, null),
+      MonoBadgeVariant.secondary => (colors.fill, colors.foreground, null),
       MonoBadgeVariant.outline => (
-        colors.background.withValues(alpha: 0),
+        colors.page.withValues(alpha: 0),
         colors.foreground,
-        colors.border,
+        colors.separator,
       ),
       MonoBadgeVariant.destructive => (
-        colors.destructiveSoft,
-        colors.destructiveText,
+        colors.dangerSoft,
+        colors.dangerText,
         null,
       ),
-      MonoBadgeVariant.success => (
-        colors.success,
-        colors.successForeground,
-        null,
-      ),
-      MonoBadgeVariant.warning => (
-        colors.warning,
-        colors.warningForeground,
-        null,
-      ),
-      MonoBadgeVariant.info => (colors.info, colors.infoForeground, null),
-      MonoBadgeVariant.live => (colors.live, colors.liveForeground, null),
+      MonoBadgeVariant.success => (colors.success, colors.onStatus, null),
+      MonoBadgeVariant.warning => (colors.warning, colors.onStatus, null),
+      MonoBadgeVariant.info => (colors.info, colors.onStatus, null),
+      MonoBadgeVariant.live => (colors.live, colors.onLive, null),
     };
 
     return MonoResolvedBadgeStyle(

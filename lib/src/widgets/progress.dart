@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 
 enum MonoProgressType { linear, circular }
@@ -61,7 +62,7 @@ class _MonoProgressState extends State<MonoProgress>
   void _syncAnimation() {
     final theme = MonokitTheme.of(context);
     _controller.duration = theme.motion.progressLoop;
-    final disabled = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final disabled = MonokitMotion.noAnimation(context);
     if (widget.value == null &&
         !disabled &&
         TickerMode.valuesOf(context).enabled) {
@@ -83,7 +84,7 @@ class _MonoProgressState extends State<MonoProgress>
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final foreground = widget.color ?? theme.colors.primary;
-    final background = widget.trackColor ?? theme.colors.muted;
+    final background = widget.trackColor ?? theme.colors.fill;
     final value = widget.value;
     final excluded = widget.semanticLabel == null;
     final indicator = switch (widget.type) {

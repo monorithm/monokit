@@ -7,7 +7,7 @@ Widget _host(Widget child) {
   return MonokitTheme(
     data: theme,
     child: WidgetsApp(
-      color: theme.colors.background,
+      color: theme.colors.page,
       onGenerateRoute: (RouteSettings settings) => PageRouteBuilder<void>(
         settings: settings,
         pageBuilder:

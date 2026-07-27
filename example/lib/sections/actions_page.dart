@@ -39,7 +39,7 @@ class ActionsPage extends StatelessWidget {
               'in horizontal padding and glyph size. On pointer devices the '
               'heights separate.',
           code:
-              "MonoButton(\n  variant: MonoButtonVariant.primary,\n  size: MonoButtonSize.md,\n  onPressed: () {},\n  child: const Text('Register interest'),\n)",
+              "MonoButton(\n  variant: MonoButtonVariant.filled,\n  size: MonoButtonSize.md,\n  onPressed: () {},\n  child: const Text('Register interest'),\n)",
           child: VariantMatrix<MonoButtonVariant, MonoButtonSize>(
             rows: MonoButtonVariant.values,
             cols: const <MonoButtonSize>[
@@ -97,20 +97,22 @@ class ActionsPage extends StatelessWidget {
                 onPressed: () {},
               ),
               MonoButton(
-                variant: MonoButtonVariant.outline,
+                variant: MonoButtonVariant.tinted,
                 leading: const MonoIcon(MonoIcons.search, size: 16),
                 onPressed: () {},
                 child: const Text('Search'),
               ),
               MonoButton(
                 variant: MonoButtonVariant.secondary,
-                size: MonoButtonSize.icon,
+                size: MonoButtonSize.md,
+                iconOnly: true,
                 onPressed: () {},
                 child: const MonoIcon(MonoIcons.more),
               ),
               MonoButton(
                 variant: MonoButtonVariant.ghost,
-                size: MonoButtonSize.icon,
+                size: MonoButtonSize.md,
+                iconOnly: true,
                 onPressed: () {},
                 child: const MonoIcon(MonoIcons.like),
               ),
@@ -186,7 +188,7 @@ class _ActionHero extends StatelessWidget {
               child: const Text('Publish'),
             ),
             MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               onPressed: () {},
               child: const Text('Save draft'),
             ),
@@ -230,7 +232,7 @@ class _ActionBarDemo extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: theme.colors.card,
                   borderRadius: BorderRadius.circular(theme.radii.lg),
-                  border: Border.all(color: theme.colors.border),
+                  border: Border.all(color: theme.colors.separator),
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(theme.spacing.sm),
@@ -259,7 +261,7 @@ class _ActionBarDemo extends StatelessWidget {
                         icon: MonoIcons.send,
                         label: 'Publish',
                         compact: compact,
-                        variant: MonoButtonVariant.primary,
+                        variant: MonoButtonVariant.filled,
                       ),
                     ],
                   ),
@@ -294,7 +296,8 @@ class _BarAction extends StatelessWidget {
       child: compact
           ? MonoButton(
               variant: variant,
-              size: MonoButtonSize.iconSm,
+              size: MonoButtonSize.sm,
+              iconOnly: true,
               semanticLabel: label,
               onPressed: () {},
               child: MonoIcon(icon, size: 16),

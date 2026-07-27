@@ -13,7 +13,7 @@ class LiveStudioScenario extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     return ColoredBox(
-      color: theme.colors.mediaCanvas,
+      color: theme.colors.canvas,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
@@ -38,7 +38,8 @@ class LiveStudioScenario extends StatelessWidget {
               children: <Widget>[
                 MonoButton(
                   variant: MonoButtonVariant.ghost,
-                  size: MonoButtonSize.iconSm,
+                  size: MonoButtonSize.sm,
+                  iconOnly: true,
                   semanticLabel: 'Back',
                   onPressed: () => context.go('/scenarios'),
                   child: MonoIcon(
@@ -49,7 +50,7 @@ class LiveStudioScenario extends StatelessWidget {
                 SizedBox(width: theme.spacing.sm),
                 const MonoLiveBadge(),
                 SizedBox(width: theme.spacing.sm),
-                _GlassPill(
+                _MistPill(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -98,7 +99,7 @@ class _BuyBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    return MonoGlassSurface(
+    return MonoMediaChrome(
       child: Row(
         children: <Widget>[
           ClipRRect(
@@ -144,14 +145,14 @@ class _BuyBar extends StatelessWidget {
   }
 }
 
-class _GlassPill extends StatelessWidget {
-  const _GlassPill({required this.child});
+class _MistPill extends StatelessWidget {
+  const _MistPill({required this.child});
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    return MonoGlassSurface(
+    return MonoMediaChrome(
       padding: EdgeInsets.symmetric(
         horizontal: theme.spacing.sm,
         vertical: theme.spacing.xs,

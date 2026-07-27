@@ -38,6 +38,14 @@ const List<GallerySection> gallerySections = <GallerySection>[
     group: 'Get started',
   ),
   GallerySection(
+    path: '/decisions',
+    title: 'Decisions',
+    navLabel: 'Decisions',
+    description: 'The four axes: motion, density, surface, theme',
+    icon: MonoIcons.sparkles,
+    group: 'Get started',
+  ),
+  GallerySection(
     path: '/responsive',
     title: 'Responsive',
     navLabel: 'Responsive',

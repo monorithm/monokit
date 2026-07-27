@@ -1,8 +1,10 @@
 import 'package:flutter/semantics.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_overlay_layer.dart';
 import '../theme/monokit_theme.dart';
+import '../motion/mono_spring_controller.dart';
 import '../theme/monokit_motion.dart';
 
 /// Edges that receive safe-area compensation in a [MonoScreen].
@@ -213,14 +215,15 @@ class _MonoScreenState extends State<MonoScreen>
   late MonoSidebarController _sidebarController;
   late bool _ownsSidebarController;
   late AnimationController _sidebarAnimation;
-  MonoScreenMotion? _lastMotion;
 
   @override
   void initState() {
     super.initState();
     _overlays = MonoOverlayController();
     _setSidebarController(widget.sidebarController);
-    _sidebarAnimation = AnimationController(
+    // Unbounded: a spring may overshoot past 1, and the edge-swipe rubber
+    // band deliberately drives the value beyond it.
+    _sidebarAnimation = AnimationController.unbounded(
       vsync: this,
       value: _sidebarController.isOpen ? 1 : 0,
     );
@@ -245,28 +248,66 @@ class _MonoScreenState extends State<MonoScreen>
     }
   }
 
-  void _syncSidebar() {
+  /// Velocity carried from an edge-swipe release, in openness units per second.
+  double? _sidebarReleaseVelocity;
+
+  void _syncSidebar({double? velocity}) {
     if (!mounted) {
       return;
     }
-    final motion = _lastMotion;
-    if (motion == null ||
-        MediaQuery.maybeOf(context)?.disableAnimations == true) {
-      _sidebarAnimation.value = _sidebarController.isOpen ? 1 : 0;
+    final theme = MonokitTheme.of(context);
+    final spring = theme.motion.reducedSpring(context, theme.motion.spatial);
+    final target = _sidebarController.isOpen ? 1.0 : 0.0;
+    if (spring == null) {
+      _sidebarAnimation.stop();
+      _sidebarAnimation.value = target;
       return;
     }
-    if (_sidebarController.isOpen) {
-      _sidebarAnimation.animateTo(
-        1,
-        duration: motion.sidebarDuration,
-        curve: motion.sidebarCurve,
-      );
+    _sidebarAnimation.animateWith(
+      SpringSimulation(
+        spring,
+        _sidebarAnimation.value,
+        target,
+        velocity ?? _sidebarReleaseVelocity ?? 0,
+      ),
+    );
+    _sidebarReleaseVelocity = null;
+  }
+
+  // --- Edge swipe -----------------------------------------------------------
+  //
+  // In the compact layout the sidebar is a push-inset reveal with no gesture
+  // at all — it could only be opened by tapping a trigger. These give it the
+  // drag it always looked like it had.
+
+  double _sidebarExtent = 1;
+
+  void _onSidebarDragStart(DragStartDetails details) =>
+      _sidebarAnimation.stop();
+
+  void _onSidebarDragUpdate(DragUpdateDetails details, bool opensLeft) {
+    final delta = (details.primaryDelta ?? 0) * (opensLeft ? 1 : -1);
+    var next = _sidebarAnimation.value + delta / _sidebarExtent;
+    if (next > 1) {
+      next =
+          1 +
+          monoRubberBand((next - 1) * _sidebarExtent, _sidebarExtent) /
+              _sidebarExtent;
+    }
+    _sidebarAnimation.value = next.clamp(0.0, 2.0);
+  }
+
+  void _onSidebarDragEnd(DragEndDetails details, bool opensLeft) {
+    final pixels = details.velocity.pixelsPerSecond.dx * (opensLeft ? 1 : -1);
+    final velocity = pixels / _sidebarExtent;
+    final shouldOpen = monoProject(_sidebarAnimation.value, velocity) >= 0.5;
+    _sidebarReleaseVelocity = velocity;
+    // Route through the controller so listeners and the trigger's expanded
+    // semantics stay in agreement with the visual state.
+    if (shouldOpen == _sidebarController.isOpen) {
+      _syncSidebar(velocity: velocity);
     } else {
-      _sidebarAnimation.animateBack(
-        0,
-        duration: motion.sidebarDuration,
-        curve: motion.sidebarCurve,
-      );
+      shouldOpen ? _sidebarController.open() : _sidebarController.close();
     }
   }
 
@@ -411,15 +452,14 @@ class _MonoScreenState extends State<MonoScreen>
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     final motion = widget.motion ?? MonoScreenMotion.fromTokens(theme.motion);
-    _lastMotion = motion;
     final bodyInsets = _bodyInsets(media);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final screenTheme = theme.components.screen;
-        final isCompact = width < screenTheme.compactBreakpoint;
-        final isMedium = !isCompact && width < screenTheme.mediumBreakpoint;
+        final isCompact = theme.breakpoints.isCompact(width);
+        final isMedium = theme.breakpoints.isMedium(width);
         final hasSidebar = widget.sidebar != null;
         final reveal = isCompact
             ? MonoSidebarReveal.pushInset
@@ -442,10 +482,12 @@ class _MonoScreenState extends State<MonoScreen>
           // conceal the closed sidebar rather than let it show through.
           final pageChild = hasSidebar && isCompact
               ? ColoredBox(
-                  color: widget.background ?? theme.colors.background,
+                  color: widget.background ?? theme.colors.page,
                   child: page,
                 )
               : page;
+          _sidebarExtent = sidebarWidth > 0 ? sidebarWidth : 1;
+          final opensLeft = Directionality.of(context) == TextDirection.ltr;
           pageWithSidebar = AnimatedBuilder(
             animation: _sidebarAnimation,
             builder: (context, child) {
@@ -453,11 +495,22 @@ class _MonoScreenState extends State<MonoScreen>
                   ? sidebarWidth * _sidebarAnimation.value
                   : 0.0;
               return Transform.translate(
-                offset: Offset(offset, 0),
+                offset: Offset(opensLeft ? offset : -offset, 0),
                 child: child,
               );
             },
-            child: pageChild,
+            child: hasSidebar
+                // Drag anywhere on the page to reveal or dismiss the sidebar.
+                // HitTestBehavior.translucent keeps taps flowing to content.
+                ? GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragStart: _onSidebarDragStart,
+                    onHorizontalDragUpdate: (d) =>
+                        _onSidebarDragUpdate(d, opensLeft),
+                    onHorizontalDragEnd: (d) => _onSidebarDragEnd(d, opensLeft),
+                    child: pageChild,
+                  )
+                : pageChild,
           );
         } else {
           pageWithSidebar = Row(
@@ -477,7 +530,7 @@ class _MonoScreenState extends State<MonoScreen>
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              ColoredBox(color: widget.background ?? theme.colors.background),
+              ColoredBox(color: widget.background ?? theme.colors.page),
               if (widget.backdrop != null)
                 Positioned.fill(child: widget.backdrop!),
               if (hasSidebar && isCompact)

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 
 /// The primary axis of a [MonoNavigationMenu].
@@ -305,11 +306,11 @@ class _MonoNavigationMenuState extends State<MonoNavigationMenu> {
             widget.variant == MonoNavigationMenuVariant.pill && active
             ? theme.colors.primary
             : highlighted
-            ? theme.colors.muted
-            : theme.colors.background.withValues(alpha: 0);
+            ? theme.colors.fill
+            : theme.colors.page.withValues(alpha: 0);
         final foreground =
             widget.variant == MonoNavigationMenuVariant.pill && active
-            ? theme.colors.primaryForeground
+            ? theme.colors.onPrimary
             : theme.colors.foreground;
         final border =
             widget.variant == MonoNavigationMenuVariant.line && selected
@@ -321,7 +322,7 @@ class _MonoNavigationMenuState extends State<MonoNavigationMenu> {
               )
             : null;
         return AnimatedContainer(
-          duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
+          duration: MonokitMotion.noAnimation(context)
               ? Duration.zero
               : theme.motion.fast,
           curve: theme.motion.curve,

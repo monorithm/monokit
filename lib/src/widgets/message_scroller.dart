@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 
 /// A chat-focused scroll view that can stay pinned to the newest message.
@@ -150,8 +151,7 @@ class _MonoMessageScrollerState extends State<MonoMessageScroller> {
           ? position.minScrollExtent
           : position.maxScrollExtent;
       final theme = MonokitTheme.of(context);
-      final motionDisabled =
-          MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+      final motionDisabled = MonokitMotion.noAnimation(context);
       final duration = widget.scrollDuration ?? theme.motion.duration;
       if (motionDisabled || duration == Duration.zero) {
         _controller.jumpTo(target);

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Per-component configuration tokens.
 ///
 /// Colors remain semantic and live in [MonokitColors]. These lightweight theme
@@ -64,115 +66,73 @@ class MonoControlTheme {
   int get hashCode => focusRingWidth.hashCode;
 }
 
+/// Sidebar geometry for [MonoScreen].
+///
+/// The width ladder used to live here too, as `compactBreakpoint`/
+/// `mediumBreakpoint` — a second copy of `MonokitBreakpoints` carrying the same
+/// numbers. `MonoScreen` read this copy while everything else read the theme's,
+/// so overriding one had no effect on the other. There is now one ladder:
+/// `theme.breakpoints`.
 class MonoScreenTheme {
-  const MonoScreenTheme({
-    this.compactBreakpoint = 600,
-    this.mediumBreakpoint = 960,
-    this.sidebarWidth = 280,
-    this.sidebarRailWidth = 72,
-  });
+  const MonoScreenTheme({this.sidebarWidth = 280, this.sidebarRailWidth = 72});
 
-  final double compactBreakpoint;
-  final double mediumBreakpoint;
   final double sidebarWidth;
   final double sidebarRailWidth;
 
+  MonoScreenTheme copyWith({double? sidebarWidth, double? sidebarRailWidth}) =>
+      MonoScreenTheme(
+        sidebarWidth: sidebarWidth ?? this.sidebarWidth,
+        sidebarRailWidth: sidebarRailWidth ?? this.sidebarRailWidth,
+      );
+
   @override
   bool operator ==(Object other) =>
-      other is MonoScreenTheme &&
-      compactBreakpoint == other.compactBreakpoint &&
-      mediumBreakpoint == other.mediumBreakpoint &&
-      sidebarWidth == other.sidebarWidth &&
-      sidebarRailWidth == other.sidebarRailWidth;
+      identical(this, other) ||
+      (other is MonoScreenTheme &&
+          sidebarWidth == other.sidebarWidth &&
+          sidebarRailWidth == other.sidebarRailWidth);
 
   @override
-  int get hashCode => Object.hash(
-    compactBreakpoint,
-    mediumBreakpoint,
-    sidebarWidth,
-    sidebarRailWidth,
-  );
+  int get hashCode => Object.hash(sidebarWidth, sidebarRailWidth);
 }
 
-/// Container for all component theme knobs.
+/// Container for the component theme knobs that are actually consulted.
+///
+/// This held 17 slots, of which 14 were never read by any widget — and 12 of
+/// those were the same one-field `MonoControlTheme`, so overriding one meant
+/// re-listing all 17 (there was no `copyWith`). Components either hardcoded
+/// the value or read `theme.focus.ringWidth` instead. What survives is the
+/// three slots the library genuinely resolves from.
+@immutable
 class MonokitComponentThemes {
   const MonokitComponentThemes({
     this.button = const MonoButtonTheme(),
-    this.badge = const MonoControlTheme(),
     this.card = const MonoCardTheme(),
-    this.input = const MonoInputTheme(),
-    this.textarea = const MonoInputTheme(),
-    this.field = const MonoControlTheme(),
-    this.checkbox = const MonoControlTheme(),
-    this.radioGroup = const MonoControlTheme(),
-    this.toggle = const MonoControlTheme(),
-    this.tabs = const MonoControlTheme(),
-    this.accordion = const MonoControlTheme(),
-    this.avatar = const MonoControlTheme(),
-    this.separator = const MonoControlTheme(),
-    this.skeleton = const MonoControlTheme(),
-    this.spinner = const MonoControlTheme(),
-    this.kbd = const MonoControlTheme(),
     this.screen = const MonoScreenTheme(),
   });
 
   final MonoButtonTheme button;
-  final MonoControlTheme badge;
   final MonoCardTheme card;
-  final MonoInputTheme input;
-  final MonoInputTheme textarea;
-  final MonoControlTheme field;
-  final MonoControlTheme checkbox;
-  final MonoControlTheme radioGroup;
-  final MonoControlTheme toggle;
-  final MonoControlTheme tabs;
-  final MonoControlTheme accordion;
-  final MonoControlTheme avatar;
-  final MonoControlTheme separator;
-  final MonoControlTheme skeleton;
-  final MonoControlTheme spinner;
-  final MonoControlTheme kbd;
   final MonoScreenTheme screen;
+
+  MonokitComponentThemes copyWith({
+    MonoButtonTheme? button,
+    MonoCardTheme? card,
+    MonoScreenTheme? screen,
+  }) => MonokitComponentThemes(
+    button: button ?? this.button,
+    card: card ?? this.card,
+    screen: screen ?? this.screen,
+  );
 
   @override
   bool operator ==(Object other) =>
-      other is MonokitComponentThemes &&
-      button == other.button &&
-      badge == other.badge &&
-      card == other.card &&
-      input == other.input &&
-      textarea == other.textarea &&
-      field == other.field &&
-      checkbox == other.checkbox &&
-      radioGroup == other.radioGroup &&
-      toggle == other.toggle &&
-      tabs == other.tabs &&
-      accordion == other.accordion &&
-      avatar == other.avatar &&
-      separator == other.separator &&
-      skeleton == other.skeleton &&
-      spinner == other.spinner &&
-      kbd == other.kbd &&
-      screen == other.screen;
+      identical(this, other) ||
+      (other is MonokitComponentThemes &&
+          button == other.button &&
+          card == other.card &&
+          screen == other.screen);
 
   @override
-  int get hashCode => Object.hashAll(<Object>[
-    button,
-    badge,
-    card,
-    input,
-    textarea,
-    field,
-    checkbox,
-    radioGroup,
-    toggle,
-    tabs,
-    accordion,
-    avatar,
-    separator,
-    skeleton,
-    spinner,
-    kbd,
-    screen,
-  ]);
+  int get hashCode => Object.hash(button, card, screen);
 }

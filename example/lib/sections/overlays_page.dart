@@ -38,7 +38,7 @@ class OverlaysPage extends StatelessWidget {
               'close. Destructive actions live behind confirmation.',
           child: MonoDialog(
             trigger: MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               child: const Text('Delete post'),
             ),
             child: MonoDialogContent(
@@ -55,7 +55,7 @@ class OverlaysPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
                         MonoButton(
-                          variant: MonoButtonVariant.outline,
+                          variant: MonoButtonVariant.tinted,
                           onPressed: () {},
                           child: const Text('Cancel'),
                         ),
@@ -81,7 +81,7 @@ class OverlaysPage extends StatelessWidget {
               'on close.',
           child: MonoSheet(
             trigger: MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               child: const Text('Open sheet'),
             ),
             child: MonoSheetContent(
@@ -109,7 +109,7 @@ class OverlaysPage extends StatelessWidget {
           description: 'Slides in from the side, and back out on close.',
           child: MonoDrawer(
             trigger: MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               child: const Text('Open drawer'),
             ),
             child: Padding(
@@ -135,7 +135,7 @@ class OverlaysPage extends StatelessWidget {
           description: 'Anchored, non-modal. Fades + scales from the trigger.',
           child: MonoPopover(
             trigger: MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               child: const Text('Show details'),
             ),
             child: Padding(
@@ -160,7 +160,7 @@ class OverlaysPage extends StatelessWidget {
           child: Align(
             alignment: Alignment.centerRight,
             child: MonoPopover(
-              placement: MonoPopoverPlacement.rightStart,
+              placement: MonoPlacement.rightStart,
               trigger: MonoButton(
                 variant: MonoButtonVariant.secondary,
                 trailing: const MonoIcon(MonoIcons.chevronRight, size: 14),
@@ -188,7 +188,8 @@ class OverlaysPage extends StatelessWidget {
             message: 'Reaches people near Nima',
             child: MonoButton(
               variant: MonoButtonVariant.ghost,
-              size: MonoButtonSize.icon,
+              size: MonoButtonSize.md,
+              iconOnly: true,
               onPressed: () {},
               child: const MonoIcon(MonoIcons.location),
             ),
@@ -218,7 +219,7 @@ class OverlaysPage extends StatelessWidget {
                           Text(
                             '12 active posts · Nima',
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.mutedForeground,
+                              color: theme.colors.foregroundMuted,
                             ),
                           ),
                         ],
@@ -253,7 +254,7 @@ class OverlaysPage extends StatelessWidget {
                   Text(
                     'Report',
                     style: theme.typography.bodyMedium.copyWith(
-                      color: theme.colors.destructiveText,
+                      color: theme.colors.dangerText,
                     ),
                   ),
                 ],
@@ -264,14 +265,14 @@ class OverlaysPage extends StatelessWidget {
               height: 88,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: theme.colors.muted,
+                color: theme.colors.fill,
                 borderRadius: BorderRadius.circular(theme.radii.md),
-                border: Border.all(color: theme.colors.border),
+                border: Border.all(color: theme.colors.separator),
               ),
               child: Text(
                 'Right-click me',
                 style: theme.typography.bodyMedium.copyWith(
-                  color: theme.colors.mutedForeground,
+                  color: theme.colors.foregroundMuted,
                 ),
               ),
             ),
@@ -284,7 +285,7 @@ class OverlaysPage extends StatelessWidget {
               'Fades in/out and flips up when it would overflow below.',
           child: MonoDropdownMenu<String>(
             trigger: MonoButton(
-              variant: MonoButtonVariant.outline,
+              variant: MonoButtonVariant.tinted,
               trailing: const MonoIcon(MonoIcons.chevronDown, size: 14),
               child: const Text('Actions'),
             ),
@@ -341,8 +342,9 @@ class _OverlaysHero extends StatelessWidget {
               child: MonoTooltip(
                 message: 'Save for later',
                 child: MonoButton(
-                  variant: MonoButtonVariant.outline,
-                  size: MonoButtonSize.icon,
+                  variant: MonoButtonVariant.tinted,
+                  size: MonoButtonSize.md,
+                  iconOnly: true,
                   onPressed: () {},
                   child: const MonoIcon(MonoIcons.bookmark),
                 ),
@@ -365,7 +367,7 @@ class _OverlaysHero extends StatelessWidget {
                   ),
                 ],
                 trigger: MonoButton(
-                  variant: MonoButtonVariant.outline,
+                  variant: MonoButtonVariant.tinted,
                   size: MonoButtonSize.sm,
                   trailing: const MonoIcon(MonoIcons.chevronDown, size: 14),
                   child: const Text('More'),

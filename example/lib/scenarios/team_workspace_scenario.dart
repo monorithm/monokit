@@ -48,7 +48,7 @@ class _TeamWorkspaceScenarioState extends State<TeamWorkspaceScenario> {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       border: Border(
-                        right: BorderSide(color: theme.colors.border),
+                        right: BorderSide(color: theme.colors.separator),
                       ),
                     ),
                     child: _ThreadList(
@@ -101,7 +101,7 @@ class _ThreadList extends StatelessWidget {
             margin: EdgeInsets.only(bottom: theme.spacing.xs),
             padding: EdgeInsets.all(theme.spacing.md),
             decoration: BoxDecoration(
-              color: active ? theme.colors.secondary : null,
+              color: active ? theme.colors.fill : null,
               borderRadius: BorderRadius.circular(theme.radii.md),
             ),
             child: Row(
@@ -126,7 +126,7 @@ class _ThreadList extends StatelessWidget {
                           Text(
                             t.time,
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.mutedForeground,
+                              color: theme.colors.foregroundMuted,
                             ),
                           ),
                         ],
@@ -140,7 +140,7 @@ class _ThreadList extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: theme.typography.bodyMedium.copyWith(
-                                color: theme.colors.mutedForeground,
+                                color: theme.colors.foregroundMuted,
                               ),
                             ),
                           ),
@@ -181,7 +181,7 @@ class _Detail extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(theme.spacing.md),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: theme.colors.border)),
+            border: Border(bottom: BorderSide(color: theme.colors.separator)),
           ),
           child: Row(
             children: <Widget>[
@@ -190,7 +190,8 @@ class _Detail extends StatelessWidget {
                   padding: EdgeInsets.only(right: theme.spacing.xs),
                   child: MonoButton(
                     variant: MonoButtonVariant.ghost,
-                    size: MonoButtonSize.iconSm,
+                    size: MonoButtonSize.sm,
+                    iconOnly: true,
                     semanticLabel: 'Back to inbox',
                     onPressed: onBack,
                     child: const MonoIcon(MonoIcons.chevronLeft),
@@ -233,7 +234,7 @@ class _Detail extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(theme.spacing.md),
           decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: theme.colors.border)),
+            border: Border(top: BorderSide(color: theme.colors.separator)),
           ),
           child: MonoComposerBar(
             input: const MonoInput(placeholder: 'Reply…'),

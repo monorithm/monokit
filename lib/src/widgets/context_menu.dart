@@ -6,6 +6,8 @@ import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
+import '../theme/monokit_motion.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -57,24 +59,15 @@ class MonoContextMenuContent extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.popover,
-        border: Border.all(
-          color: theme.colors.foreground.withValues(alpha: 0.1),
-        ),
+        color: theme.colors.elevated,
         borderRadius: BorderRadius.circular(theme.radii.lg),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: theme.colors.foreground.withValues(alpha: 0.12),
-            blurRadius: theme.spacing.xxl,
-            offset: Offset(0, theme.spacing.sm),
-          ),
-        ],
+        boxShadow: theme.elevation.resolve(MonoElevation.raised),
       ),
       child: Padding(
         padding: padding ?? EdgeInsets.all(theme.spacing.xs),
         child: DefaultTextStyle.merge(
           style: theme.typography.bodyMedium.copyWith(
-            color: theme.colors.popoverForeground,
+            color: theme.colors.foreground,
           ),
           // Scrolls instead of overflowing when the anchored layout caps the
           // menu's height to the space available on screen.
@@ -139,17 +132,17 @@ class MonoContextMenuItem extends StatelessWidget {
         final focused = states.contains(MonoState.focusVisible);
         final bool isHi = (pressed || hovered) && isEnabled;
         final foreground = !isEnabled
-            ? theme.colors.mutedForeground
+            ? theme.colors.foregroundMuted
             : destructive
-            ? (isHi ? theme.colors.destructiveText : theme.colors.destructive)
+            ? (isHi ? theme.colors.dangerText : theme.colors.danger)
             : isHi
-            ? theme.colors.accentForeground
-            : theme.colors.popoverForeground;
+            ? theme.colors.onPrimary
+            : theme.colors.foreground;
         // On the accent-highlighted row, the trailing/shortcut glyph flips to
         // accentForeground too; otherwise it stays muted.
         final trailingColor = isHi && !destructive
-            ? theme.colors.accentForeground
-            : theme.colors.mutedForeground;
+            ? theme.colors.onPrimary
+            : theme.colors.foregroundMuted;
         return AnimatedContainer(
           duration: theme.motion.fast,
           curve: theme.motion.curve,
@@ -161,8 +154,8 @@ class MonoContextMenuItem extends StatelessWidget {
             color: !isHi
                 ? const Color(0x00000000)
                 : destructive
-                ? theme.colors.destructiveSoft
-                : theme.colors.accent,
+                ? theme.colors.dangerSoft
+                : theme.colors.primary,
             borderRadius: BorderRadius.circular(theme.radii.md),
             boxShadow: focused
                 ? <BoxShadow>[
@@ -226,7 +219,7 @@ class MonoContextMenuSeparator extends StatelessWidget {
     return Padding(
       padding: padding ?? EdgeInsets.symmetric(vertical: theme.spacing.xs),
       child: ColoredBox(
-        color: theme.colors.border,
+        color: theme.colors.separator,
         child: const SizedBox(height: 1, width: double.infinity),
       ),
     );
@@ -420,8 +413,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
     }
     _overlayFocus.captureForOpen();
     _overlayTheme = MonokitTheme.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
@@ -449,8 +441,7 @@ class _MonoContextMenuState extends State<MonoContextMenu> {
       return;
     }
     _overlayTheme = MonokitTheme.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry!.markNeedsBuild();
   }
 

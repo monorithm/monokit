@@ -141,7 +141,7 @@ class NavigationPage extends StatelessWidget {
                   ),
                   MonoCardFooter(
                     child: MonoButton(
-                      variant: MonoButtonVariant.outline,
+                      variant: MonoButtonVariant.tinted,
                       size: MonoButtonSize.sm,
                       onPressed: () {},
                       child: const Text('Track'),
@@ -169,7 +169,7 @@ class NavigationPage extends StatelessWidget {
     return Text(
       text,
       style: theme.typography.bodyMedium.copyWith(
-        color: theme.colors.mutedForeground,
+        color: theme.colors.foregroundMuted,
       ),
     );
   }
@@ -247,7 +247,7 @@ class _NavShellDemoState extends State<_NavShellDemo> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     border: Border(
-                      right: BorderSide(color: theme.colors.border),
+                      right: BorderSide(color: theme.colors.separator),
                     ),
                   ),
                   child: Padding(
@@ -286,7 +286,9 @@ class _NavShellDemoState extends State<_NavShellDemo> {
           children: <Widget>[
             DecoratedBox(
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: theme.colors.border)),
+                border: Border(
+                  bottom: BorderSide(color: theme.colors.separator),
+                ),
               ),
               child: Padding(
                 padding: EdgeInsets.all(theme.spacing.md),
@@ -336,7 +338,7 @@ class _Content extends StatelessWidget {
             'The $label destination. On wide viewports this sits beside a side '
             'rail; on compact it fills the screen with a bottom nav below.',
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
         ],
@@ -380,7 +382,7 @@ class _BottomNavDemoState extends State<_BottomNavDemo> {
               'Icon-only, controlled by the host; every tap reports its '
               'index — including re-taps of the selected destination.',
               style: theme.typography.bodyMedium.copyWith(
-                color: theme.colors.mutedForeground,
+                color: theme.colors.foregroundMuted,
               ),
             ),
           ),

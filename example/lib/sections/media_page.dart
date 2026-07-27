@@ -18,7 +18,7 @@ class MediaPage extends StatelessWidget {
           eyebrow: 'Media',
           title: 'Immersive surfaces',
           tagline:
-              'Full-bleed media on the always-dark canvas, glass controls, live '
+              'Full-bleed media on the always-dark canvas, mist chrome, live '
               'badges, action rails, waveforms, and call controls.',
           child: const _MediaHero(),
         ),
@@ -27,7 +27,7 @@ class MediaPage extends StatelessWidget {
           title: 'Immersive surface',
           widgetName: 'MonoMediaSurface',
           description:
-              'Full-bleed media on the dark canvas; glass controls over content; '
+              'Full-bleed media on the dark canvas; mist chrome over content; '
               'marketplace facts survive immersion. The live badge is sacred.',
           child: SizedBox(
             width: 300,
@@ -112,19 +112,22 @@ class MediaPage extends StatelessWidget {
             children: <Widget>[
               MonoButton(
                 variant: MonoButtonVariant.secondary,
-                size: MonoButtonSize.icon,
+                size: MonoButtonSize.md,
+                iconOnly: true,
                 onPressed: () {},
                 child: const MonoIcon(MonoIcons.mic),
               ),
               MonoButton(
                 variant: MonoButtonVariant.secondary,
-                size: MonoButtonSize.icon,
+                size: MonoButtonSize.md,
+                iconOnly: true,
                 onPressed: () {},
                 child: const MonoIcon(MonoIcons.video),
               ),
               MonoButton(
                 variant: MonoButtonVariant.destructive,
-                size: MonoButtonSize.icon,
+                size: MonoButtonSize.md,
+                iconOnly: true,
                 onPressed: () {},
                 child: const MonoIcon(MonoIcons.close),
               ),

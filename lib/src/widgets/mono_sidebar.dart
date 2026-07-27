@@ -47,9 +47,9 @@ class MonoSidebar extends StatelessWidget {
     final effectiveController = controller ?? screenScope?.sidebarController;
     final content = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.sidebar,
+        color: theme.colors.card,
         border: BorderDirectional(
-          end: BorderSide(color: theme.colors.sidebarBorder),
+          end: BorderSide(color: theme.colors.separator),
         ),
       ),
       child: Padding(

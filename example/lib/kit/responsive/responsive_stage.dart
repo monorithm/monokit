@@ -67,9 +67,9 @@ class _ResponsiveStageState extends State<ResponsiveStage> {
         if (constraints.maxWidth < bp.medium) {
           return DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colors.background,
+              color: theme.colors.page,
               borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: theme.colors.border),
+              border: Border.all(color: theme.colors.separator),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(theme.radii.md),
@@ -105,9 +105,9 @@ class _ResponsiveStageState extends State<ResponsiveStage> {
             SizedBox(height: theme.spacing.md),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: theme.colors.muted,
+                color: theme.colors.fill,
                 borderRadius: BorderRadius.circular(theme.radii.lg),
-                border: Border.all(color: theme.colors.border),
+                border: Border.all(color: theme.colors.separator),
               ),
               child: Padding(
                 padding: EdgeInsets.all(theme.spacing.md),
@@ -171,7 +171,7 @@ class _Toolbar extends StatelessWidget {
               variant: (intendedWidth - preset.width).abs() < 1
                   ? MonoButtonVariant.secondary
                   : MonoButtonVariant.ghost,
-              size: MonoButtonSize.xs,
+              size: MonoButtonSize.sm,
               onPressed: () => onPreset(preset.width),
               child: Text(preset.label),
             ),
@@ -205,9 +205,9 @@ class _Frame extends StatelessWidget {
       height: height,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.background,
+          color: theme.colors.page,
           borderRadius: BorderRadius.circular(theme.radii.md),
-          border: Border.all(color: theme.colors.border),
+          border: Border.all(color: theme.colors.separator),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(theme.radii.md),
@@ -247,7 +247,7 @@ class _DragHandle extends StatelessWidget {
               width: 4,
               height: 40,
               decoration: BoxDecoration(
-                color: theme.colors.mutedForeground,
+                color: theme.colors.foregroundMuted,
                 borderRadius: BorderRadius.circular(theme.radii.full),
               ),
             ),

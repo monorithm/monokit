@@ -317,10 +317,10 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
     for (int index = 0; index < _controllers.length; index++) {
       final bool focused = _focusNodes[index].hasFocus;
       final Color borderColor = widget.invalid
-          ? theme.colors.destructive
+          ? theme.colors.danger
           : focused
           ? theme.colors.ring
-          : theme.colors.input;
+          : theme.colors.separator;
       fields.add(
         Focus(
           canRequestFocus: false,
@@ -348,15 +348,12 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: _isEnabled
-                      ? theme.colors.background.withAlpha(0)
-                      : theme.colors.muted.withAlpha(150),
+                      ? theme.colors.page.withAlpha(0)
+                      : theme.colors.fill.withAlpha(150),
                   borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
                   boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(
-                          theme.colors.destructive,
-                          alpha: 0.2,
-                        )
+                      ? theme.focus.ringShadow(theme.colors.danger, alpha: 0.2)
                       : focused && focusVisible
                       ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
@@ -373,7 +370,7 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
                     style: theme.typography.titleLarge.copyWith(
                       color: _isEnabled
                           ? theme.colors.foreground
-                          : theme.colors.mutedForeground,
+                          : theme.colors.foregroundMuted,
                     ),
                     textAlign: TextAlign.center,
                     cursorColor: theme.colors.foreground,
