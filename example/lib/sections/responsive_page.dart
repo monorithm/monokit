@@ -24,7 +24,7 @@ class ResponsivePage extends StatelessWidget {
             'breakpoint below drives real reflow — drag the stage, scan the '
             'panes, or pin the whole app with the device switcher up top.',
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
         ),
@@ -71,7 +71,7 @@ class _SectionTitle extends StatelessWidget {
           child: Text(
             subtitle,
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
         ),
@@ -140,7 +140,7 @@ class _TierChip extends StatelessWidget {
         color: active ? theme.colors.primarySoft : theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.lg),
         border: Border.all(
-          color: active ? theme.colors.primary : theme.colors.border,
+          color: active ? theme.colors.primary : theme.colors.separator,
         ),
       ),
       child: Padding(
@@ -170,7 +170,7 @@ class _TierChip extends StatelessWidget {
             Text(
               '$range pt',
               style: theme.typography.mono.copyWith(
-                color: theme.colors.mutedForeground,
+                color: theme.colors.foregroundMuted,
               ),
             ),
           ],
@@ -276,7 +276,7 @@ class _Grid extends StatelessWidget {
                         Text(
                           label,
                           style: theme.typography.labelMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                         ),
                       ],
@@ -299,7 +299,7 @@ class _SummaryRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     return MonoSurface(
-      tier: MonoElevationTier.e0,
+      elevation: MonoElevation.flat,
       padding: EdgeInsets.all(theme.spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,12 +312,12 @@ class _SummaryRail extends StatelessWidget {
                 ? 'Rail stacks above the grid on compact.'
                 : 'Rail sits beside the grid from medium up.',
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
           SizedBox(height: theme.spacing.md),
           MonoButton(
-            variant: MonoButtonVariant.primary,
+            variant: MonoButtonVariant.filled,
             size: MonoButtonSize.sm,
             onPressed: () {},
             leading: const MonoIcon(MonoIcons.add, size: 16),

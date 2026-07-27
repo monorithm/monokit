@@ -5,24 +5,10 @@ import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../primitives/mono_pressable.dart';
+import '../theme/monokit_motion.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
-
-/// Where a [MonoPopover] is anchored relative to its trigger.
-enum MonoPopoverPlacement {
-  top,
-  topStart,
-  topEnd,
-  right,
-  rightStart,
-  rightEnd,
-  bottom,
-  bottomStart,
-  bottomEnd,
-  left,
-  leftStart,
-  leftEnd,
-}
 
 /// Exposes a [MonoPopover]'s current state and close actions to descendants.
 class MonoPopoverScope extends InheritedWidget {
@@ -135,24 +121,15 @@ class MonoPopoverContent extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.popover,
-        border: Border.all(
-          color: theme.colors.foreground.withValues(alpha: 0.1),
-        ),
+        color: theme.colors.elevated,
         borderRadius: BorderRadius.circular(theme.radii.lg),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: theme.colors.foreground.withValues(alpha: 0.12),
-            blurRadius: theme.spacing.xxl,
-            offset: Offset(0, theme.spacing.sm),
-          ),
-        ],
+        boxShadow: theme.elevation.resolve(MonoElevation.raised),
       ),
       child: Padding(
         padding: padding ?? EdgeInsets.all(theme.spacing.md),
         child: DefaultTextStyle.merge(
           style: theme.typography.bodyMedium.copyWith(
-            color: theme.colors.popoverForeground,
+            color: theme.colors.foreground,
           ),
           child: child,
         ),
@@ -183,7 +160,7 @@ class MonoPopover extends StatefulWidget {
     this.open,
     this.defaultOpen = false,
     this.onOpenChange,
-    this.placement = MonoPopoverPlacement.bottomStart,
+    this.placement = MonoPlacement.bottomStart,
     this.offset = Offset.zero,
     this.gap,
     this.dismissible = true,
@@ -196,7 +173,7 @@ class MonoPopover extends StatefulWidget {
   final bool? open;
   final bool defaultOpen;
   final ValueChanged<bool>? onOpenChange;
-  final MonoPopoverPlacement placement;
+  final MonoPlacement placement;
   final Offset offset;
 
   /// Space between the trigger and the popover. Defaults to the small spacing
@@ -334,8 +311,7 @@ class _MonoPopoverState extends State<MonoPopover> {
     _overlayFocus.captureForOpen();
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
@@ -365,8 +341,7 @@ class _MonoPopoverState extends State<MonoPopover> {
     }
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry!.markNeedsBuild();
   }
 
@@ -449,7 +424,7 @@ class _MonoPopoverOverlay extends StatefulWidget {
   final bool visible;
   final VoidCallback onExited;
   final Rect anchorRect;
-  final MonoPopoverPlacement placement;
+  final MonoPlacement placement;
   final Offset offset;
   final double gap;
   final TextDirection textDirection;
@@ -532,7 +507,7 @@ class _MonoPopoverOverlayState extends State<_MonoPopoverOverlay>
     );
     final follower = MonoAnchoredOverlay(
       anchorRect: widget.anchorRect.shift(widget.offset),
-      placement: MonoPlacement.values.byName(widget.placement.name),
+      placement: widget.placement,
       gap: widget.gap,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -625,7 +600,7 @@ class _MonoPopoverAnchors {
   };
 
   static _MonoPopoverAnchors resolve(
-    MonoPopoverPlacement placement,
+    MonoPlacement placement,
     TextDirection textDirection,
   ) {
     final isLtr = textDirection == TextDirection.ltr;
@@ -635,62 +610,62 @@ class _MonoPopoverAnchors {
     final bottomEnd = isLtr ? Alignment.bottomRight : Alignment.bottomLeft;
 
     return switch (placement) {
-      MonoPopoverPlacement.top => const _MonoPopoverAnchors(
+      MonoPlacement.top => const _MonoPopoverAnchors(
         targetAnchor: Alignment.topCenter,
         followerAnchor: Alignment.bottomCenter,
         direction: AxisDirection.up,
       ),
-      MonoPopoverPlacement.topStart => _MonoPopoverAnchors(
+      MonoPlacement.topStart => _MonoPopoverAnchors(
         targetAnchor: start,
         followerAnchor: bottomStart,
         direction: AxisDirection.up,
       ),
-      MonoPopoverPlacement.topEnd => _MonoPopoverAnchors(
+      MonoPlacement.topEnd => _MonoPopoverAnchors(
         targetAnchor: end,
         followerAnchor: bottomEnd,
         direction: AxisDirection.up,
       ),
-      MonoPopoverPlacement.right => const _MonoPopoverAnchors(
+      MonoPlacement.right => const _MonoPopoverAnchors(
         targetAnchor: Alignment.centerRight,
         followerAnchor: Alignment.centerLeft,
         direction: AxisDirection.right,
       ),
-      MonoPopoverPlacement.rightStart => const _MonoPopoverAnchors(
+      MonoPlacement.rightStart => const _MonoPopoverAnchors(
         targetAnchor: Alignment.topRight,
         followerAnchor: Alignment.topLeft,
         direction: AxisDirection.right,
       ),
-      MonoPopoverPlacement.rightEnd => const _MonoPopoverAnchors(
+      MonoPlacement.rightEnd => const _MonoPopoverAnchors(
         targetAnchor: Alignment.bottomRight,
         followerAnchor: Alignment.bottomLeft,
         direction: AxisDirection.right,
       ),
-      MonoPopoverPlacement.bottom => const _MonoPopoverAnchors(
+      MonoPlacement.bottom => const _MonoPopoverAnchors(
         targetAnchor: Alignment.bottomCenter,
         followerAnchor: Alignment.topCenter,
         direction: AxisDirection.down,
       ),
-      MonoPopoverPlacement.bottomStart => _MonoPopoverAnchors(
+      MonoPlacement.bottomStart => _MonoPopoverAnchors(
         targetAnchor: bottomStart,
         followerAnchor: start,
         direction: AxisDirection.down,
       ),
-      MonoPopoverPlacement.bottomEnd => _MonoPopoverAnchors(
+      MonoPlacement.bottomEnd => _MonoPopoverAnchors(
         targetAnchor: bottomEnd,
         followerAnchor: end,
         direction: AxisDirection.down,
       ),
-      MonoPopoverPlacement.left => const _MonoPopoverAnchors(
+      MonoPlacement.left => const _MonoPopoverAnchors(
         targetAnchor: Alignment.centerLeft,
         followerAnchor: Alignment.centerRight,
         direction: AxisDirection.left,
       ),
-      MonoPopoverPlacement.leftStart => const _MonoPopoverAnchors(
+      MonoPlacement.leftStart => const _MonoPopoverAnchors(
         targetAnchor: Alignment.topLeft,
         followerAnchor: Alignment.topRight,
         direction: AxisDirection.left,
       ),
-      MonoPopoverPlacement.leftEnd => const _MonoPopoverAnchors(
+      MonoPlacement.leftEnd => const _MonoPopoverAnchors(
         targetAnchor: Alignment.bottomLeft,
         followerAnchor: Alignment.bottomRight,
         direction: AxisDirection.left,

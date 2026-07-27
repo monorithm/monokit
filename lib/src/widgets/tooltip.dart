@@ -5,24 +5,10 @@ import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_placement.dart';
+import '../theme/monokit_motion.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
-
-/// Where a [MonoTooltip] is anchored relative to its child.
-enum MonoTooltipPlacement {
-  top,
-  topStart,
-  topEnd,
-  right,
-  rightStart,
-  rightEnd,
-  bottom,
-  bottomStart,
-  bottomEnd,
-  left,
-  leftStart,
-  leftEnd,
-}
 
 /// The token-derived visual surface used by [MonoTooltip].
 class MonoTooltipContent extends StatelessWidget {
@@ -48,13 +34,7 @@ class MonoTooltipContent extends StatelessWidget {
         // match the reference tooltip, rather than the brand color.
         color: theme.colors.foreground,
         borderRadius: BorderRadius.circular(theme.radii.md),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: theme.colors.foreground.withValues(alpha: 0.12),
-            blurRadius: theme.spacing.lg,
-            offset: Offset(0, theme.spacing.xs),
-          ),
-        ],
+        boxShadow: theme.elevation.resolve(MonoElevation.raised),
       ),
       child: Padding(
         padding:
@@ -65,7 +45,7 @@ class MonoTooltipContent extends StatelessWidget {
             ),
         child: DefaultTextStyle.merge(
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.background,
+            color: theme.colors.page,
           ),
           child: child,
         ),
@@ -93,7 +73,7 @@ class MonoTooltip extends StatefulWidget {
     this.open,
     this.defaultOpen = false,
     this.onOpenChange,
-    this.placement = MonoTooltipPlacement.top,
+    this.placement = MonoPlacement.top,
     this.offset = Offset.zero,
     this.gap,
     this.waitDuration,
@@ -115,7 +95,7 @@ class MonoTooltip extends StatefulWidget {
   final bool? open;
   final bool defaultOpen;
   final ValueChanged<bool>? onOpenChange;
-  final MonoTooltipPlacement placement;
+  final MonoPlacement placement;
   final Offset offset;
 
   /// Space between the trigger and tooltip. Defaults to the extra-small token.
@@ -290,8 +270,7 @@ class _MonoTooltipState extends State<MonoTooltip> {
     }
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
@@ -330,8 +309,7 @@ class _MonoTooltipState extends State<MonoTooltip> {
     }
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry!.markNeedsBuild();
   }
 
@@ -443,7 +421,7 @@ class _MonoTooltipOverlay extends StatefulWidget {
   final bool visible;
   final VoidCallback onExited;
   final Rect anchorRect;
-  final MonoTooltipPlacement placement;
+  final MonoPlacement placement;
   final Offset offset;
   final double gap;
   final TextDirection textDirection;
@@ -515,7 +493,7 @@ class _MonoTooltipOverlayState extends State<_MonoTooltipOverlay>
         ignoring: true,
         child: MonoAnchoredOverlay(
           anchorRect: widget.anchorRect.shift(widget.offset),
-          placement: MonoPlacement.values.byName(widget.placement.name),
+          placement: widget.placement,
           gap: widget.gap,
           child: FadeTransition(
             opacity: animation,
@@ -563,7 +541,7 @@ class _MonoTooltipAnchors {
   };
 
   static _MonoTooltipAnchors resolve(
-    MonoTooltipPlacement placement,
+    MonoPlacement placement,
     TextDirection textDirection,
   ) {
     final isLtr = textDirection == TextDirection.ltr;
@@ -573,62 +551,62 @@ class _MonoTooltipAnchors {
     final bottomEnd = isLtr ? Alignment.bottomRight : Alignment.bottomLeft;
 
     return switch (placement) {
-      MonoTooltipPlacement.top => const _MonoTooltipAnchors(
+      MonoPlacement.top => const _MonoTooltipAnchors(
         targetAnchor: Alignment.topCenter,
         followerAnchor: Alignment.bottomCenter,
         direction: AxisDirection.up,
       ),
-      MonoTooltipPlacement.topStart => _MonoTooltipAnchors(
+      MonoPlacement.topStart => _MonoTooltipAnchors(
         targetAnchor: start,
         followerAnchor: bottomStart,
         direction: AxisDirection.up,
       ),
-      MonoTooltipPlacement.topEnd => _MonoTooltipAnchors(
+      MonoPlacement.topEnd => _MonoTooltipAnchors(
         targetAnchor: end,
         followerAnchor: bottomEnd,
         direction: AxisDirection.up,
       ),
-      MonoTooltipPlacement.right => const _MonoTooltipAnchors(
+      MonoPlacement.right => const _MonoTooltipAnchors(
         targetAnchor: Alignment.centerRight,
         followerAnchor: Alignment.centerLeft,
         direction: AxisDirection.right,
       ),
-      MonoTooltipPlacement.rightStart => const _MonoTooltipAnchors(
+      MonoPlacement.rightStart => const _MonoTooltipAnchors(
         targetAnchor: Alignment.topRight,
         followerAnchor: Alignment.topLeft,
         direction: AxisDirection.right,
       ),
-      MonoTooltipPlacement.rightEnd => const _MonoTooltipAnchors(
+      MonoPlacement.rightEnd => const _MonoTooltipAnchors(
         targetAnchor: Alignment.bottomRight,
         followerAnchor: Alignment.bottomLeft,
         direction: AxisDirection.right,
       ),
-      MonoTooltipPlacement.bottom => const _MonoTooltipAnchors(
+      MonoPlacement.bottom => const _MonoTooltipAnchors(
         targetAnchor: Alignment.bottomCenter,
         followerAnchor: Alignment.topCenter,
         direction: AxisDirection.down,
       ),
-      MonoTooltipPlacement.bottomStart => _MonoTooltipAnchors(
+      MonoPlacement.bottomStart => _MonoTooltipAnchors(
         targetAnchor: bottomStart,
         followerAnchor: start,
         direction: AxisDirection.down,
       ),
-      MonoTooltipPlacement.bottomEnd => _MonoTooltipAnchors(
+      MonoPlacement.bottomEnd => _MonoTooltipAnchors(
         targetAnchor: bottomEnd,
         followerAnchor: end,
         direction: AxisDirection.down,
       ),
-      MonoTooltipPlacement.left => const _MonoTooltipAnchors(
+      MonoPlacement.left => const _MonoTooltipAnchors(
         targetAnchor: Alignment.centerLeft,
         followerAnchor: Alignment.centerRight,
         direction: AxisDirection.left,
       ),
-      MonoTooltipPlacement.leftStart => const _MonoTooltipAnchors(
+      MonoPlacement.leftStart => const _MonoTooltipAnchors(
         targetAnchor: Alignment.topLeft,
         followerAnchor: Alignment.topRight,
         direction: AxisDirection.left,
       ),
-      MonoTooltipPlacement.leftEnd => const _MonoTooltipAnchors(
+      MonoPlacement.leftEnd => const _MonoTooltipAnchors(
         targetAnchor: Alignment.bottomLeft,
         followerAnchor: Alignment.bottomRight,
         direction: AxisDirection.left,

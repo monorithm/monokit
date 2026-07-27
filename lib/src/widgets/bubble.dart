@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'message.dart';
@@ -63,38 +64,26 @@ class MonoBubbleStyleResolver {
     ) = switch (variant) {
       MonoBubbleVariant.default_ => (
         colors.card,
-        colors.cardForeground,
-        colors.border,
+        colors.foreground,
+        colors.separator,
       ),
-      MonoBubbleVariant.primary => (
-        colors.primary,
-        colors.primaryForeground,
-        null,
-      ),
-      MonoBubbleVariant.secondary => (
-        colors.secondary,
-        colors.secondaryForeground,
-        null,
-      ),
-      MonoBubbleVariant.muted => (colors.muted, colors.foreground, null),
+      MonoBubbleVariant.primary => (colors.primary, colors.onPrimary, null),
+      MonoBubbleVariant.secondary => (colors.fill, colors.foreground, null),
+      MonoBubbleVariant.muted => (colors.fill, colors.foreground, null),
       // Soft primary tint (not the full accent), matching the reference's
       // desaturated-primary tinted bubble; foreground stays legible in both modes.
       MonoBubbleVariant.tinted => (colors.primarySoft, colors.foreground, null),
       MonoBubbleVariant.outline => (
-        colors.background.withValues(alpha: 0),
+        colors.page.withValues(alpha: 0),
         colors.foreground,
-        colors.border,
+        colors.separator,
       ),
       MonoBubbleVariant.ghost => (
-        colors.background.withValues(alpha: 0),
+        colors.page.withValues(alpha: 0),
         colors.foreground,
         null,
       ),
-      MonoBubbleVariant.destructive => (
-        colors.destructive,
-        colors.destructiveForeground,
-        null,
-      ),
+      MonoBubbleVariant.destructive => (colors.danger, colors.onStatus, null),
     };
     return MonoResolvedBubbleStyle(
       background: background,
@@ -296,11 +285,13 @@ class MonoBubbleReaction extends StatelessWidget {
       final isPressed = states.contains(MonoState.pressed);
       final isHovered = states.contains(MonoState.hovered);
       final background = isSelected || isPressed || isHovered
-          ? theme.colors.muted
-          : theme.colors.background;
-      final borderColor = isSelected ? theme.colors.ring : theme.colors.border;
+          ? theme.colors.fill
+          : theme.colors.page;
+      final borderColor = isSelected
+          ? theme.colors.ring
+          : theme.colors.separator;
       return AnimatedContainer(
-        duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
+        duration: MonokitMotion.noAnimation(context)
             ? Duration.zero
             : theme.motion.fast,
         curve: theme.motion.curve,

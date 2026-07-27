@@ -20,9 +20,8 @@ class MonoCard extends StatelessWidget {
     this.size = MonoCardSize.md,
     this.background,
     this.borderColor,
-    this.showBorder = true,
-    this.elevation,
-    this.tier = MonoElevationTier.e1,
+    this.showBorder = false,
+    this.elevation = MonoElevation.flat,
     this.semanticLabel,
   });
 
@@ -32,42 +31,40 @@ class MonoCard extends StatelessWidget {
   final Color? borderColor;
   final bool showBorder;
 
-  /// A multiplier applied to the token-derived subtle shadow. Set to zero to
-  /// render a flat card.
-  @Deprecated('Use tier.')
-  final double? elevation;
-  final MonoElevationTier tier;
+  /// Defaults to [MonoElevation.flat]: in the grouped model the page-to-card
+  /// luminance step is the depth cue, and a shadow is reserved for surfaces
+  /// that genuinely float.
+  ///
+  /// This replaces the old `tier` enum *and* the deprecated `elevation`
+  /// double, which were two parameters describing one thing.
+  final MonoElevation elevation;
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final resolvedTier = elevation == null
-        ? tier
-        : elevation! <= 0
-        ? MonoElevationTier.e0
-        : MonoElevationTier.e2;
     final card = DecoratedBox(
       decoration: BoxDecoration(
         color: background ?? theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.xl),
+        // Opt-in. Under the grouped surface model a card already separates
+        // from the page by a luminance step, so a hairline on top of that
+        // reads as double-drawing the same boundary. Set `showBorder: true`
+        // for the cases the step cannot carry — a card on an equal-value
+        // ground, or one over media.
         border: showBorder
             ? Border.all(
-                // Translucent foreground hairline (ring-1 ring-foreground/10),
-                // matching the reference rather than an opaque border.
-                color:
-                    borderColor ??
-                    theme.colors.foreground.withValues(alpha: 0.1),
+                color: borderColor ?? theme.colors.separator,
                 width: theme.components.card.borderWidth,
               )
             : null,
-        boxShadow: theme.elevation.resolve(resolvedTier),
+        boxShadow: theme.elevation.resolve(elevation),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(theme.radii.xl),
         child: DefaultTextStyle.merge(
           style: theme.typography.bodyMedium.copyWith(
-            color: theme.colors.cardForeground,
+            color: theme.colors.foreground,
           ),
           child: _MonoCardScope(size: size, child: child),
         ),
@@ -162,7 +159,7 @@ class MonoCardTitle extends StatelessWidget {
     return MonoHeading(
       DefaultTextStyle.merge(
         style: theme.typography.titleLarge.copyWith(
-          color: theme.colors.cardForeground,
+          color: theme.colors.foreground,
         ),
         textAlign: textAlign,
         maxLines: maxLines,
@@ -193,7 +190,7 @@ class MonoCardDescription extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DefaultTextStyle.merge(
       style: theme.typography.bodyMedium.copyWith(
-        color: theme.colors.mutedForeground,
+        color: theme.colors.foregroundMuted,
       ),
       textAlign: textAlign,
       maxLines: maxLines,

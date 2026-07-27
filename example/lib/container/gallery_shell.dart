@@ -62,7 +62,7 @@ class _GalleryHeader extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.colors.border)),
+        border: Border(bottom: BorderSide(color: theme.colors.separator)),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -78,7 +78,8 @@ class _GalleryHeader extends StatelessWidget {
                 semanticLabel: 'Navigation',
                 trigger: MonoButton(
                   variant: MonoButtonVariant.ghost,
-                  size: MonoButtonSize.iconSm,
+                  size: MonoButtonSize.sm,
+                  iconOnly: true,
                   semanticLabel: 'Open navigation',
                   child: const MonoIcon(MonoIcons.menu),
                 ),
@@ -97,7 +98,7 @@ class _GalleryHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.mutedForeground,
+                      color: theme.colors.foregroundMuted,
                     ),
                   ),
                 ],
@@ -150,9 +151,9 @@ class _ViewportSwitcher extends StatelessWidget {
           padding: EdgeInsets.only(right: theme.spacing.sm),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colors.muted,
+              color: theme.colors.fill,
               borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: theme.colors.border),
+              border: Border.all(color: theme.colors.separator),
             ),
             child: Padding(
               padding: EdgeInsets.all(theme.spacing.xs / 2),
@@ -165,7 +166,7 @@ class _ViewportSwitcher extends StatelessWidget {
                         variant: controller.mode == mode
                             ? MonoButtonVariant.secondary
                             : MonoButtonVariant.ghost,
-                        size: MonoButtonSize.xs,
+                        size: MonoButtonSize.sm,
                         semanticLabel: '${mode.label} viewport',
                         onPressed: () => controller.set(mode),
                         child: Text(mode.label),
@@ -210,7 +211,7 @@ class _SidebarHeader extends StatelessWidget {
                 child: MonoIcon(
                   MonoIcons.sparkles,
                   size: 16,
-                  color: theme.colors.primaryForeground,
+                  color: theme.colors.onPrimary,
                 ),
               ),
               if (!rail) ...<Widget>[
@@ -257,7 +258,7 @@ class _NavList extends StatelessWidget {
                   child: Text(
                     group.toUpperCase(),
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.mutedForeground,
+                      color: theme.colors.foregroundMuted,
                     ),
                   ),
                 ),
@@ -326,7 +327,8 @@ class _SearchButton extends StatelessWidget {
         // than a large, near-empty outlined box on touch (where the tap target
         // clamps to 48).
         variant: MonoButtonVariant.ghost,
-        size: MonoButtonSize.icon,
+        size: MonoButtonSize.md,
+        iconOnly: true,
         semanticLabel: 'Search sections',
         child: const MonoIcon(MonoIcons.search, size: 20),
       ),

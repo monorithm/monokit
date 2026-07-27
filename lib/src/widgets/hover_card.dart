@@ -6,24 +6,10 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
+import '../theme/monokit_motion.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
-
-/// Where a [MonoHoverCard] is anchored relative to its trigger.
-enum MonoHoverCardPlacement {
-  top,
-  topStart,
-  topEnd,
-  right,
-  rightStart,
-  rightEnd,
-  bottom,
-  bottomStart,
-  bottomEnd,
-  left,
-  leftStart,
-  leftEnd,
-}
 
 /// Gives hover-card content a way to close the nearest [MonoHoverCard].
 class MonoHoverCardScope extends InheritedWidget {
@@ -73,24 +59,15 @@ class MonoHoverCardContent extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.popover,
-        border: Border.all(
-          color: theme.colors.foreground.withValues(alpha: 0.1),
-        ),
+        color: theme.colors.elevated,
         borderRadius: BorderRadius.circular(theme.radii.lg),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: theme.colors.foreground.withValues(alpha: 0.12),
-            blurRadius: theme.spacing.xxl,
-            offset: Offset(0, theme.spacing.sm),
-          ),
-        ],
+        boxShadow: theme.elevation.resolve(MonoElevation.raised),
       ),
       child: Padding(
         padding: padding ?? EdgeInsets.all(theme.spacing.md),
         child: DefaultTextStyle.merge(
           style: theme.typography.bodyMedium.copyWith(
-            color: theme.colors.popoverForeground,
+            color: theme.colors.foreground,
           ),
           child: child,
         ),
@@ -120,7 +97,7 @@ class MonoHoverCard extends StatefulWidget {
     this.open,
     this.defaultOpen = false,
     this.onOpenChange,
-    this.placement = MonoHoverCardPlacement.bottom,
+    this.placement = MonoPlacement.bottom,
     this.offset = Offset.zero,
     this.gap,
     this.openDelay,
@@ -135,7 +112,7 @@ class MonoHoverCard extends StatefulWidget {
   final bool? open;
   final bool defaultOpen;
   final ValueChanged<bool>? onOpenChange;
-  final MonoHoverCardPlacement placement;
+  final MonoPlacement placement;
   final Offset offset;
 
   /// Space between trigger and card. Defaults to the small spacing token.
@@ -341,8 +318,7 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     _overlayFocus.captureForOpen();
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry = OverlayEntry(
       maintainState: true,
       builder: (overlayContext) => _buildOverlay(),
@@ -371,8 +347,7 @@ class _MonoHoverCardState extends State<MonoHoverCard> {
     }
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     _entry!.markNeedsBuild();
   }
 
@@ -528,7 +503,7 @@ class _MonoHoverCardOverlay extends StatefulWidget {
   final bool visible;
   final VoidCallback onExited;
   final Rect anchorRect;
-  final MonoHoverCardPlacement placement;
+  final MonoPlacement placement;
   final Offset offset;
   final double gap;
   final TextDirection textDirection;
@@ -605,7 +580,7 @@ class _MonoHoverCardOverlayState extends State<_MonoHoverCardOverlay>
     );
     final follower = MonoAnchoredOverlay(
       anchorRect: widget.anchorRect.shift(widget.offset),
-      placement: MonoPlacement.values.byName(widget.placement.name),
+      placement: widget.placement,
       gap: widget.gap,
       child: Focus(
         focusNode: _focusNode,
@@ -697,7 +672,7 @@ class _MonoHoverCardAnchors {
   };
 
   static _MonoHoverCardAnchors resolve(
-    MonoHoverCardPlacement placement,
+    MonoPlacement placement,
     TextDirection textDirection,
   ) {
     final isLtr = textDirection == TextDirection.ltr;
@@ -707,62 +682,62 @@ class _MonoHoverCardAnchors {
     final bottomEnd = isLtr ? Alignment.bottomRight : Alignment.bottomLeft;
 
     return switch (placement) {
-      MonoHoverCardPlacement.top => const _MonoHoverCardAnchors(
+      MonoPlacement.top => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.topCenter,
         followerAnchor: Alignment.bottomCenter,
         direction: AxisDirection.up,
       ),
-      MonoHoverCardPlacement.topStart => _MonoHoverCardAnchors(
+      MonoPlacement.topStart => _MonoHoverCardAnchors(
         targetAnchor: start,
         followerAnchor: bottomStart,
         direction: AxisDirection.up,
       ),
-      MonoHoverCardPlacement.topEnd => _MonoHoverCardAnchors(
+      MonoPlacement.topEnd => _MonoHoverCardAnchors(
         targetAnchor: end,
         followerAnchor: bottomEnd,
         direction: AxisDirection.up,
       ),
-      MonoHoverCardPlacement.right => const _MonoHoverCardAnchors(
+      MonoPlacement.right => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.centerRight,
         followerAnchor: Alignment.centerLeft,
         direction: AxisDirection.right,
       ),
-      MonoHoverCardPlacement.rightStart => const _MonoHoverCardAnchors(
+      MonoPlacement.rightStart => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.topRight,
         followerAnchor: Alignment.topLeft,
         direction: AxisDirection.right,
       ),
-      MonoHoverCardPlacement.rightEnd => const _MonoHoverCardAnchors(
+      MonoPlacement.rightEnd => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.bottomRight,
         followerAnchor: Alignment.bottomLeft,
         direction: AxisDirection.right,
       ),
-      MonoHoverCardPlacement.bottom => const _MonoHoverCardAnchors(
+      MonoPlacement.bottom => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.bottomCenter,
         followerAnchor: Alignment.topCenter,
         direction: AxisDirection.down,
       ),
-      MonoHoverCardPlacement.bottomStart => _MonoHoverCardAnchors(
+      MonoPlacement.bottomStart => _MonoHoverCardAnchors(
         targetAnchor: bottomStart,
         followerAnchor: start,
         direction: AxisDirection.down,
       ),
-      MonoHoverCardPlacement.bottomEnd => _MonoHoverCardAnchors(
+      MonoPlacement.bottomEnd => _MonoHoverCardAnchors(
         targetAnchor: bottomEnd,
         followerAnchor: end,
         direction: AxisDirection.down,
       ),
-      MonoHoverCardPlacement.left => const _MonoHoverCardAnchors(
+      MonoPlacement.left => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.centerLeft,
         followerAnchor: Alignment.centerRight,
         direction: AxisDirection.left,
       ),
-      MonoHoverCardPlacement.leftStart => const _MonoHoverCardAnchors(
+      MonoPlacement.leftStart => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.topLeft,
         followerAnchor: Alignment.topRight,
         direction: AxisDirection.left,
       ),
-      MonoHoverCardPlacement.leftEnd => const _MonoHoverCardAnchors(
+      MonoPlacement.leftEnd => const _MonoHoverCardAnchors(
         targetAnchor: Alignment.bottomLeft,
         followerAnchor: Alignment.bottomRight,
         direction: AxisDirection.left,

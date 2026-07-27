@@ -25,7 +25,7 @@ class GroupCallScenario extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     return ColoredBox(
-      color: theme.colors.mediaCanvas,
+      color: theme.colors.canvas,
       child: Column(
         children: <Widget>[
           Padding(
@@ -39,7 +39,8 @@ class GroupCallScenario extends StatelessWidget {
               children: <Widget>[
                 MonoButton(
                   variant: MonoButtonVariant.ghost,
-                  size: MonoButtonSize.iconSm,
+                  size: MonoButtonSize.sm,
+                  iconOnly: true,
                   semanticLabel: 'Back',
                   onPressed: () => context.go('/scenarios'),
                   child: MonoIcon(
@@ -98,28 +99,32 @@ class GroupCallScenario extends StatelessWidget {
               children: <Widget>[
                 MonoButton(
                   variant: MonoButtonVariant.secondary,
-                  size: MonoButtonSize.icon,
+                  size: MonoButtonSize.md,
+                  iconOnly: true,
                   semanticLabel: 'Mute',
                   onPressed: () {},
                   child: const MonoIcon(MonoIcons.mic),
                 ),
                 MonoButton(
                   variant: MonoButtonVariant.secondary,
-                  size: MonoButtonSize.icon,
+                  size: MonoButtonSize.md,
+                  iconOnly: true,
                   semanticLabel: 'Camera',
                   onPressed: () {},
                   child: const MonoIcon(MonoIcons.video),
                 ),
                 MonoButton(
                   variant: MonoButtonVariant.secondary,
-                  size: MonoButtonSize.icon,
+                  size: MonoButtonSize.md,
+                  iconOnly: true,
                   semanticLabel: 'Share',
                   onPressed: () {},
                   child: const MonoIcon(MonoIcons.send),
                 ),
                 MonoButton(
                   variant: MonoButtonVariant.destructive,
-                  size: MonoButtonSize.icon,
+                  size: MonoButtonSize.md,
+                  iconOnly: true,
                   semanticLabel: 'Leave call',
                   onPressed: () => context.go('/scenarios'),
                   child: const MonoIcon(MonoIcons.close),
@@ -144,7 +149,7 @@ class _Tile extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.lg),
-        border: Border.all(color: theme.colors.glassBorder),
+        border: Border.all(color: theme.colors.mistLine),
       ),
       child: Stack(
         fit: StackFit.expand,

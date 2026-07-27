@@ -41,7 +41,8 @@ class _ConversationScenarioState extends State<ConversationScenario> {
       actions: <Widget>[
         MonoButton(
           variant: MonoButtonVariant.ghost,
-          size: MonoButtonSize.iconSm,
+          size: MonoButtonSize.sm,
+          iconOnly: true,
           semanticLabel: 'Call',
           onPressed: () {},
           child: const MonoIcon(MonoIcons.call),

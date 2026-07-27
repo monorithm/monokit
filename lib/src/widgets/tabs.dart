@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -386,7 +387,7 @@ class _MonoTabsState extends State<MonoTabs> {
   }
 
   Duration _duration(BuildContext context) {
-    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+    if (MonokitMotion.noAnimation(context)) {
       return Duration.zero;
     }
     return widget.duration ?? MonokitTheme.of(context).motion.duration;
@@ -503,7 +504,7 @@ class _MonoTabsState extends State<MonoTabs> {
       return const BoxDecoration();
     }
     return BoxDecoration(
-      color: theme.colors.muted,
+      color: theme.colors.fill,
       borderRadius: BorderRadius.circular(theme.radii.lg),
     );
   }
@@ -654,10 +655,10 @@ class _MonoTabsTriggerStyle {
     final hovered = states.contains(MonoState.hovered);
     final pressed = states.contains(MonoState.pressed);
     final foreground = !enabled
-        ? theme.colors.mutedForeground
+        ? theme.colors.foregroundMuted
         : selected
         ? theme.colors.foreground
-        : theme.colors.mutedForeground;
+        : theme.colors.foregroundMuted;
 
     if (variant == MonoTabsVariant.line) {
       final indicatorColor = selected
@@ -666,7 +667,7 @@ class _MonoTabsTriggerStyle {
       final line = BorderSide(color: indicatorColor, width: 2);
       final decoration = BoxDecoration(
         color: pressed || (hovered && !selected)
-            ? theme.colors.muted
+            ? theme.colors.fill
             : const Color(0x00000000),
         border: orientation == MonoTabsOrientation.horizontal
             ? Border(bottom: line)
@@ -699,9 +700,9 @@ class _MonoTabsTriggerStyle {
       foreground: foreground,
       decoration: BoxDecoration(
         color: selected
-            ? theme.colors.background
+            ? theme.colors.page
             : pressed || hovered
-            ? theme.colors.muted
+            ? theme.colors.fill
             : const Color(0x00000000),
         border: focused ? Border.all(color: theme.colors.ring, width: 2) : null,
         borderRadius: BorderRadius.circular(theme.radii.md),

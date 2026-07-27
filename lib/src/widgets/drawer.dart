@@ -1,14 +1,14 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../motion/mono_spring_controller.dart';
 import '../primitives/mono_focus_trap.dart';
 import '../primitives/mono_heading.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import '../theme/monokit_elevation.dart';
@@ -118,7 +118,7 @@ class MonoDrawerContent extends StatelessWidget {
       padding: padding ?? EdgeInsets.all(theme.spacing.lg),
       child: DefaultTextStyle.merge(
         style: theme.typography.bodyMedium.copyWith(
-          color: theme.colors.popoverForeground,
+          color: theme.colors.foreground,
         ),
         child: child,
       ),
@@ -149,7 +149,7 @@ class MonoDrawerHeader extends StatelessWidget {
           MonoHeading(
             DefaultTextStyle.merge(
               style: theme.typography.titleLarge.copyWith(
-                color: theme.colors.popoverForeground,
+                color: theme.colors.foreground,
               ),
               child: title!,
             ),
@@ -159,7 +159,7 @@ class MonoDrawerHeader extends StatelessWidget {
         if (description != null)
           DefaultTextStyle.merge(
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
             child: description!,
           ),
@@ -336,8 +336,7 @@ class _MonoDrawerState extends State<MonoDrawer> {
     _overlayVisible = true;
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     final OverlayEntry? entry = _entry;
     if (entry != null) {
       entry.markNeedsBuild();
@@ -468,22 +467,44 @@ class _MonoDrawerOverlay extends StatefulWidget {
 
 class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  /// Openness: 0 offscreen, 1 seated. Mirrors [MonoSheet], but on the
+  /// horizontal axis.
+  late final MonoSpringController _openness;
   late final FocusNode _focusNode;
+  final GlobalKey _surfaceKey = GlobalKey();
+
+  double? _releaseVelocity;
+  bool _reportedExit = false;
+
+  SpringDescription? get _spring =>
+      widget.disableAnimations ? null : widget.theme.motion.spatial;
+
+  /// Drawer width in logical pixels, for converting drag deltas to openness.
+  double get _extent {
+    final box = _surfaceKey.currentContext?.findRenderObject() as RenderBox?;
+    final width = box?.size.width ?? 0;
+    return width > 0 ? width : 1;
+  }
+
+  bool get _canDrag => widget.dismissible;
+
+  /// Which screen direction closes the drawer: a start-side drawer closes
+  /// leftward in LTR, rightward in RTL.
+  double get _closeSign {
+    final startIsLeft = widget.textDirection == TextDirection.ltr;
+    final onLeft = widget.side == MonoDrawerSide.start
+        ? startIsLeft
+        : !startIsLeft;
+    return onLeft ? -1 : 1;
+  }
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.disableAnimations
-          ? Duration.zero
-          : widget.theme.motion.base,
-    );
-    _controller.addStatusListener(_onStatus);
+    _openness = MonoSpringController(vsync: this)..addListener(_onTick);
     _focusNode = FocusNode(debugLabel: 'MonoDrawer');
     if (widget.visible) {
-      _controller.forward();
+      _openness.animateTo(1, spring: _spring);
     }
     if (widget.requestFocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -494,38 +515,73 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
     }
   }
 
+  void _onTick() {
+    if (!mounted) return;
+    setState(() {});
+    _maybeReportExit();
+  }
+
+  void _maybeReportExit() {
+    if (_reportedExit || widget.visible) return;
+    if (_openness.isAnimating || _openness.value > 0.001) return;
+    _reportedExit = true;
+    widget.onExited();
+  }
+
   @override
   void didUpdateWidget(covariant _MonoDrawerOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.visible != oldWidget.visible) {
-      if (widget.visible) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
+      final velocity = _releaseVelocity;
+      _releaseVelocity = null;
+      if (widget.visible) _reportedExit = false;
+      _openness.animateTo(
+        widget.visible ? 1 : 0,
+        withVelocity: velocity,
+        spring: _spring,
+      );
+      _maybeReportExit();
     }
   }
 
-  void _onStatus(AnimationStatus status) {
-    if (status == AnimationStatus.dismissed && !widget.visible) {
-      widget.onExited();
+  void _onDragStart(DragStartDetails details) => _openness.stop();
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    final delta = (details.primaryDelta ?? 0) * _closeSign;
+    var next = _openness.value - delta / _extent;
+    if (next > 1) {
+      next = 1 + monoRubberBand((next - 1) * _extent, _extent) / _extent;
+    }
+    _openness.jumpTo(next.clamp(0.0, 2.0));
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    final pixels = details.velocity.pixelsPerSecond.dx * _closeSign;
+    final velocity = -pixels / _extent;
+    final target = monoNearest(const <double>[
+      0,
+      1,
+    ], monoProject(_openness.value, velocity));
+    if (target == 0) {
+      _releaseVelocity = velocity;
+      widget.onDismiss();
+    } else {
+      _openness.animateTo(1, withVelocity: velocity, spring: _spring);
     }
   }
 
   @override
   void dispose() {
-    _controller.removeStatusListener(_onStatus);
-    _controller.dispose();
+    _openness.removeListener(_onTick);
+    _openness.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Animation<double> animation = CurvedAnimation(
-      parent: _controller,
-      curve: widget.theme.motion.curve,
-    );
+    final double openness = _openness.value;
+    final double scrimOpacity = openness.clamp(0.0, 1.0);
     final bool startIsLeft = widget.textDirection == TextDirection.ltr;
     final bool opensLeft = widget.side == MonoDrawerSide.start
         ? startIsLeft
@@ -540,14 +596,14 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
     final double width = widget.width ?? widget.theme.spacing.giant * 7;
     final Widget surface = SafeArea(
       child: SizedBox(
+        key: _surfaceKey,
         width: width,
         height: double.infinity,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: widget.theme.colors.popover,
+            color: widget.theme.colors.elevated,
             borderRadius: radius,
-            border: Border.all(color: widget.theme.colors.border),
-            boxShadow: widget.theme.elevation.resolve(MonoElevationTier.e3),
+            boxShadow: widget.theme.elevation.resolve(MonoElevation.floating),
           ),
           child: widget.scope,
         ),
@@ -570,30 +626,30 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            FadeTransition(
-              opacity: animation,
+            Opacity(
+              opacity: scrimOpacity,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: widget.dismissible ? widget.onDismiss : null,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                  child: ColoredBox(color: widget.theme.colors.overlayScrim),
-                ),
+                child: ColoredBox(color: widget.theme.colors.scrim),
               ),
             ),
             Align(
               alignment: alignment,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: begin,
-                  end: Offset.zero,
-                ).animate(animation),
-                child: Semantics(
-                  scopesRoute: true,
-                  namesRoute: true,
-                  explicitChildNodes: true,
-                  label: widget.semanticLabel ?? widget.theme.labels.drawer,
-                  child: surface,
+              child: GestureDetector(
+                behavior: HitTestBehavior.deferToChild,
+                onHorizontalDragStart: _canDrag ? _onDragStart : null,
+                onHorizontalDragUpdate: _canDrag ? _onDragUpdate : null,
+                onHorizontalDragEnd: _canDrag ? _onDragEnd : null,
+                child: FractionalTranslation(
+                  translation: Offset((1 - openness) * begin.dx, 0),
+                  child: Semantics(
+                    scopesRoute: true,
+                    namesRoute: true,
+                    explicitChildNodes: true,
+                    label: widget.semanticLabel ?? widget.theme.labels.drawer,
+                    child: surface,
+                  ),
                 ),
               ),
             ),

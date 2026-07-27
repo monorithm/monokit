@@ -62,7 +62,7 @@ const List<ScenarioMeta> scenarios = <ScenarioMeta>[
   ScenarioMeta(
     path: '/scenarios/group-call',
     title: 'Group call',
-    description: 'A participant grid with glass call controls.',
+    description: 'A participant grid with mist-on-media call controls.',
     icon: MonoIcons.call,
   ),
 ];
@@ -85,7 +85,7 @@ class ScenariosIndexPage extends StatelessWidget {
             'one, then pin Phone, Tablet, or Desktop in the header to see it '
             'framed like a real device.',
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
         ),
@@ -160,7 +160,7 @@ class _ScenarioCard extends StatelessWidget {
               Text(
                 meta.description,
                 style: theme.typography.bodyMedium.copyWith(
-                  color: theme.colors.mutedForeground,
+                  color: theme.colors.foregroundMuted,
                 ),
               ),
             ],

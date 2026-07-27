@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_pressable.dart';
 import '../primitives/mono_surfaces.dart';
+import '../motion/mono_spring_controller.dart';
 import '../theme/monokit_theme.dart';
 import 'badge.dart';
 import 'button.dart';
@@ -65,7 +66,7 @@ class MonoMediaSurface extends StatelessWidget {
       label: semanticLabel,
       image: true,
       child: ColoredBox(
-        color: MonokitTheme.of(context).colors.mediaCanvas,
+        color: MonokitTheme.of(context).colors.canvas,
         child: Stack(fit: StackFit.expand, children: <Widget>[child, ?overlay]),
       ),
     );
@@ -168,8 +169,8 @@ class MonoPresence extends StatelessWidget {
               height: 10,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: online ? t.colors.success : t.colors.mutedForeground,
-                border: Border.all(color: t.colors.background, width: 2),
+                color: online ? t.colors.success : t.colors.foregroundMuted,
+                border: Border.all(color: t.colors.page, width: 2),
               ),
             ),
           ),
@@ -212,7 +213,7 @@ class _WaveformPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
     final step = size.width / values.length;
-    final muted = Paint()..color = colors.mutedForeground;
+    final muted = Paint()..color = colors.foregroundMuted;
     final active = Paint()..color = colors.primary;
     for (var i = 0; i < values.length; i++) {
       final h = values[i].clamp(0, 1) * size.height;
@@ -298,7 +299,7 @@ class MonoCameraShutter extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: t.colors.onMedia,
-            border: Border.all(color: t.colors.glassBorder, width: 6),
+            border: Border.all(color: t.colors.mistLine, width: 6),
           ),
         ),
       ),
@@ -330,7 +331,7 @@ class MonoCallControls extends StatelessWidget {
   const MonoCallControls({super.key, required this.children});
   final List<Widget> children;
   @override
-  Widget build(BuildContext context) => MonoGlassSurface(
+  Widget build(BuildContext context) => MonoMediaChrome(
     child: Wrap(
       alignment: WrapAlignment.center,
       spacing: 12,
@@ -376,25 +377,114 @@ class MonoMediaGrid extends StatelessWidget {
   );
 }
 
-class MonoGalleryViewer extends StatelessWidget {
+/// A full-bleed pager over media, with drag-down-to-dismiss.
+///
+/// Pass [onDismiss] to enable the gesture: dragging vertically translates and
+/// fades the viewer, and on release the decision is made against the
+/// *projected* position, so a short hard flick dismisses while a long slow drag
+/// that is released gently springs back.
+class MonoGalleryViewer extends StatefulWidget {
   const MonoGalleryViewer({
     super.key,
     required this.itemCount,
     required this.itemBuilder,
     this.controller,
+    this.onDismiss,
   });
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
   final PageController? controller;
+
+  /// Enables drag-to-dismiss. Null leaves the viewer non-dismissible.
+  final VoidCallback? onDismiss;
+
   @override
-  Widget build(BuildContext context) => ColoredBox(
-    color: MonokitTheme.of(context).colors.mediaCanvas,
-    child: PageView.builder(
-      controller: controller,
-      itemCount: itemCount,
-      itemBuilder: itemBuilder,
-    ),
-  );
+  State<MonoGalleryViewer> createState() => _MonoGalleryViewerState();
+}
+
+class _MonoGalleryViewerState extends State<MonoGalleryViewer>
+    with SingleTickerProviderStateMixin {
+  /// Vertical drag offset in logical pixels.
+  late final MonoSpringController _offset;
+
+  @override
+  void initState() {
+    super.initState();
+    _offset = MonoSpringController(vsync: this)
+      ..addListener(() {
+        if (mounted) setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    _offset.dispose();
+    super.dispose();
+  }
+
+  /// Captured from the last layout. `context.size` is unavailable during build,
+  /// and the drag handlers need the same value the paint used.
+  double _lastHeight = 1;
+
+  double get _height => _lastHeight > 0 ? _lastHeight : 1;
+
+  void _onDragStart(DragStartDetails details) => _offset.stop();
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    final next = _offset.value + (details.primaryDelta ?? 0);
+    // Dragging up is resisted; the gesture is a downward dismissal.
+    _offset.jumpTo(next < 0 ? monoRubberBand(next, _height) : next);
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    final theme = MonokitTheme.of(context);
+    final velocity = details.velocity.pixelsPerSecond.dy;
+    final spring = theme.motion.reducedSpring(context, theme.motion.spatial);
+    if (monoProject(_offset.value, velocity) > _height * 0.25) {
+      _offset.animateTo(_height, withVelocity: velocity, spring: spring);
+      widget.onDismiss!.call();
+    } else {
+      _offset.animateTo(0, withVelocity: velocity, spring: spring);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget viewer = ColoredBox(
+      color: MonokitTheme.of(context).colors.canvas,
+      child: PageView.builder(
+        controller: widget.controller,
+        itemCount: widget.itemCount,
+        itemBuilder: widget.itemBuilder,
+      ),
+    );
+
+    if (widget.onDismiss == null) return viewer;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxHeight.isFinite && constraints.maxHeight > 0) {
+          _lastHeight = constraints.maxHeight;
+        }
+        // Fade as it travels, so the dismissal reads as a release rather than
+        // the media simply sliding off the edge.
+        final progress = (_offset.value.abs() / _height).clamp(0.0, 1.0);
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragStart: _onDragStart,
+          onVerticalDragUpdate: _onDragUpdate,
+          onVerticalDragEnd: _onDragEnd,
+          child: Opacity(
+            opacity: 1 - progress * 0.6,
+            child: Transform.translate(
+              offset: Offset(0, _offset.value),
+              child: viewer,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class MonoDocReader extends StatelessWidget {
@@ -478,8 +568,8 @@ class MonoReceipt extends StatelessWidget {
         label,
         style: t.typography.labelMedium.copyWith(
           color: state == MonoReceiptState.failed
-              ? t.colors.destructiveText
-              : t.colors.mutedForeground,
+              ? t.colors.dangerText
+              : t.colors.foregroundMuted,
         ),
       ),
     );

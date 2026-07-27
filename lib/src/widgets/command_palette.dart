@@ -1,11 +1,11 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_focus_trap.dart';
 import '../primitives/mono_pressable.dart';
 import '../primitives/mono_overlay_fade.dart';
+import '../theme/monokit_motion.dart';
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -193,8 +193,7 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
     _overlayVisible = true;
     _overlayTheme = MonokitTheme.of(context);
     _textDirection = Directionality.of(context);
-    _disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _disableAnimations = MonokitMotion.noAnimation(context);
     if (_entry != null) {
       _entry!.markNeedsBuild();
       return;
@@ -435,18 +434,9 @@ class _MonoCommandPaletteOverlayState
       constraints: BoxConstraints(maxWidth: widget.width),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.popover,
+          color: theme.colors.elevated,
           borderRadius: BorderRadius.circular(theme.radii.xl),
-          border: Border.all(
-            color: theme.colors.foreground.withValues(alpha: 0.1),
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: theme.colors.foreground.withValues(alpha: 0.18),
-              blurRadius: theme.spacing.xxxl,
-              offset: Offset(0, theme.spacing.md),
-            ),
-          ],
+          boxShadow: theme.elevation.resolve(MonoElevation.floating),
         ),
         child: MonoFocusTrap(
           autofocus: true,
@@ -464,7 +454,7 @@ class _MonoCommandPaletteOverlayState
                 children: <Widget>[
                   _buildQuery(theme),
                   DecoratedBox(
-                    decoration: BoxDecoration(color: theme.colors.border),
+                    decoration: BoxDecoration(color: theme.colors.separator),
                     child: SizedBox(height: theme.spacing.xs / 4),
                   ),
                   ConstrainedBox(
@@ -476,7 +466,7 @@ class _MonoCommandPaletteOverlayState
                                 widget.empty ??
                                 DefaultTextStyle.merge(
                                   style: theme.typography.bodyMedium.copyWith(
-                                    color: theme.colors.mutedForeground,
+                                    color: theme.colors.foregroundMuted,
                                   ),
                                   child: const Text('No commands found.'),
                                 ),
@@ -507,16 +497,10 @@ class _MonoCommandPaletteOverlayState
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onDismiss,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-              child: ColoredBox(color: theme.colors.overlayScrim),
-            ),
+            child: ColoredBox(color: theme.colors.scrim),
           )
         else
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-            child: ColoredBox(color: theme.colors.overlayScrim),
-          ),
+          ColoredBox(color: theme.colors.scrim),
         Center(
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(
@@ -544,7 +528,7 @@ class _MonoCommandPaletteOverlayState
           Text(
             '⌕',
             style: theme.typography.titleMedium.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
           SizedBox(width: theme.spacing.sm),
@@ -557,7 +541,7 @@ class _MonoCommandPaletteOverlayState
                     child: Text(
                       widget.placeholder,
                       style: theme.typography.bodyMedium.copyWith(
-                        color: theme.colors.mutedForeground,
+                        color: theme.colors.foregroundMuted,
                       ),
                     ),
                   ),
@@ -565,7 +549,7 @@ class _MonoCommandPaletteOverlayState
                   controller: _queryController,
                   focusNode: _queryFocusNode,
                   style: theme.typography.bodyMedium.copyWith(
-                    color: theme.colors.popoverForeground,
+                    color: theme.colors.foreground,
                   ),
                   cursorColor: theme.colors.foreground,
                   backgroundCursorColor: theme.colors.foreground,
@@ -588,8 +572,8 @@ class _MonoCommandPaletteOverlayState
   ) {
     // Reference command items highlight on neutral muted (not the brand
     // accent), keeping the foreground unchanged.
-    final background = highlighted ? theme.colors.muted : theme.colors.popover;
-    final foreground = theme.colors.popoverForeground;
+    final background = highlighted ? theme.colors.fill : theme.colors.elevated;
+    final foreground = theme.colors.foreground;
     return Semantics(
       button: true,
       enabled: command.enabled,
@@ -632,7 +616,7 @@ class _MonoCommandPaletteOverlayState
                             style: theme.typography.labelMedium.copyWith(
                               color: highlighted
                                   ? foreground.withValues(alpha: 0.75)
-                                  : theme.colors.mutedForeground,
+                                  : theme.colors.foregroundMuted,
                             ),
                             child: command.description!,
                           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../motion/mono_spring_controller.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../theme/monokit_theme.dart';
@@ -174,13 +175,29 @@ class MonoRadio<T> extends StatefulWidget {
   State<MonoRadio<T>> createState() => _MonoRadioState<T>();
 }
 
-class _MonoRadioState<T> extends State<MonoRadio<T>> {
+class _MonoRadioState<T> extends State<MonoRadio<T>>
+    with SingleTickerProviderStateMixin {
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
   late MonoStatesController _statesController;
   late bool _ownsStatesController;
 
+  /// Dot scale: 0 unselected, 1 selected, 0.86 while pressed.
+  late final MonoSpringController _dot;
+
   _MonoRadioGroupScope<T>? _scope;
+
+  double get _dotTarget => _isSelected ? (_isPressed ? 0.86 : 1) : 0;
+
+  void _syncDot() {
+    if (!mounted) return;
+    if ((_dot.value - _dotTarget).abs() < 0.0001 && !_dot.isAnimating) return;
+    final motion = MonokitTheme.of(context).motion;
+    _dot.animateTo(
+      _dotTarget,
+      spring: motion.reducedSpring(context, motion.effect),
+    );
+  }
 
   bool get _isSelected => (_scope?.value ?? widget.groupValue) == widget.value;
   bool get _isEnabled =>
@@ -202,6 +219,13 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
 
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
+    // Selection arrives via didChangeDependencies (the group is inherited);
+    // press arrives here, so the dot has to be retargeted from both.
+    _statesController.addListener(_syncDot);
+    _dot = MonoSpringController(vsync: this)
+      ..addListener(() {
+        if (mounted) setState(() {});
+      });
   }
 
   @override
@@ -209,6 +233,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
     super.didChangeDependencies();
     _scope = _MonoRadioGroupScope.maybeOf<T>(context);
     _syncFixedStates();
+    _syncDot();
   }
 
   @override
@@ -224,20 +249,24 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
       _focusNode.addListener(_handleFocusChanged);
     }
     if (oldWidget.statesController != widget.statesController) {
+      _statesController.removeListener(_syncDot);
       if (_ownsStatesController) {
         _statesController.dispose();
       }
       _ownsStatesController = widget.statesController == null;
       _statesController = widget.statesController ?? MonoStatesController();
+      _statesController.addListener(_syncDot);
     }
     if (!_isEnabled && _focusNode.hasFocus) {
       _focusNode.unfocus();
     }
-    _syncFixedStates();
+    _syncDot();
   }
 
   @override
   void dispose() {
+    _statesController.removeListener(_syncDot);
+    _dot.dispose();
     _focusNode.removeListener(_handleFocusChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
@@ -265,6 +294,8 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
       return;
     }
     final _MonoRadioGroupScope<T>? scope = _scope;
+    // Picking a different option is a discrete value change.
+    MonokitTheme.of(context).haptics.selection();
     if (scope != null) {
       scope.select(widget.value);
     } else {
@@ -334,12 +365,12 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
         builder: (BuildContext context, Widget? _) {
           final Color foreground = _isEnabled
               ? theme.colors.foreground
-              : theme.colors.mutedForeground;
+              : theme.colors.foregroundMuted;
           final Color borderColor = _isSelected
               ? theme.colors.primary
               : _isHovered && _isEnabled
               ? theme.colors.foreground
-              : theme.colors.input;
+              : theme.colors.separator;
 
           final Widget marker = AnimatedContainer(
             duration: theme.motion.reduced(context, theme.motion.duration),
@@ -352,20 +383,20 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
               // dot) rather than a hollow ring, matching the reference.
               color: _isSelected
                   ? theme.colors.primary
-                  : theme.colors.background.withAlpha(0),
+                  : theme.colors.page.withAlpha(0),
               border: Border.all(color: borderColor),
               shape: BoxShape.circle,
               boxShadow: _isFocusVisible
                   ? theme.focus.ringShadow(theme.colors.ring)
                   : null,
             ),
-            child: AnimatedScale(
-              scale: _isSelected ? (_isPressed ? 0.86 : 1) : 0,
-              duration: theme.motion.reduced(context, theme.motion.duration),
-              curve: theme.motion.curve,
+            child: Transform.scale(
+              // Spring-driven: the dot grows in, and a press retargets it
+              // mid-flight rather than restarting a curve.
+              scale: _dot.value.clamp(0.0, 1.2),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.colors.primaryForeground,
+                  color: theme.colors.onPrimary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -397,7 +428,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
                           SizedBox(height: theme.spacing.xs),
                         DefaultTextStyle.merge(
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                           child: widget.description!,
                         ),

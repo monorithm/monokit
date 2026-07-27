@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -126,7 +127,7 @@ class _MonoTextMagnifier extends StatelessWidget {
         decoration: MagnifierDecoration(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(theme.radii.md),
-            side: BorderSide(color: theme.colors.border),
+            side: BorderSide(color: theme.colors.separator),
           ),
         ),
       ),
@@ -180,16 +181,9 @@ class MonoTextSelectionToolbar extends StatelessWidget {
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.popover,
+          color: theme.colors.elevated,
           borderRadius: BorderRadius.circular(theme.radii.md),
-          border: Border.all(color: theme.colors.border),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: theme.colors.foreground.withValues(alpha: 0.12),
-              blurRadius: theme.spacing.lg,
-              offset: Offset(0, theme.spacing.xs),
-            ),
-          ],
+          boxShadow: theme.elevation.resolve(MonoElevation.raised),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(theme.radii.md),
@@ -259,7 +253,7 @@ class _MonoToolbarButton extends StatelessWidget {
           child: Text(
             label,
             style: theme.typography.labelMedium.copyWith(
-              color: theme.colors.popoverForeground,
+              color: theme.colors.foreground,
             ),
           ),
         ),

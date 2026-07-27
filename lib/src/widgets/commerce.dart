@@ -29,7 +29,7 @@ class MonoPriceTag extends StatelessWidget {
             Text(
               currency!,
               style: t.typography.labelMedium.copyWith(
-                color: t.colors.mutedForeground,
+                color: t.colors.foregroundMuted,
               ),
             ),
           Text(
@@ -41,7 +41,7 @@ class MonoPriceTag extends StatelessWidget {
             Text(
               compareAt!,
               style: t.typography.bodyMedium.copyWith(
-                color: t.colors.mutedForeground,
+                color: t.colors.foregroundMuted,
                 decoration: TextDecoration.lineThrough,
               ),
             ),
@@ -72,7 +72,10 @@ class MonoProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = MonokitTheme.of(context);
     final content = MonoCard(
-      tier: onMedia ? MonoElevationTier.e2 : MonoElevationTier.e1,
+      elevation: onMedia ? MonoElevation.raised : MonoElevation.flat,
+      // Over media the luminance step cannot be relied on, so the card keeps
+      // its hairline there.
+      showBorder: onMedia,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -130,8 +133,9 @@ class MonoQuantityStepper extends StatelessWidget {
         children: <Widget>[
           MonoButton(
             semanticLabel: 'Decrease quantity',
-            variant: MonoButtonVariant.outline,
-            size: MonoButtonSize.iconSm,
+            variant: MonoButtonVariant.tinted,
+            size: MonoButtonSize.sm,
+            iconOnly: true,
             onPressed: value > minimum ? () => onChanged(value - 1) : null,
             child: const Text('−'),
           ),
@@ -140,8 +144,9 @@ class MonoQuantityStepper extends StatelessWidget {
           SizedBox(width: t.spacing.md),
           MonoButton(
             semanticLabel: 'Increase quantity',
-            variant: MonoButtonVariant.outline,
-            size: MonoButtonSize.iconSm,
+            variant: MonoButtonVariant.tinted,
+            size: MonoButtonSize.sm,
+            iconOnly: true,
             onPressed: value < maximum ? () => onChanged(value + 1) : null,
             child: const Text('+'),
           ),
@@ -164,7 +169,7 @@ class MonoCartBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = MonokitTheme.of(context);
     return MonoSurface(
-      tier: MonoElevationTier.e4,
+      elevation: MonoElevation.floating,
       padding: EdgeInsets.all(t.spacing.md),
       child: Row(
         children: <Widget>[

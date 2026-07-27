@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import 'mono_icon.dart';
 
@@ -171,7 +172,7 @@ class MonoAttachment extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = AspectRatio(
       aspectRatio: aspectRatio ?? 4 / 3,
-      child: ColoredBox(color: theme.colors.mediaCanvas, child: thumbnail),
+      child: ColoredBox(color: theme.colors.canvas, child: thumbnail),
     );
     if (description == null) {
       return ClipRRect(
@@ -183,7 +184,6 @@ class MonoAttachment extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.lg),
-        border: Border.all(color: theme.colors.border),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(theme.radii.lg),
@@ -253,7 +253,7 @@ class MonoAttachment extends StatelessWidget {
                     SizedBox(height: theme.spacing.xs / 2),
                     DefaultTextStyle.merge(
                       style: theme.typography.labelMedium.copyWith(
-                        color: theme.colors.mutedForeground,
+                        color: theme.colors.foregroundMuted,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -267,7 +267,7 @@ class MonoAttachment extends StatelessWidget {
             trailing ??
                 MonoIcon(
                   MonoIcons.download,
-                  color: theme.colors.mutedForeground,
+                  color: theme.colors.foregroundMuted,
                 ),
           ],
         ),
@@ -292,10 +292,7 @@ class MonoAttachment extends StatelessWidget {
           if (thumbnail != null)
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: ColoredBox(
-                color: theme.colors.mediaCanvas,
-                child: thumbnail,
-              ),
+              child: ColoredBox(color: theme.colors.canvas, child: thumbnail),
             ),
           Padding(
             padding: EdgeInsets.all(theme.spacing.sm),
@@ -309,7 +306,7 @@ class MonoAttachment extends StatelessWidget {
                     MonoIcon(
                       MonoIcons.link,
                       size: 12,
-                      color: theme.colors.mutedForeground,
+                      color: theme.colors.foregroundMuted,
                     ),
                     SizedBox(width: theme.spacing.xs),
                     Flexible(
@@ -318,7 +315,7 @@ class MonoAttachment extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.typography.labelMedium.copyWith(
-                          color: theme.colors.mutedForeground,
+                          color: theme.colors.foregroundMuted,
                         ),
                       ),
                     ),
@@ -337,7 +334,7 @@ class MonoAttachment extends StatelessWidget {
                   SizedBox(height: theme.spacing.xs / 2),
                   DefaultTextStyle.merge(
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.mutedForeground,
+                      color: theme.colors.foregroundMuted,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -358,11 +355,11 @@ class MonoAttachment extends StatelessWidget {
       width: theme.spacing.giant,
       height: theme.spacing.giant,
       decoration: BoxDecoration(
-        color: theme.colors.muted,
+        color: theme.colors.fill,
         borderRadius: BorderRadius.circular(theme.radii.sm),
       ),
       alignment: Alignment.center,
-      child: MonoIcon(icon, color: theme.colors.mutedForeground),
+      child: MonoIcon(icon, color: theme.colors.foregroundMuted),
     );
   }
 
@@ -374,14 +371,13 @@ class MonoAttachment extends StatelessWidget {
   }) {
     final theme = MonokitTheme.of(context);
     final decorated = AnimatedContainer(
-      duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
+      duration: MonokitMotion.noAnimation(context)
           ? Duration.zero
           : theme.motion.fast,
       curve: theme.motion.standard,
       decoration: BoxDecoration(
-        color: active ? theme.colors.muted : theme.colors.card,
+        color: active ? theme.colors.fill : theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.md),
-        border: Border.all(color: theme.colors.border),
       ),
       child: child,
     );

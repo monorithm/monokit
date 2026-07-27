@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/widgets.dart';
 
+import '../motion/monokit_scroll_behavior.dart';
+import '../theme/monokit_density.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -33,6 +36,7 @@ class MonokitApp extends StatelessWidget {
     this.pageRouteBuilder,
     this.debugShowCheckedModeBanner = false,
     this.restorationScopeId,
+    this.scrollBehavior = const MonokitScrollBehavior(),
   }) : routerConfig = null,
        routerDelegate = null,
        routeInformationParser = null,
@@ -61,6 +65,7 @@ class MonokitApp extends StatelessWidget {
     this.backButtonDispatcher,
     this.debugShowCheckedModeBanner = false,
     this.restorationScopeId,
+    this.scrollBehavior = const MonokitScrollBehavior(),
   }) : home = null,
        routes = const <String, WidgetBuilder>{},
        initialRoute = null,
@@ -105,6 +110,11 @@ class MonokitApp extends StatelessWidget {
   /// (the default) leaves state restoration off, as before.
   final String? restorationScopeId;
 
+  /// Installed via [ScrollConfiguration] so every scrollable in the app shares
+  /// one physics. Defaults to [MonokitScrollBehavior] — rubber-band overscroll
+  /// on every platform, no glow.
+  final ScrollBehavior scrollBehavior;
+
   MonokitThemeData _resolveTheme(BuildContext context) {
     if (themeMode == MonokitThemeMode.light || darkTheme == null) {
       return theme;
@@ -142,15 +152,42 @@ class MonokitApp extends StatelessWidget {
     );
   }
 
+  /// Resolves adaptive density **once**, here, and bakes the answer into the
+  /// theme that goes down the tree.
+  ///
+  /// Doing it at the root is the point: widgets read `theme.density` and the
+  /// derived metrics (`rowHeight`, `controlHeight`, `bodyText`, ...) without
+  /// each performing its own `MediaQuery` lookup, so touch and pointer never
+  /// disagree between two components in the same frame.
+  ///
+  /// An explicit `density.mode` set by the host is a hard override and skips
+  /// the heuristic entirely.
+  MonokitThemeData _applyDensity(BuildContext context, MonokitThemeData base) {
+    if (base.density.mode != null) return base;
+    return base.withDensityMode(
+      MonokitDensity.resolveFrom(
+        platform: defaultTargetPlatform,
+        width: MediaQuery.maybeOf(context)?.size.width ?? 0,
+        breakpoints: base.breakpoints,
+      ),
+    );
+  }
+
   Widget _wrapTheme(BuildContext context, Widget? child) {
-    final effectiveTheme = _resolveTheme(context);
+    final effectiveTheme = _applyDensity(context, _resolveTheme(context));
     return MonokitTheme(
       data: effectiveTheme,
-      child: DefaultTextStyle(
-        style: effectiveTheme.typography.body.copyWith(
-          color: effectiveTheme.colors.foreground,
+      child: ScrollConfiguration(
+        // WidgetsApp installs no ScrollBehavior, so without this every
+        // scrollable inherits Flutter's platform-conditional default and the
+        // system has no opinion of its own.
+        behavior: scrollBehavior,
+        child: DefaultTextStyle(
+          style: effectiveTheme.typography.body.copyWith(
+            color: effectiveTheme.colors.foreground,
+          ),
+          child: child ?? const SizedBox.shrink(),
         ),
-        child: child ?? const SizedBox.shrink(),
       ),
     );
   }
@@ -159,7 +196,7 @@ class MonokitApp extends StatelessWidget {
   Widget build(BuildContext context) {
     if (routerConfig != null || routerDelegate != null) {
       return WidgetsApp.router(
-        color: theme.colors.background,
+        color: theme.colors.page,
         routerConfig: routerConfig,
         routerDelegate: routerDelegate,
         routeInformationParser: routeInformationParser,
@@ -183,7 +220,7 @@ class MonokitApp extends StatelessWidget {
       'Do not provide both home and a route for \'/\'.',
     );
     return WidgetsApp(
-      color: theme.colors.background,
+      color: theme.colors.page,
       home: home,
       routes: routes,
       initialRoute: initialRoute,

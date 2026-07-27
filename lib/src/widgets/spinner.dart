@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 
 /// A compact, token-aware indeterminate loading indicator.
@@ -16,7 +17,7 @@ class MonoSpinner extends StatefulWidget {
     this.color,
     this.strokeWidth,
     this.animate = true,
-    this.semanticLabel = 'Loading',
+    this.semanticLabel,
     this.excludeFromSemantics = false,
   });
 
@@ -32,6 +33,10 @@ class MonoSpinner extends StatefulWidget {
   /// Whether the arc should rotate when motion is enabled.
   final bool animate;
 
+  /// Accessible name announced while the spinner is live. Falls back to
+  /// `MonokitTheme.of(context).labels.loading`, which is overridable and
+  /// localisable — this used to hardcode the English string 'Loading', which
+  /// is why `labels.loading` had no call sites.
   final String? semanticLabel;
   final bool excludeFromSemantics;
 
@@ -72,8 +77,7 @@ class _MonoSpinnerState extends State<MonoSpinner>
   void _syncAnimation() {
     final theme = MonokitTheme.of(context);
     _controller.duration = theme.motion.spinnerLoop;
-    final animationsDisabled =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final animationsDisabled = MonokitMotion.noAnimation(context);
     final shouldAnimate =
         widget.animate &&
         !animationsDisabled &&
@@ -95,8 +99,7 @@ class _MonoSpinnerState extends State<MonoSpinner>
         .clamp(1.0, size / 2)
         .toDouble();
     final color = widget.color ?? theme.colors.foreground;
-    final animationsDisabled =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final animationsDisabled = MonokitMotion.noAnimation(context);
     final isAnimated = widget.animate && !animationsDisabled;
 
     final spinner = RepaintBoundary(
@@ -119,7 +122,7 @@ class _MonoSpinnerState extends State<MonoSpinner>
       return ExcludeSemantics(child: spinner);
     }
     return Semantics(
-      label: widget.semanticLabel,
+      label: widget.semanticLabel ?? MonokitTheme.of(context).labels.loading,
       liveRegion: true,
       child: spinner,
     );

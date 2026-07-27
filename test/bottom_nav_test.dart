@@ -92,10 +92,13 @@ void main() {
       _host(MonoBottomNav(items: _items, selectedIndex: 0, onSelected: (_) {})),
     );
 
+    // Assert the contract, not a literal: destinations meet whatever the
+    // resolved density says the minimum is (44 touch, 32 pointer).
+    final target = MonokitThemeData.light().density.minimumTarget;
     for (var index = 0; index < _items.length; index++) {
       expect(
         tester.getSize(find.byType(MonoPressable).at(index)).height,
-        greaterThanOrEqualTo(48),
+        greaterThanOrEqualTo(target),
       );
     }
   });

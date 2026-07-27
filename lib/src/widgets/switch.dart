@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../motion/mono_spring_controller.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../theme/monokit_theme.dart';
@@ -39,11 +40,18 @@ class MonoSwitch extends StatefulWidget {
   State<MonoSwitch> createState() => _MonoSwitchState();
 }
 
-class _MonoSwitchState extends State<MonoSwitch> {
+class _MonoSwitchState extends State<MonoSwitch>
+    with SingleTickerProviderStateMixin {
   late FocusNode _focusNode;
   late bool _ownsFocusNode;
   late MonoStatesController _statesController;
   late bool _ownsStatesController;
+
+  /// Knob travel, 0 (off) to 1 (on).
+  ///
+  /// The knob moves in space, so it springs; the track is a colour change and
+  /// stays on a curve. That split is the whole motion doctrine in one widget.
+  late final MonoSpringController _knob;
 
   bool get _isEnabled => widget.enabled && widget.onChanged != null;
   bool get _isFocused => _statesController.contains(MonoState.focused);
@@ -61,12 +69,28 @@ class _MonoSwitchState extends State<MonoSwitch> {
 
     _ownsStatesController = widget.statesController == null;
     _statesController = widget.statesController ?? MonoStatesController();
+    _knob = MonoSpringController(vsync: this, value: widget.value ? 1 : 0)
+      ..addListener(_onKnobTick);
     _syncFixedStates();
+  }
+
+  void _onKnobTick() {
+    if (mounted) setState(() {});
   }
 
   @override
   void didUpdateWidget(covariant MonoSwitch oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _knob.animateTo(
+        widget.value ? 1 : 0,
+        // `effect` is the critically damped one: a toggle should land, not
+        // settle. Only a confirmed outcome gets an overshoot.
+        spring: MonokitTheme.of(
+          context,
+        ).motion.reducedSpring(context, MonokitTheme.of(context).motion.effect),
+      );
+    }
     if (oldWidget.focusNode != widget.focusNode) {
       _focusNode.removeListener(_handleFocusChanged);
       if (_ownsFocusNode) {
@@ -92,6 +116,8 @@ class _MonoSwitchState extends State<MonoSwitch> {
 
   @override
   void dispose() {
+    _knob.removeListener(_onKnobTick);
+    _knob.dispose();
     _focusNode.removeListener(_handleFocusChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
@@ -116,6 +142,10 @@ class _MonoSwitchState extends State<MonoSwitch> {
 
   void _toggle() {
     if (_isEnabled) {
+      // A toggle is a discrete value change — the selection haptic, not the
+      // press impact. `MonokitHaptics.selection` had no call sites at all
+      // before this; it is a no-op unless the host opts in.
+      MonokitTheme.of(context).haptics.selection();
       widget.onChanged?.call(!widget.value);
     }
   }
@@ -157,19 +187,19 @@ class _MonoSwitchState extends State<MonoSwitch> {
         builder: (BuildContext context, Widget? _) {
           final Color foreground = _isEnabled
               ? theme.colors.foreground
-              : theme.colors.mutedForeground;
+              : theme.colors.foregroundMuted;
           final Color trackColor = widget.value
               ? theme.colors.primary
               : _isEnabled
-              ? theme.colors.input
-              : theme.colors.input.withAlpha(150);
+              ? theme.colors.separator
+              : theme.colors.separator.withAlpha(150);
           final Color trackBorder = widget.value
               ? theme.colors.primary
               : _isHovered && _isEnabled
               ? theme.colors.foreground
-              : theme.colors.input;
+              : theme.colors.separator;
           final Color thumbColor = widget.value
-              ? theme.colors.primaryForeground
+              ? theme.colors.onPrimary
               : theme.colors.card;
 
           final Widget toggle = AnimatedContainer(
@@ -185,12 +215,12 @@ class _MonoSwitchState extends State<MonoSwitch> {
                   ? theme.focus.ringShadow(theme.colors.ring)
                   : null,
             ),
-            child: AnimatedAlign(
-              duration: theme.motion.reduced(context, theme.motion.base),
-              curve: theme.motion.curve,
-              alignment: widget.value
-                  ? AlignmentDirectional.centerEnd
-                  : AlignmentDirectional.centerStart,
+            child: Align(
+              alignment: AlignmentDirectional.lerp(
+                AlignmentDirectional.centerStart,
+                AlignmentDirectional.centerEnd,
+                _knob.value.clamp(0.0, 1.0),
+              )!,
               child: Padding(
                 padding: EdgeInsets.all(theme.spacing.xs / 2),
                 child: Transform.scale(
@@ -235,7 +265,7 @@ class _MonoSwitchState extends State<MonoSwitch> {
                           SizedBox(height: theme.spacing.xs),
                         DefaultTextStyle.merge(
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                           child: widget.description!,
                         ),

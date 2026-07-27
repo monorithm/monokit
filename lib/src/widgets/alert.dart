@@ -32,9 +32,9 @@ class MonoAlert extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final (background, foreground, border) = switch (variant) {
       MonoAlertVariant.destructive => (
-        theme.colors.destructiveSoft,
-        theme.colors.destructiveText,
-        theme.colors.destructive,
+        theme.colors.dangerSoft,
+        theme.colors.dangerText,
+        theme.colors.danger,
       ),
       MonoAlertVariant.success => (
         theme.colors.successSoft,
@@ -52,9 +52,9 @@ class MonoAlert extends StatelessWidget {
         theme.colors.info,
       ),
       MonoAlertVariant.defaultStyle => (
-        theme.colors.muted,
+        theme.colors.fill,
         theme.colors.foreground,
-        theme.colors.border,
+        theme.colors.separator,
       ),
     };
     final content =

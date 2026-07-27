@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../primitives/mono_text_scale.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import 'mono_icon.dart';
 
@@ -64,8 +65,8 @@ class MonoBottomNav extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.background,
-        border: Border(top: BorderSide(color: theme.colors.border)),
+        color: theme.colors.page,
+        border: Border(top: BorderSide(color: theme.colors.separator)),
       ),
       child: Padding(
         padding: EdgeInsets.only(
@@ -104,9 +105,8 @@ class MonoBottomNav extends StatelessWidget {
                 ? theme.colors.primary
                 : hovered
                 ? theme.colors.foreground
-                : theme.colors.mutedForeground;
-            final disableAnimations =
-                MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+                : theme.colors.foregroundMuted;
+            final disableAnimations = MonokitMotion.noAnimation(context);
             return ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: monoScaledExtent(

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -415,7 +416,7 @@ class _MonoAccordionState extends State<MonoAccordion> {
   }
 
   Duration _duration(BuildContext context) {
-    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+    if (MonokitMotion.noAnimation(context)) {
       return Duration.zero;
     }
     return widget.duration ?? MonokitTheme.of(context).motion.duration;
@@ -431,7 +432,7 @@ class _MonoAccordionState extends State<MonoAccordion> {
       for (var index = 0; index < _items.length; index++) ...<Widget>[
         if (index > 0)
           ColoredBox(
-            color: theme.colors.border,
+            color: theme.colors.separator,
             child: const SizedBox(height: 1),
           ),
         _buildItem(
@@ -453,7 +454,6 @@ class _MonoAccordionState extends State<MonoAccordion> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: theme.colors.card,
-            border: Border.all(color: theme.colors.border),
             borderRadius: BorderRadius.circular(theme.radii.md),
           ),
           child: ClipRRect(
@@ -697,12 +697,12 @@ class _MonoAccordionTriggerStyle {
     final pressed = states.contains(MonoState.pressed);
     final focused = states.contains(MonoState.focusVisible);
     final foreground = !enabled
-        ? theme.colors.mutedForeground
+        ? theme.colors.foregroundMuted
         : theme.colors.foreground;
     final background = !enabled
         ? theme.colors.card
         : pressed || hovered || expanded
-        ? theme.colors.muted
+        ? theme.colors.fill
         : theme.colors.card;
 
     return _MonoAccordionTriggerStyle(

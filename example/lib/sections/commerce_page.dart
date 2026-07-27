@@ -116,7 +116,7 @@ class _CommercePageState extends State<CommercePage> {
                 Text(
                   '$_qty item${_qty == 1 ? '' : 's'}',
                   style: theme.typography.labelMedium.copyWith(
-                    color: theme.colors.mutedForeground,
+                    color: theme.colors.foregroundMuted,
                   ),
                 ),
                 MonoPriceTag(currency: 'GH₵', price: '${4800 * _qty}'),
@@ -161,7 +161,7 @@ class _CommerceHero extends StatelessWidget {
             Text(
               'East Legon · free delivery in Accra',
               style: theme.typography.bodyMedium.copyWith(
-                color: theme.colors.mutedForeground,
+                color: theme.colors.foregroundMuted,
               ),
             ),
             SizedBox(height: theme.spacing.md),
@@ -183,8 +183,9 @@ class _CommerceHero extends StatelessWidget {
                   ),
                 ),
                 MonoButton(
-                  variant: MonoButtonVariant.outline,
-                  size: MonoButtonSize.icon,
+                  variant: MonoButtonVariant.tinted,
+                  size: MonoButtonSize.md,
+                  iconOnly: true,
                   onPressed: () {},
                   child: const MonoIcon(MonoIcons.bookmark),
                 ),

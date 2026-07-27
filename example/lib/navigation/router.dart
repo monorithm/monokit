@@ -17,6 +17,7 @@ import '../sections/commerce_page.dart';
 import '../sections/data_display_page.dart';
 import '../sections/feedback_page.dart';
 import '../sections/forms_page.dart';
+import '../sections/decisions_page.dart';
 import '../sections/foundations_page.dart';
 import '../sections/media_page.dart';
 import '../sections/navigation_page.dart';
@@ -38,6 +39,7 @@ final GoRouter router = GoRouter(
       routes: <RouteBase>[
         _page('/', const OverviewPage()),
         _page('/foundations', const FoundationsPage()),
+        _page('/decisions', const DecisionsPage()),
         _page('/responsive', const ResponsivePage()),
         _page('/actions', const ActionsPage()),
         _page('/forms', const FormsPage()),

@@ -71,10 +71,10 @@ class _Pitch extends StatelessWidget {
           width: 520,
           child: Text(
             'A widgets-first, Material-free Flutter system — emerald on mist, '
-            'borders and light not shadows. Explore every component, watch it '
+            'a luminance step, not hairlines. Explore every component, watch it '
             'reflow across breakpoints, and see it composed into real products.',
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.mutedForeground,
+              color: theme.colors.foregroundMuted,
             ),
           ),
         ),
@@ -95,7 +95,7 @@ class _Pitch extends StatelessWidget {
             ),
             IntrinsicWidth(
               child: MonoButton(
-                variant: MonoButtonVariant.outline,
+                variant: MonoButtonVariant.tinted,
                 size: MonoButtonSize.lg,
                 onPressed: () => context.go('/responsive'),
                 leading: const MonoIcon(MonoIcons.grid, size: 18),
@@ -149,7 +149,7 @@ class _Collage extends StatelessWidget {
                           Text(
                             'East Legon · like new',
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.mutedForeground,
+                              color: theme.colors.foregroundMuted,
                             ),
                           ),
                         ],
@@ -295,7 +295,7 @@ class _Highlights extends StatelessWidget {
     (
       MonoIcons.image,
       'Emerald on mist',
-      'A rationed accent over cool neutrals, separated by borders and light — '
+      'A rationed accent over cool mist neutrals, separated by value — '
           'in light and dark.',
     ),
   ];
@@ -334,7 +334,7 @@ class _Highlights extends StatelessWidget {
                         Text(
                           body,
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.mutedForeground,
+                            color: theme.colors.foregroundMuted,
                           ),
                         ),
                       ],

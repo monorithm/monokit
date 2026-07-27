@@ -4,15 +4,25 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../primitives/mono_text_scale.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'spinner.dart';
 
 /// Visual treatments available to a [MonoButton].
-enum MonoButtonVariant { primary, outline, secondary, ghost, destructive, link }
+///
+/// Five weights, each with an obvious job. `outline` is gone — a bordered
+/// button contradicts the grouped surface model, and [tinted] covers the same
+/// "present but not primary" role without one. `link` is gone too: [ghost]
+/// already renders a bare tinted label.
+enum MonoButtonVariant { filled, tinted, secondary, ghost, destructive }
 
-/// Density and icon-layout options available to a [MonoButton].
-enum MonoButtonSize { xs, sm, md, lg, icon, iconXs, iconSm, iconLg }
+/// Density options available to a [MonoButton].
+///
+/// Icon-only buttons are no longer separate values; pass `iconOnly` instead.
+/// The old eight values were four sizes doubled, and at touch density `xs` and
+/// `sm` both clamped to the 44pt minimum target — identical in practice.
+enum MonoButtonSize { sm, md, lg }
 
 /// The immutable visual result of resolving a [MonoButton]'s tokens and state.
 @immutable
@@ -27,7 +37,6 @@ class MonoResolvedButtonStyle {
     required this.iconSize,
     required this.opacity,
     required this.textStyle,
-    required this.showUnderline,
   });
 
   final Color background;
@@ -39,7 +48,6 @@ class MonoResolvedButtonStyle {
   final double iconSize;
   final double opacity;
   final TextStyle textStyle;
-  final bool showUnderline;
 }
 
 /// Resolves a button's visual treatment from Monokit tokens and interaction
@@ -52,39 +60,46 @@ class MonoButtonStyleResolver {
     required MonoButtonVariant variant,
     required MonoButtonSize size,
     required Set<MonoState> states,
+    bool iconOnly = false,
   }) {
     final colors = theme.colors;
     final isHovered = states.contains(MonoState.hovered);
     final isPressed = states.contains(MonoState.pressed);
     final isDisabled = states.contains(MonoState.disabled);
 
-    var background = colors.background.withValues(alpha: 0);
+    var background = colors.page.withValues(alpha: 0);
     var foreground = colors.foreground;
     Color? borderColor;
-    var showUnderline = false;
 
     switch (variant) {
-      case MonoButtonVariant.primary:
+      case MonoButtonVariant.filled:
         background = colors.primary;
-        foreground = colors.primaryForeground;
+        foreground = colors.onPrimary;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
-            colors.background,
+            colors.page,
             isPressed ? 0.18 : 0.1,
           )!;
         }
         break;
-      case MonoButtonVariant.outline:
-        borderColor = colors.border;
+      case MonoButtonVariant.tinted:
+        // The new middle weight, and what `outline` should have been: brand
+        // presence without a border, since the grouped model has no borders
+        // to lean on.
+        background = colors.primarySoft;
+        foreground = colors.tint;
         if (isHovered || isPressed) {
-          background = colors.muted;
-          foreground = colors.foreground;
+          background = Color.lerp(
+            background,
+            colors.primary,
+            isPressed ? 0.24 : 0.14,
+          )!;
         }
         break;
       case MonoButtonVariant.secondary:
-        background = colors.secondary;
-        foreground = colors.secondaryForeground;
+        background = colors.fill;
+        foreground = colors.foreground;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
@@ -94,32 +109,29 @@ class MonoButtonStyleResolver {
         }
         break;
       case MonoButtonVariant.ghost:
+        // Absorbs the former `link` variant: a bare interactive label. It
+        // takes the tint rather than the plain foreground, which is what made
+        // `link` distinct in the first place.
+        foreground = colors.tint;
         if (isHovered || isPressed) {
-          background = colors.muted;
-          foreground = colors.foreground;
+          background = colors.fill;
         }
         break;
       case MonoButtonVariant.destructive:
-        // Soft tint (destructive/10-style) rather than a solid fill, matching
-        // the reference; hover deepens the tint toward the solid destructive.
-        background = colors.destructiveSoft;
-        foreground = colors.destructiveText;
+        // Soft tint rather than a solid fill; hover deepens it toward solid.
+        background = colors.dangerSoft;
+        foreground = colors.dangerText;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
-            colors.destructive,
+            colors.danger,
             isPressed ? 0.24 : 0.14,
           )!;
         }
         break;
-      case MonoButtonVariant.link:
-        foreground = colors.primary;
-        showUnderline =
-            isHovered || isPressed || states.contains(MonoState.focused);
-        break;
     }
 
-    final sizeTokens = _MonoButtonSizeTokens.fromTheme(theme, size);
+    final sizeTokens = _MonoButtonSizeTokens.fromTheme(theme, size, iconOnly);
     return MonoResolvedButtonStyle(
       background: background,
       foreground: foreground,
@@ -131,13 +143,7 @@ class MonoButtonStyleResolver {
           : sizeTokens.minimumHeight,
       iconSize: sizeTokens.iconSize,
       opacity: isDisabled ? 0.5 : 1,
-      textStyle: theme.typography.button.copyWith(
-        color: foreground,
-        decoration: showUnderline
-            ? TextDecoration.underline
-            : TextDecoration.none,
-      ),
-      showUnderline: showUnderline,
+      textStyle: theme.typography.button.copyWith(color: foreground),
     );
   }
 }
@@ -156,58 +162,21 @@ class _MonoButtonSizeTokens {
   factory _MonoButtonSizeTokens.fromTheme(
     MonokitThemeData theme,
     MonoButtonSize size,
+    bool iconOnly,
   ) {
     final spacing = theme.spacing;
-    switch (size) {
-      case MonoButtonSize.xs:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.symmetric(horizontal: spacing.sm),
-          minimumHeight: spacing.xxl + spacing.xs,
-          iconSize: spacing.md,
-        );
-      case MonoButtonSize.sm:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.symmetric(horizontal: spacing.md),
-          minimumHeight: spacing.xxxl,
-          iconSize: spacing.lg,
-        );
-      case MonoButtonSize.md:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.symmetric(horizontal: spacing.lg),
-          minimumHeight: spacing.lg + spacing.xl,
-          iconSize: spacing.xl,
-        );
-      case MonoButtonSize.lg:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.symmetric(horizontal: spacing.xl),
-          minimumHeight: spacing.huge,
-          iconSize: spacing.xxl,
-        );
-      case MonoButtonSize.iconXs:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.zero,
-          minimumHeight: spacing.xxl + spacing.xs,
-          iconSize: spacing.md,
-        );
-      case MonoButtonSize.iconSm:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.zero,
-          minimumHeight: spacing.xxxl,
-          iconSize: spacing.lg,
-        );
-      case MonoButtonSize.icon:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.zero,
-          minimumHeight: spacing.lg + spacing.xl,
-          iconSize: spacing.xl,
-        );
-      case MonoButtonSize.iconLg:
-        return _MonoButtonSizeTokens(
-          padding: EdgeInsets.zero,
-          minimumHeight: spacing.huge,
-          iconSize: spacing.xxl,
-        );
-    }
+    final (double horizontal, double height, double icon) = switch (size) {
+      MonoButtonSize.sm => (spacing.md, spacing.xxxl, spacing.lg),
+      MonoButtonSize.md => (spacing.lg, spacing.lg + spacing.xl, spacing.xl),
+      MonoButtonSize.lg => (spacing.xl, spacing.huge, spacing.xxl),
+    };
+    return _MonoButtonSizeTokens(
+      padding: iconOnly
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(horizontal: horizontal),
+      minimumHeight: height,
+      iconSize: icon,
+    );
   }
 }
 
@@ -222,21 +191,26 @@ class MonoButton extends StatefulWidget {
     this.onPressed,
     this.leading,
     this.trailing,
-    this.variant = MonoButtonVariant.primary,
+    this.variant = MonoButtonVariant.filled,
     this.size = MonoButtonSize.md,
     this.isLoading = false,
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
+    this.iconOnly = false,
   });
 
   /// Convenience constructor for an icon followed by an optional label.
+  ///
+  /// Omitting [label] makes it an icon-only button — the padding collapses and
+  /// it renders square. That used to require picking one of four separate
+  /// `icon*` size values.
   const MonoButton.icon({
     super.key,
     required Widget icon,
     Widget? label,
     this.onPressed,
-    this.variant = MonoButtonVariant.primary,
+    this.variant = MonoButtonVariant.filled,
     this.size = MonoButtonSize.md,
     this.isLoading = false,
     this.focusNode,
@@ -244,7 +218,8 @@ class MonoButton extends StatefulWidget {
     this.semanticLabel,
   }) : child = label ?? icon,
        leading = label == null ? null : icon,
-       trailing = null;
+       trailing = null,
+       iconOnly = label == null;
 
   final Widget child;
   final VoidCallback? onPressed;
@@ -252,6 +227,10 @@ class MonoButton extends StatefulWidget {
   final Widget? trailing;
   final MonoButtonVariant variant;
   final MonoButtonSize size;
+
+  /// Renders square with no horizontal padding. Set automatically by
+  /// [MonoButton.icon] when no label is supplied.
+  final bool iconOnly;
   final bool isLoading;
   final FocusNode? focusNode;
   final bool autofocus;
@@ -352,9 +331,7 @@ class _MonoButtonState extends State<MonoButton> {
   }
 
   Duration _motionDuration(BuildContext context, Duration duration) {
-    return MediaQuery.maybeOf(context)?.disableAnimations ?? false
-        ? Duration.zero
-        : duration;
+    return MonokitMotion.noAnimation(context) ? Duration.zero : duration;
   }
 
   /// The interaction-state-dependent visual, rebuilt in isolation by the
@@ -448,13 +425,7 @@ class _MonoButtonState extends State<MonoButton> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final motionDuration = _motionDuration(context, theme.motion.fast);
-    final isIconButton = switch (widget.size) {
-      MonoButtonSize.icon ||
-      MonoButtonSize.iconXs ||
-      MonoButtonSize.iconSm ||
-      MonoButtonSize.iconLg => true,
-      _ => false,
-    };
+    final isIconButton = widget.iconOnly;
 
     // Only this leaf rebuilds on hover/press/focus ticks; the Semantics and
     // FocusableActionDetector below stay stable.
@@ -467,6 +438,7 @@ class _MonoButtonState extends State<MonoButton> {
           variant: widget.variant,
           size: widget.size,
           states: states,
+          iconOnly: widget.iconOnly,
         );
         final isPressed = states.contains(MonoState.pressed);
         return _buildVisual(

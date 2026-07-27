@@ -47,7 +47,7 @@ class _FramedDevice extends StatelessWidget {
         : EdgeInsets.zero;
 
     return ColoredBox(
-      color: theme.colors.muted,
+      color: theme.colors.fill,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final pad = theme.spacing.xl;
@@ -63,7 +63,7 @@ class _FramedDevice extends StatelessWidget {
             child: Transform.scale(
               scale: scale,
               child: MonoSurface(
-                tier: MonoElevationTier.e3,
+                elevation: MonoElevation.floating,
                 padding: EdgeInsets.all(theme.spacing.sm),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(theme.radii.xl + 12),

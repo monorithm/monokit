@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_announcer.dart';
 import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
+import '../theme/monokit_motion.dart';
 import '../theme/monokit_theme.dart';
 
 /// An accessible page navigator with controlled and uncontrolled modes.
@@ -203,11 +204,11 @@ class MonoPaginationLink extends StatelessWidget {
       // Active page is a bordered outline chip (not a filled brand chip);
       // hover is neutral muted, matching the reference.
       final background = hovered && !active
-          ? theme.colors.muted
-          : theme.colors.background.withValues(alpha: 0);
+          ? theme.colors.fill
+          : theme.colors.page.withValues(alpha: 0);
       final foreground = theme.colors.foreground;
       return AnimatedContainer(
-        duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
+        duration: MonokitMotion.noAnimation(context)
             ? Duration.zero
             : theme.motion.fast,
         curve: theme.motion.curve,
@@ -218,7 +219,7 @@ class MonoPaginationLink extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(theme.radii.md),
-          border: active ? Border.all(color: theme.colors.border) : null,
+          border: active ? Border.all(color: theme.colors.separator) : null,
         ),
         child: Center(
           child: DefaultTextStyle.merge(
@@ -268,7 +269,7 @@ class MonoPaginationEllipsis extends StatelessWidget {
             child: Text(
               '…',
               style: theme.typography.labelLarge.copyWith(
-                color: theme.colors.mutedForeground,
+                color: theme.colors.foregroundMuted,
               ),
             ),
           ),

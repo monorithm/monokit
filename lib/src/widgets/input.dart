@@ -398,10 +398,10 @@ class _MonoInputState extends State<MonoInput>
     final bool hasText = _controller.text.isNotEmpty;
     final Color foreground = _isEnabled
         ? theme.colors.foreground
-        : theme.colors.mutedForeground;
+        : theme.colors.foregroundMuted;
     final Color background = _isEnabled
-        ? theme.colors.background.withAlpha(0)
-        : theme.colors.muted.withAlpha(150);
+        ? theme.colors.page.withAlpha(0)
+        : theme.colors.fill.withAlpha(150);
     final Color resolvedSelectionColor =
         widget.selectionColor ?? theme.colors.ring.withAlpha(80);
     final EdgeInsetsGeometry resolvedPadding =
@@ -414,7 +414,7 @@ class _MonoInputState extends State<MonoInput>
         .copyWith(color: foreground);
     final TextStyle hintStyle =
         (widget.placeholderStyle ?? theme.typography.bodyMedium).copyWith(
-          color: theme.colors.mutedForeground,
+          color: theme.colors.foregroundMuted,
         );
 
     final Widget editable = Stack(
@@ -509,7 +509,7 @@ class _MonoInputState extends State<MonoInput>
                 children: <Widget>[
                   if (widget.prefix != null) ...<Widget>[
                     IconTheme.merge(
-                      data: IconThemeData(color: theme.colors.mutedForeground),
+                      data: IconThemeData(color: theme.colors.foregroundMuted),
                       child: widget.prefix!,
                     ),
                     SizedBox(width: theme.spacing.sm),
@@ -518,7 +518,7 @@ class _MonoInputState extends State<MonoInput>
                   if (widget.suffix != null) ...<Widget>[
                     SizedBox(width: theme.spacing.sm),
                     IconTheme.merge(
-                      data: IconThemeData(color: theme.colors.mutedForeground),
+                      data: IconThemeData(color: theme.colors.foregroundMuted),
                       child: widget.suffix!,
                     ),
                   ],
@@ -527,12 +527,12 @@ class _MonoInputState extends State<MonoInput>
             ),
             builder: (BuildContext context, Widget? child) {
               final Color borderColor = widget.invalid
-                  ? theme.colors.destructive
+                  ? theme.colors.danger
                   : _isFocused
                   ? theme.colors.ring
                   : _isHovered && _isEnabled
                   ? theme.colors.foreground
-                  : theme.colors.input;
+                  : theme.colors.separator;
               return AnimatedContainer(
                 duration: theme.motion.duration,
                 curve: theme.motion.curve,
@@ -544,10 +544,7 @@ class _MonoInputState extends State<MonoInput>
                   borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
                   boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(
-                          theme.colors.destructive,
-                          alpha: 0.2,
-                        )
+                      ? theme.focus.ringShadow(theme.colors.danger, alpha: 0.2)
                       : _isFocused
                       ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
@@ -576,7 +573,7 @@ class _MonoInputState extends State<MonoInput>
               child: Text(
                 '$currentLength/${widget.maxLength}',
                 style: theme.typography.labelMedium.copyWith(
-                  color: theme.colors.mutedForeground,
+                  color: theme.colors.foregroundMuted,
                 ),
               ),
             ),
