@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
+import '../motion/mono_spring_controller.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../theme/monokit_motion.dart';
@@ -188,10 +191,22 @@ class MonoAccordion extends StatefulWidget {
   State<MonoAccordion> createState() => _MonoAccordionState();
 }
 
-class _MonoAccordionState extends State<MonoAccordion> {
+class _MonoAccordionState extends State<MonoAccordion>
+    with TickerProviderStateMixin {
   final Map<String, FocusNode> _focusNodes = <String, FocusNode>{};
   final Map<String, MonoStatesController> _stateControllers =
       <String, MonoStatesController>{};
+
+  /// Per-item panel openness, 0 (collapsed) to 1 (expanded).
+  ///
+  /// A panel opening is height changing in space, so by the motion doctrine it
+  /// springs. [_lastExpanded] records what each spring was last aimed at, so a
+  /// rebuild that does not change expansion never retargets it — otherwise
+  /// every unrelated rebuild would restart the animation.
+  final Map<String, MonoSpringController> _openness =
+      <String, MonoSpringController>{};
+  final Map<String, bool> _lastExpanded = <String, bool>{};
+
   late Set<String> _uncontrolledValues;
 
   List<MonoAccordionItem> get _items => widget._items;
@@ -245,7 +260,49 @@ class _MonoAccordionState extends State<MonoAccordion> {
     for (final controller in _stateControllers.values) {
       controller.dispose();
     }
+    for (final controller in _openness.values) {
+      controller
+        ..removeListener(_onOpennessTick)
+        ..dispose();
+    }
     super.dispose();
+  }
+
+  void _onOpennessTick() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// Brings every item's openness spring in line with [expandedValues].
+  ///
+  /// Called from `build`, which is safe here: a spring started now ticks on
+  /// later frames, so no listener fires during this build pass. The
+  /// [_lastExpanded] guard is what keeps it to genuine transitions.
+  void _syncOpenness(BuildContext context, Set<String> expandedValues) {
+    final motion = MonokitTheme.of(context).motion;
+    for (final item in _items) {
+      final expanded = expandedValues.contains(item.value);
+      final controller = _openness[item.value];
+      if (controller == null) {
+        // First build for this item: adopt the resting state outright. An
+        // accordion that animates itself open on mount is a distraction.
+        _openness[item.value] = MonoSpringController(
+          vsync: this,
+          value: expanded ? 1 : 0,
+        )..addListener(_onOpennessTick);
+        _lastExpanded[item.value] = expanded;
+        continue;
+      }
+      if (_lastExpanded[item.value] == expanded) {
+        continue;
+      }
+      _lastExpanded[item.value] = expanded;
+      controller.animateTo(
+        expanded ? 1 : 0,
+        spring: motion.reducedSpring(context, motion.spatial),
+      );
+    }
   }
 
   void _assertDistinctValues(List<MonoAccordionItem> items) {
@@ -271,6 +328,10 @@ class _MonoAccordionState extends State<MonoAccordion> {
     for (final value in removedValues) {
       _focusNodes.remove(value)?.dispose();
       _stateControllers.remove(value)?.dispose();
+      _openness.remove(value)
+        ?..removeListener(_onOpennessTick)
+        ..dispose();
+      _lastExpanded.remove(value);
     }
 
     for (final item in _items) {
@@ -428,6 +489,7 @@ class _MonoAccordionState extends State<MonoAccordion> {
     final duration = _duration(context);
     final curve = widget.curve ?? theme.motion.curve;
     final expandedValues = _expandedValues;
+    _syncOpenness(context, expandedValues);
     final items = <Widget>[
       for (var index = 0; index < _items.length; index++) ...<Widget>[
         if (index > 0)
@@ -440,6 +502,7 @@ class _MonoAccordionState extends State<MonoAccordion> {
           item: _items[index],
           index: index,
           expanded: expandedValues.contains(_items[index].value),
+          openness: _openness[_items[index].value]!.value,
           duration: duration,
           curve: curve,
         ),
@@ -474,6 +537,7 @@ class _MonoAccordionState extends State<MonoAccordion> {
     required MonoAccordionItem item,
     required int index,
     required bool expanded,
+    required double openness,
     required Duration duration,
     required Curve curve,
   }) {
@@ -609,34 +673,34 @@ class _MonoAccordionState extends State<MonoAccordion> {
       children: <Widget>[
         triggerSection,
         ClipRect(
-          child: AnimatedSize(
-            duration: duration,
-            curve: curve,
+          child: Align(
             alignment: Alignment.topCenter,
-            child: Align(
-              alignment: Alignment.topCenter,
-              heightFactor: expanded ? 1 : 0,
-              child: ExcludeSemantics(
-                excluding: !expanded,
-                child: IgnorePointer(
-                  ignoring: !expanded,
-                  child: AnimatedOpacity(
-                    duration: duration,
-                    curve: curve,
-                    opacity: expanded ? 1 : 0,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        theme.spacing.md,
-                        0,
-                        theme.spacing.md,
-                        theme.spacing.md,
+            // Floor only. `heightFactor` asserts on negatives, so a collapse
+            // undershoot has to be clamped — and it is invisible anyway, the
+            // panel is shut. The ceiling stays open on purpose: the expand
+            // overshoot showing as the panel over-extending and settling back
+            // is the reason to use a spring here at all.
+            heightFactor: math.max(0, openness),
+            child: ExcludeSemantics(
+              excluding: !expanded,
+              child: IgnorePointer(
+                ignoring: !expanded,
+                child: AnimatedOpacity(
+                  duration: duration,
+                  curve: curve,
+                  opacity: expanded ? 1 : 0,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      theme.spacing.md,
+                      0,
+                      theme.spacing.md,
+                      theme.spacing.md,
+                    ),
+                    child: DefaultTextStyle.merge(
+                      style: theme.typography.bodyMedium.copyWith(
+                        color: theme.colors.foreground,
                       ),
-                      child: DefaultTextStyle.merge(
-                        style: theme.typography.bodyMedium.copyWith(
-                          color: theme.colors.foreground,
-                        ),
-                        child: contentChild,
-                      ),
+                      child: contentChild,
                     ),
                   ),
                 ),

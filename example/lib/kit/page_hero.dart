@@ -80,7 +80,7 @@ class StageBlock extends StatelessWidget {
           children: <Widget>[
             Expanded(child: Text(title, style: theme.typography.titleLarge)),
             const MonoBadge(
-              variant: MonoBadgeVariant.outline,
+              variant: MonoBadgeVariant.neutral,
               child: Text('Responsive'),
             ),
           ],

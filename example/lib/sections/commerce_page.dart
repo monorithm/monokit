@@ -90,7 +90,7 @@ class _CommercePageState extends State<CommercePage> {
               description: const Text('Nima'),
               price: const MonoPriceTag(currency: 'GH₵', price: '4,800'),
               badge: const MonoBadge(
-                variant: MonoBadgeVariant.secondary,
+                variant: MonoBadgeVariant.neutral,
                 child: Text('Used'),
               ),
             ),
@@ -152,7 +152,7 @@ class _CommerceHero extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const MonoBadge(
-              variant: MonoBadgeVariant.secondary,
+              variant: MonoBadgeVariant.neutral,
               child: Text('Furniture · Used'),
             ),
             SizedBox(height: theme.spacing.sm),

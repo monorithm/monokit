@@ -31,7 +31,7 @@ class ComponentSection extends StatelessWidget {
             builder: (context, constraints) {
               final title0 = Text(title, style: theme.typography.titleMedium);
               final badge = MonoBadge(
-                variant: MonoBadgeVariant.outline,
+                variant: MonoBadgeVariant.neutral,
                 child: Text(widgetName),
               );
               // Stack title over badge when there isn't room for both on one

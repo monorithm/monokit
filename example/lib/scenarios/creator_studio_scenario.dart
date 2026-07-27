@@ -72,21 +72,18 @@ class _CreatorStudioScenarioState extends State<CreatorStudioScenario> {
             runSpacing: theme.spacing.sm,
             children: const <Widget>[
               MonoBadge(
-                variant: MonoBadgeVariant.secondary,
+                variant: MonoBadgeVariant.neutral,
                 child: Text('iPhone 13'),
               ),
               MonoBadge(
-                variant: MonoBadgeVariant.secondary,
+                variant: MonoBadgeVariant.neutral,
                 child: Text('128GB'),
               ),
               MonoBadge(
-                variant: MonoBadgeVariant.secondary,
+                variant: MonoBadgeVariant.neutral,
                 child: Text('GH₵ 4,800'),
               ),
-              MonoBadge(
-                variant: MonoBadgeVariant.secondary,
-                child: Text('Nima'),
-              ),
+              MonoBadge(variant: MonoBadgeVariant.neutral, child: Text('Nima')),
             ],
           ),
           SizedBox(height: theme.spacing.lg),

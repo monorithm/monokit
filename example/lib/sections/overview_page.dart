@@ -58,7 +58,7 @@ class _Pitch extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         const MonoBadge(
-          variant: MonoBadgeVariant.secondary,
+          variant: MonoBadgeVariant.neutral,
           child: Text('Monokit · v0.10'),
         ),
         SizedBox(height: theme.spacing.lg),
@@ -256,7 +256,7 @@ class _StatusStack extends StatelessWidget {
                 child: Text('Packing'),
               ),
               MonoBadge(
-                variant: MonoBadgeVariant.outline,
+                variant: MonoBadgeVariant.neutral,
                 child: Text('Out for delivery'),
               ),
             ],

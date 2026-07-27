@@ -53,7 +53,7 @@ class _ConversationScenarioState extends State<ConversationScenario> {
         children: <Widget>[
           Center(
             child: MonoBadge(
-              variant: MonoBadgeVariant.secondary,
+              variant: MonoBadgeVariant.neutral,
               child: const Text('Today'),
             ),
           ),

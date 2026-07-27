@@ -335,7 +335,7 @@ class _MotionDemoState extends State<_MotionDemo>
               child: const Text('Replay'),
             ),
             const MonoBadge(
-              variant: MonoBadgeVariant.secondary,
+              variant: MonoBadgeVariant.neutral,
               child: Text('150–300ms'),
             ),
           ],

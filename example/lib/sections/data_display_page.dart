@@ -211,7 +211,7 @@ class _AvatarGroup extends StatelessWidget {
             left: _people.length * 26.0,
             top: 4,
             child: MonoBadge(
-              variant: MonoBadgeVariant.secondary,
+              variant: MonoBadgeVariant.neutral,
               child: Text('+12'),
             ),
           ),

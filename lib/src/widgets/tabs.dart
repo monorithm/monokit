@@ -13,10 +13,13 @@ enum MonoTabsOrientation { horizontal, vertical }
 
 /// The visual treatment used by [MonoTabs].
 ///
-/// [MonoTabsVariant.defaultStyle] is a compact segmented control. [line] uses
-/// an underline (or a leading line in vertical layouts) to mark the active
-/// tab.
-enum MonoTabsVariant { defaultStyle, line }
+/// [line] marks the active tab with an underline (or a leading line in
+/// vertical layouts) and is the default: it adds a single moving mark rather
+/// than a second filled surface, which is what the grouped model wants when
+/// the tabs sit on a card that is already the focus. [segmented] is the
+/// compact segmented control — reach for it when the choice itself is the
+/// content, as in a short filter row.
+enum MonoTabsVariant { line, segmented }
 
 /// A single tab declaration for [MonoTabs].
 ///
@@ -102,7 +105,7 @@ class MonoTabs extends StatefulWidget {
     this.initialIndex,
     this.onIndexChanged,
     this.orientation = MonoTabsOrientation.horizontal,
-    this.variant = MonoTabsVariant.defaultStyle,
+    this.variant = MonoTabsVariant.line,
     this.padding,
     this.duration,
     this.curve,
@@ -478,7 +481,7 @@ class _MonoTabsState extends State<MonoTabs> {
     final decorated = DecoratedBox(
       decoration: _listDecoration(theme),
       child: Padding(
-        padding: widget.variant == MonoTabsVariant.defaultStyle
+        padding: widget.variant == MonoTabsVariant.segmented
             ? EdgeInsets.all(theme.spacing.xs)
             : EdgeInsets.zero,
         child: triggerRow,

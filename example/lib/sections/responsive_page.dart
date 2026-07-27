@@ -157,7 +157,7 @@ class _TierChip extends StatelessWidget {
               children: <Widget>[
                 if (active) ...<Widget>[
                   MonoBadge(
-                    variant: MonoBadgeVariant.primary,
+                    variant: MonoBadgeVariant.neutral,
                     size: MonoBadgeSize.sm,
                     child: const Text('now'),
                   ),
