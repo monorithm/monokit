@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -435,7 +437,9 @@ class _MonoCommandPaletteOverlayState
         decoration: BoxDecoration(
           color: theme.colors.popover,
           borderRadius: BorderRadius.circular(theme.radii.xl),
-          border: Border.all(color: theme.colors.border),
+          border: Border.all(
+            color: theme.colors.foreground.withValues(alpha: 0.1),
+          ),
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: theme.colors.foreground.withValues(alpha: 0.18),
@@ -503,12 +507,16 @@ class _MonoCommandPaletteOverlayState
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onDismiss,
-            child: ColoredBox(
-              color: theme.colors.foreground.withValues(alpha: 0.42),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+              child: ColoredBox(color: theme.colors.overlayScrim),
             ),
           )
         else
-          ColoredBox(color: theme.colors.foreground.withValues(alpha: 0.42)),
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: ColoredBox(color: theme.colors.overlayScrim),
+          ),
         Center(
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(
@@ -578,10 +586,10 @@ class _MonoCommandPaletteOverlayState
     MonoCommand command,
     bool highlighted,
   ) {
-    final background = highlighted ? theme.colors.accent : theme.colors.popover;
-    final foreground = highlighted
-        ? theme.colors.accentForeground
-        : theme.colors.popoverForeground;
+    // Reference command items highlight on neutral muted (not the brand
+    // accent), keeping the foreground unchanged.
+    final background = highlighted ? theme.colors.muted : theme.colors.popover;
+    final foreground = theme.colors.popoverForeground;
     return Semantics(
       button: true,
       enabled: command.enabled,

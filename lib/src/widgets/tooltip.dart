@@ -44,8 +44,10 @@ class MonoTooltipContent extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.primary,
-        borderRadius: BorderRadius.circular(theme.radii.sm),
+        // Inverted-neutral surface (foreground bubble / background text) to
+        // match the reference tooltip, rather than the brand color.
+        color: theme.colors.foreground,
+        borderRadius: BorderRadius.circular(theme.radii.md),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: theme.colors.foreground.withValues(alpha: 0.12),
@@ -58,12 +60,12 @@ class MonoTooltipContent extends StatelessWidget {
         padding:
             padding ??
             EdgeInsets.symmetric(
-              horizontal: theme.spacing.sm,
+              horizontal: theme.spacing.md,
               vertical: theme.spacing.xs,
             ),
         child: DefaultTextStyle.merge(
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.primaryForeground,
+            color: theme.colors.background,
           ),
           child: child,
         ),

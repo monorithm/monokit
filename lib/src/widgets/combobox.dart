@@ -467,15 +467,15 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
                   color: _isEnabled
                       ? theme.colors.background.withValues(alpha: 0)
                       : theme.colors.muted.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
-                  boxShadow: _statesController.contains(MonoState.focusVisible)
-                      ? <BoxShadow>[
-                          BoxShadow(
-                            color: theme.colors.ring.withValues(alpha: 0.28),
-                            spreadRadius: theme.components.input.focusRingWidth,
-                          ),
-                        ]
+                  boxShadow: widget.invalid
+                      ? theme.focus.ringShadow(
+                          theme.colors.destructive,
+                          alpha: 0.2,
+                        )
+                      : _statesController.contains(MonoState.focusVisible)
+                      ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
                 ),
                 child: DefaultTextStyle.merge(

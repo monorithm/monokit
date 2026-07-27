@@ -379,7 +379,7 @@ class MonoAttachment extends StatelessWidget {
           : theme.motion.fast,
       curve: theme.motion.standard,
       decoration: BoxDecoration(
-        color: active ? theme.colors.accent : theme.colors.card,
+        color: active ? theme.colors.muted : theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.md),
         border: Border.all(color: theme.colors.border),
       ),

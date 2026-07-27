@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -294,7 +296,10 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: widget.dismissible ? widget.onDismiss : null,
-                  child: ColoredBox(color: widget.theme.colors.overlayScrim),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: ColoredBox(color: widget.theme.colors.overlayScrim),
+                  ),
                 ),
               ),
               // Lift the surface clear of the software keyboard and keep an
@@ -356,7 +361,9 @@ class MonoDialogContent extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colors.popover,
           borderRadius: BorderRadius.circular(theme.radii.xl),
-          border: Border.all(color: theme.colors.border),
+          border: Border.all(
+            color: theme.colors.foreground.withValues(alpha: 0.1),
+          ),
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: const Color(0x2609090B),

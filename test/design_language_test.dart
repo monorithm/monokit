@@ -11,7 +11,7 @@ void main() {
   test('theme v2 exposes canonical semantic groups', () {
     final theme = MonokitThemeData.light();
     expect(theme.colors.primary, const Color(0xFF007A55));
-    expect(theme.colors.overlayScrim, const Color(0x99090A0B));
+    expect(theme.colors.overlayScrim, const Color(0x1A000000));
     expect(theme.colors.successText, const Color(0xFF016630));
     expect(theme.elevation.resolve(MonoElevationTier.e3), isNotEmpty);
     expect(theme.density.minimumTarget, 48);
@@ -32,8 +32,11 @@ void main() {
       variant: MonoBadgeVariant.destructive,
       size: MonoBadgeSize.md,
     );
-    expect(button.foreground, theme.colors.destructiveForeground);
-    expect(badge.foreground, theme.colors.destructiveForeground);
+    // Destructive controls use the soft tint (destructiveSoft) with the
+    // contrast-safe destructiveText foreground, matching the reference.
+    expect(button.background, theme.colors.destructiveSoft);
+    expect(button.foreground, theme.colors.destructiveText);
+    expect(badge.foreground, theme.colors.destructiveText);
   });
 
   testWidgets('toast host owns transient event surfaces', (tester) async {

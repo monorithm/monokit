@@ -58,8 +58,8 @@ class MonoContextMenuContent extends StatelessWidget {
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colors.popover,
-        border: Border.all(color: theme.colors.border),
-        borderRadius: BorderRadius.circular(theme.radii.md),
+        border: Border.all(color: theme.colors.foreground.withValues(alpha: 0.1)),
+        borderRadius: BorderRadius.circular(theme.radii.lg),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: theme.colors.foreground.withValues(alpha: 0.12),
@@ -135,10 +135,18 @@ class MonoContextMenuItem extends StatelessWidget {
         final hovered = states.contains(MonoState.hovered);
         final pressed = states.contains(MonoState.pressed);
         final focused = states.contains(MonoState.focusVisible);
-        final foreground = destructive
-            ? theme.colors.destructive
-            : isEnabled
-            ? theme.colors.popoverForeground
+        final bool isHi = (pressed || hovered) && isEnabled;
+        final foreground = !isEnabled
+            ? theme.colors.mutedForeground
+            : destructive
+            ? (isHi ? theme.colors.destructiveText : theme.colors.destructive)
+            : isHi
+            ? theme.colors.accentForeground
+            : theme.colors.popoverForeground;
+        // On the accent-highlighted row, the trailing/shortcut glyph flips to
+        // accentForeground too; otherwise it stays muted.
+        final trailingColor = isHi && !destructive
+            ? theme.colors.accentForeground
             : theme.colors.mutedForeground;
         return AnimatedContainer(
           duration: theme.motion.fast,
@@ -148,10 +156,12 @@ class MonoContextMenuItem extends StatelessWidget {
             vertical: theme.spacing.sm,
           ),
           decoration: BoxDecoration(
-            color: pressed || hovered
-                ? theme.colors.accent
-                : const Color(0x00000000),
-            borderRadius: BorderRadius.circular(theme.radii.sm),
+            color: !isHi
+                ? const Color(0x00000000)
+                : destructive
+                ? theme.colors.destructiveSoft
+                : theme.colors.accent,
+            borderRadius: BorderRadius.circular(theme.radii.md),
             boxShadow: focused
                 ? <BoxShadow>[
                     BoxShadow(
@@ -187,7 +197,7 @@ class MonoContextMenuItem extends StatelessWidget {
                   SizedBox(width: theme.spacing.xl),
                   IconTheme.merge(
                     data: IconThemeData(
-                      color: theme.colors.mutedForeground,
+                      color: trailingColor,
                       size: theme.spacing.lg,
                     ),
                     child: trailing!,

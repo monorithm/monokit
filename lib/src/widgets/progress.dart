@@ -92,7 +92,7 @@ class _MonoProgressState extends State<MonoProgress>
         value: value,
         color: foreground,
         trackColor: background,
-        height: widget.height ?? theme.spacing.sm,
+        height: widget.height ?? theme.spacing.xs,
         width: widget.width,
         radius: theme.radii.full,
       ),

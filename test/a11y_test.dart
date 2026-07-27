@@ -81,10 +81,12 @@ void main() {
   group('focus ring tokens', () {
     test('MonokitFocus exposes defaults and copyWith', () {
       const focus = MonokitFocus();
-      expect(focus.ringWidth, 2);
+      expect(focus.ringWidth, 3);
       expect(focus.ringOffset, 2);
-      expect(focus.copyWith(ringWidth: 3).ringWidth, 3);
-      expect(focus.copyWith(ringWidth: 3).ringOffset, 2);
+      expect(focus.ringAlpha, 0.5);
+      expect(focus.copyWith(ringWidth: 4).ringWidth, 4);
+      expect(focus.copyWith(ringWidth: 4).ringOffset, 2);
+      expect(focus.copyWith(ringAlpha: 0.4).ringAlpha, 0.4);
     });
 
     test('MonokitThemeData threads the focus group through copyWith/==', () {

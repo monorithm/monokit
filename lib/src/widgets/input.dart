@@ -197,6 +197,32 @@ class _MonoInputState extends State<MonoInput>
   final MonoTextSelectionControls _selectionControls =
       MonoTextSelectionControls();
 
+  // A raw EditableText keeps selection handles hidden unless the host toggles
+  // `showSelectionHandles` (Material's TextField manages this; we must too).
+  // Without it the drag handles never appear even though selection works.
+  bool _showSelectionHandles = false;
+
+  void _handleSelectionChanged(
+    TextSelection selection,
+    SelectionChangedCause? cause,
+  ) {
+    final bool willShow = _shouldShowSelectionHandles(cause);
+    if (willShow != _showSelectionHandles) {
+      setState(() => _showSelectionHandles = willShow);
+    }
+  }
+
+  bool _shouldShowSelectionHandles(SelectionChangedCause? cause) {
+    if (!_selectionGestureBuilder.shouldShowSelectionToolbar) return false;
+    if (cause == SelectionChangedCause.keyboard) return false;
+    if (widget.readOnly && _controller.selection.isCollapsed) return false;
+    if (cause == SelectionChangedCause.longPress ||
+        cause == SelectionChangedCause.stylusHandwriting) {
+      return true;
+    }
+    return _controller.text.isNotEmpty;
+  }
+
   // TextSelectionGestureDetectorBuilderDelegate.
   @override
   GlobalKey<EditableTextState> get editableTextKey => _editableTextKey;
@@ -419,6 +445,8 @@ class _MonoInputState extends State<MonoInput>
           selectionControls: widget.enableInteractiveSelection
               ? _selectionControls
               : null,
+          showSelectionHandles: _showSelectionHandles,
+          onSelectionChanged: _handleSelectionChanged,
           contextMenuBuilder: widget.enableInteractiveSelection
               ? monoContextMenuBuilder
               : null,
@@ -513,16 +541,15 @@ class _MonoInputState extends State<MonoInput>
                 ),
                 decoration: BoxDecoration(
                   color: background,
-                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
-                  boxShadow: _isFocused
-                      ? <BoxShadow>[
-                          BoxShadow(
-                            color: theme.colors.ring.withAlpha(72),
-                            blurRadius: 0,
-                            spreadRadius: 3,
-                          ),
-                        ]
+                  boxShadow: widget.invalid
+                      ? theme.focus.ringShadow(
+                          theme.colors.destructive,
+                          alpha: 0.2,
+                        )
+                      : _isFocused
+                      ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
                 ),
                 child: child,

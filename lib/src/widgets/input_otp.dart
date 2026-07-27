@@ -350,16 +350,15 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
                   color: _isEnabled
                       ? theme.colors.background.withAlpha(0)
                       : theme.colors.muted.withAlpha(150),
-                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
-                  boxShadow: focused && focusVisible
-                      ? <BoxShadow>[
-                          BoxShadow(
-                            color: theme.colors.ring.withAlpha(72),
-                            blurRadius: 0,
-                            spreadRadius: 3,
-                          ),
-                        ]
+                  boxShadow: widget.invalid
+                      ? theme.focus.ringShadow(
+                          theme.colors.destructive,
+                          alpha: 0.2,
+                        )
+                      : focused && focusVisible
+                      ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
                 ),
                 child: Padding(

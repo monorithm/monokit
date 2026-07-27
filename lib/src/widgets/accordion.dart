@@ -701,9 +701,7 @@ class _MonoAccordionTriggerStyle {
         : theme.colors.foreground;
     final background = !enabled
         ? theme.colors.card
-        : pressed
-        ? theme.colors.accent
-        : hovered || expanded
+        : pressed || hovered || expanded
         ? theme.colors.muted
         : theme.colors.card;
 

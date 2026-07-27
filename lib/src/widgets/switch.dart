@@ -161,8 +161,8 @@ class _MonoSwitchState extends State<MonoSwitch> {
           final Color trackColor = widget.value
               ? theme.colors.primary
               : _isEnabled
-              ? theme.colors.muted
-              : theme.colors.muted.withAlpha(150);
+              ? theme.colors.input
+              : theme.colors.input.withAlpha(150);
           final Color trackBorder = widget.value
               ? theme.colors.primary
               : _isHovered && _isEnabled
@@ -182,13 +182,7 @@ class _MonoSwitchState extends State<MonoSwitch> {
               border: Border.all(color: trackBorder),
               borderRadius: BorderRadius.circular(theme.radii.full),
               boxShadow: _isFocusVisible
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.ring.withAlpha(72),
-                        blurRadius: 0,
-                        spreadRadius: 3,
-                      ),
-                    ]
+                  ? theme.focus.ringShadow(theme.colors.ring)
                   : null,
             ),
             child: AnimatedAlign(

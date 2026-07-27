@@ -514,16 +514,15 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
                   color: _isEnabled
                       ? theme.colors.background.withAlpha(0)
                       : theme.colors.muted.withAlpha(150),
-                  borderRadius: BorderRadius.circular(theme.radii.md),
+                  borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
-                  boxShadow: _isFocusVisible || _isOpen
-                      ? <BoxShadow>[
-                          BoxShadow(
-                            color: theme.colors.ring.withAlpha(72),
-                            blurRadius: 0,
-                            spreadRadius: 3,
-                          ),
-                        ]
+                  boxShadow: widget.invalid
+                      ? theme.focus.ringShadow(
+                          theme.colors.destructive,
+                          alpha: 0.2,
+                        )
+                      : _isFocusVisible || _isOpen
+                      ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
                 ),
                 child: Row(
@@ -792,8 +791,10 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: theme.colors.popover,
-                  borderRadius: BorderRadius.circular(theme.radii.md),
-                  border: Border.all(color: theme.colors.border),
+                  borderRadius: BorderRadius.circular(theme.radii.lg),
+                  border: Border.all(
+                    color: theme.colors.foreground.withValues(alpha: 0.1),
+                  ),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
                       color: theme.colors.foreground.withAlpha(38),
@@ -892,9 +893,14 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MonokitThemeData theme = MonokitTheme.of(context);
-    final Color foreground = option.enabled
-        ? theme.colors.popoverForeground
-        : theme.colors.mutedForeground;
+    // Highlighted/selected tiles paint the (now green) accent, so their text,
+    // description, and check icon flip to accentForeground to stay legible.
+    final bool onAccent = (selected || highlighted) && option.enabled;
+    final Color foreground = !option.enabled
+        ? theme.colors.mutedForeground
+        : onAccent
+        ? theme.colors.accentForeground
+        : theme.colors.popoverForeground;
     final Color background = selected || highlighted
         ? theme.colors.accent
         : theme.colors.popover.withAlpha(0);
@@ -917,7 +923,7 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
           constraints: BoxConstraints(minHeight: theme.spacing.xxxl),
           decoration: BoxDecoration(
             color: background,
-            borderRadius: BorderRadius.circular(theme.radii.sm),
+            borderRadius: BorderRadius.circular(theme.radii.md),
           ),
           child: Row(
             children: <Widget>[
@@ -936,7 +942,9 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
                       SizedBox(height: theme.spacing.xs),
                       DefaultTextStyle.merge(
                         style: theme.typography.labelMedium.copyWith(
-                          color: theme.colors.mutedForeground,
+                          color: onAccent
+                              ? theme.colors.accentForeground
+                              : theme.colors.mutedForeground,
                         ),
                         child: option.description!,
                       ),
@@ -949,7 +957,7 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
                 MonoIcon(
                   MonoIcons.check,
                   size: theme.spacing.lg,
-                  color: theme.colors.popoverForeground,
+                  color: theme.colors.accentForeground,
                   semanticLabel: 'Selected',
                 ),
               ],

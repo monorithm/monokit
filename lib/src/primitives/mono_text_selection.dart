@@ -167,30 +167,44 @@ class MonoTextSelectionToolbar extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final MonokitThemeData theme = MonokitTheme.of(context);
-    final Widget toolbar = DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colors.popover,
-        borderRadius: BorderRadius.circular(theme.radii.md),
-        border: Border.all(color: theme.colors.border),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: theme.colors.foreground.withValues(alpha: 0.12),
-            blurRadius: theme.spacing.lg,
-            offset: Offset(0, theme.spacing.xs),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(theme.spacing.xs / 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            for (final ContextMenuButtonItem item in buttonItems)
-              _MonoToolbarButton(
-                label: _labelFor(item, theme),
-                onPressed: item.onPressed,
-              ),
+    // Cap the toolbar to the viewport width so a long button list — Android
+    // adds every PROCESS_TEXT app (Share, translators, etc.) to
+    // contextMenuButtonItems — scrolls horizontally instead of overflowing off
+    // the screen edge.
+    final double maxWidth =
+        (MediaQuery.of(context).size.width - theme.spacing.lg * 2)
+            .clamp(0.0, double.infinity);
+    final Widget toolbar = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colors.popover,
+          borderRadius: BorderRadius.circular(theme.radii.md),
+          border: Border.all(color: theme.colors.border),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: theme.colors.foreground.withValues(alpha: 0.12),
+              blurRadius: theme.spacing.lg,
+              offset: Offset(0, theme.spacing.xs),
+            ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(theme.radii.md),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.all(theme.spacing.xs / 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                for (final ContextMenuButtonItem item in buttonItems)
+                  _MonoToolbarButton(
+                    label: _labelFor(item, theme),
+                    onPressed: item.onPressed,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

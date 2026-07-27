@@ -1,3 +1,39 @@
+## Unreleased
+
+Balance the design tokens and components to the shadcn `base-nova` web reference.
+
+### Changed
+- **Tokens.** `accent`/`accentForeground` now the bold brand green
+  (`#007A55`/`#006045` on `#ECFDF5`), matching the reference's `--accent == --primary`.
+  Radius scale rebalanced to the reference multipliers (`sm 6`, `md 8`, `xl 14`) and
+  extended with `xxl 18` / `xxxl 22` / `xxxxl 26`. `overlayScrim` lightened from ~60%
+  to ~10% black. `MonokitFocus` gains a `ringAlpha` (0.5) and a `ringShadow()` helper,
+  and defaults `ringWidth` to 3 — the single source of truth for every control's ring.
+- **Focus rings.** Every control (input, textarea, select, combobox, input-otp,
+  checkbox, radio, switch, button, nav) now draws the ring from `MonokitFocus`
+  at the reference `ring/50` strength; input-like controls gained the previously
+  missing invalid-state ring (`destructive/20`).
+- **Accent application.** Only menu/select items paint the green accent (with an
+  `accentForeground` follow-through on text/icons/description so nothing is
+  dark-on-green); button/tab/accordion/command/navigation/pagination hovers were
+  repointed to neutral `muted`, matching the reference.
+- **Destructive.** Buttons and badges use the soft `destructiveSoft`/`destructiveText`
+  tint instead of a solid fill.
+- **Tooltip.** Inverted-neutral surface (`foreground`/`background`) instead of the brand color.
+- **Overlays.** Popover/hover-card/dropdown/context-menu/select/dialog/command surfaces
+  use a translucent `foreground/10` hairline instead of an opaque border; dialog/drawer/
+  sheet/command scrims are `~10% black + 4px backdrop blur`.
+- **Misc parity.** Input/select/button/otp radius `md → lg`; card radius `lg → xl` +
+  hairline; alert radius `md → lg`; tabs list/trigger radii + active `shadow-sm` +
+  neutral line indicator; progress track `8 → 4px`; spinner inherits `foreground`;
+  switch unchecked track uses `input`; sidebar container uses `sidebar`/`sidebarBorder`;
+  bubble `tinted` uses the soft `primarySoft`.
+- **Polish.** Selected radio is now a filled primary circle with a
+  `primaryForeground` dot (was a hollow ring); `kbd` drops its border/shadow and
+  uses `mutedForeground` text; avatar border is a translucent hairline; empty state
+  gains the reference's dashed rounded-xl frame and muted icon chip.
+- Control sizes (touch targets) intentionally kept larger than the web reference.
+
 ## 0.10.0
 
 Interaction-rebuild scoping, part 2 — the remaining stateful widgets.

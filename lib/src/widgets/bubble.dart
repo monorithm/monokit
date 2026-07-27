@@ -77,9 +77,11 @@ class MonoBubbleStyleResolver {
         null,
       ),
       MonoBubbleVariant.muted => (colors.muted, colors.foreground, null),
+      // Soft primary tint (not the full accent), matching the reference's
+      // desaturated-primary tinted bubble; foreground stays legible in both modes.
       MonoBubbleVariant.tinted => (
-        colors.accent,
-        colors.accentForeground,
+        colors.primarySoft,
+        colors.foreground,
         null,
       ),
       MonoBubbleVariant.outline => (
@@ -297,9 +299,7 @@ class MonoBubbleReaction extends StatelessWidget {
       final isSelected = selected || states.contains(MonoState.selected);
       final isPressed = states.contains(MonoState.pressed);
       final isHovered = states.contains(MonoState.hovered);
-      final background = isSelected
-          ? theme.colors.accent
-          : isPressed || isHovered
+      final background = isSelected || isPressed || isHovered
           ? theme.colors.muted
           : theme.colors.background;
       final borderColor = isSelected ? theme.colors.ring : theme.colors.border;

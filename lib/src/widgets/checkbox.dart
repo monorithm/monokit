@@ -212,13 +212,7 @@ class _MonoCheckboxState extends State<MonoCheckbox> {
               border: Border.all(color: borderColor),
               borderRadius: BorderRadius.circular(theme.radii.sm),
               boxShadow: _isFocusVisible
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.ring.withAlpha(72),
-                        blurRadius: 0,
-                        spreadRadius: 3,
-                      ),
-                    ]
+                  ? theme.focus.ringShadow(theme.colors.ring)
                   : null,
             ),
             child: mark,

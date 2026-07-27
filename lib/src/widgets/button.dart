@@ -78,8 +78,8 @@ class MonoButtonStyleResolver {
       case MonoButtonVariant.outline:
         borderColor = colors.border;
         if (isHovered || isPressed) {
-          background = colors.accent;
-          foreground = colors.accentForeground;
+          background = colors.muted;
+          foreground = colors.foreground;
         }
         break;
       case MonoButtonVariant.secondary:
@@ -95,18 +95,20 @@ class MonoButtonStyleResolver {
         break;
       case MonoButtonVariant.ghost:
         if (isHovered || isPressed) {
-          background = colors.accent;
-          foreground = colors.accentForeground;
+          background = colors.muted;
+          foreground = colors.foreground;
         }
         break;
       case MonoButtonVariant.destructive:
-        background = colors.destructive;
-        foreground = colors.destructiveForeground;
+        // Soft tint (destructive/10-style) rather than a solid fill, matching
+        // the reference; hover deepens the tint toward the solid destructive.
+        background = colors.destructiveSoft;
+        foreground = colors.destructiveText;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
-            colors.foreground,
-            isPressed ? 0.16 : 0.08,
+            colors.destructive,
+            isPressed ? 0.24 : 0.14,
           )!;
         }
         break;
@@ -122,7 +124,7 @@ class MonoButtonStyleResolver {
       background: background,
       foreground: foreground,
       borderColor: borderColor,
-      borderRadius: BorderRadius.circular(theme.radii.md),
+      borderRadius: BorderRadius.circular(theme.radii.lg),
       padding: sizeTokens.padding,
       minimumHeight: sizeTokens.minimumHeight < theme.density.minimumTarget
           ? theme.density.minimumTarget
@@ -428,12 +430,7 @@ class _MonoButtonState extends State<MonoButton> {
                 ? null
                 : Border.all(color: style.borderColor!),
             boxShadow: states.contains(MonoState.focusVisible)
-                ? <BoxShadow>[
-                    BoxShadow(
-                      color: theme.colors.ring.withValues(alpha: 0.35),
-                      spreadRadius: theme.components.button.focusRingWidth,
-                    ),
-                  ]
+                ? theme.focus.ringShadow(theme.colors.ring)
                 : null,
           ),
           child: Center(

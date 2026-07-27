@@ -93,8 +93,8 @@ class MonoBadgeStyleResolver {
         colors.border,
       ),
       MonoBadgeVariant.destructive => (
-        colors.destructive,
-        colors.destructiveForeground,
+        colors.destructiveSoft,
+        colors.destructiveText,
         null,
       ),
       MonoBadgeVariant.success => (

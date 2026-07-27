@@ -70,20 +70,12 @@ class MonoKbd extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colors.muted,
           borderRadius: BorderRadius.circular(theme.radii.sm),
-          border: Border.all(color: theme.colors.border),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: theme.colors.foreground.withValues(alpha: 0.08),
-              offset: Offset(0, theme.spacing.xs / 4),
-              blurRadius: theme.spacing.xs / 2,
-            ),
-          ],
         ),
         child: Padding(
           padding: padding,
           child: Center(
             child: DefaultTextStyle.merge(
-              style: textStyle.copyWith(color: theme.colors.foreground),
+              style: textStyle.copyWith(color: theme.colors.mutedForeground),
               child: child,
             ),
           ),

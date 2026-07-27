@@ -627,8 +627,10 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: theme.colors.popover,
-                    borderRadius: BorderRadius.circular(theme.radii.md),
-                    border: Border.all(color: theme.colors.border),
+                    borderRadius: BorderRadius.circular(theme.radii.lg),
+                    border: Border.all(
+                      color: theme.colors.foreground.withValues(alpha: 0.1),
+                    ),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
                         color: theme.colors.foreground.withAlpha(38),
@@ -701,11 +703,17 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MonokitThemeData theme = MonokitTheme.of(context);
-    final Color foreground = item.destructive
-        ? theme.colors.destructive
-        : item.enabled
-        ? theme.colors.popoverForeground
-        : theme.colors.mutedForeground;
+    // A highlighted item paints the (now green) accent, so its text and icons
+    // flip to accentForeground; a highlighted destructive item uses the soft
+    // destructive tint instead, matching the reference.
+    final bool isHi = highlighted && item.enabled;
+    final Color foreground = !item.enabled
+        ? theme.colors.mutedForeground
+        : item.destructive
+        ? (isHi ? theme.colors.destructiveText : theme.colors.destructive)
+        : isHi
+        ? theme.colors.accentForeground
+        : theme.colors.popoverForeground;
     return Semantics(
       button: true,
       enabled: item.enabled,
@@ -726,15 +734,20 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
               vertical: theme.spacing.sm,
             ),
             decoration: BoxDecoration(
-              color: highlighted
-                  ? theme.colors.accent
-                  : theme.colors.popover.withAlpha(0),
-              borderRadius: BorderRadius.circular(theme.radii.sm),
+              color: !isHi
+                  ? theme.colors.popover.withAlpha(0)
+                  : item.destructive
+                  ? theme.colors.destructiveSoft
+                  : theme.colors.accent,
+              borderRadius: BorderRadius.circular(theme.radii.md),
             ),
             child: Row(
               children: <Widget>[
                 if (item.leading != null) ...<Widget>[
-                  item.leading!,
+                  IconTheme.merge(
+                    data: IconThemeData(color: foreground),
+                    child: item.leading!,
+                  ),
                   SizedBox(width: theme.spacing.sm),
                 ],
                 Expanded(
@@ -747,7 +760,10 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
                 ),
                 if (item.trailing != null) ...<Widget>[
                   SizedBox(width: theme.spacing.sm),
-                  item.trailing!,
+                  IconTheme.merge(
+                    data: IconThemeData(color: foreground),
+                    child: item.trailing!,
+                  ),
                 ],
               ],
             ),

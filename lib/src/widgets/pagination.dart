@@ -200,16 +200,12 @@ class MonoPaginationLink extends StatelessWidget {
     Widget visual(Set<MonoState> states) {
       final active = selected || states.contains(MonoState.pressed);
       final hovered = states.contains(MonoState.hovered);
-      final background = active
-          ? theme.colors.primary
-          : hovered
-          ? theme.colors.accent
+      // Active page is a bordered outline chip (not a filled brand chip);
+      // hover is neutral muted, matching the reference.
+      final background = hovered && !active
+          ? theme.colors.muted
           : theme.colors.background.withValues(alpha: 0);
-      final foreground = active
-          ? theme.colors.primaryForeground
-          : hovered
-          ? theme.colors.accentForeground
-          : theme.colors.foreground;
+      final foreground = theme.colors.foreground;
       return AnimatedContainer(
         duration: MediaQuery.maybeOf(context)?.disableAnimations ?? false
             ? Duration.zero
@@ -222,6 +218,7 @@ class MonoPaginationLink extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(theme.radii.md),
+          border: active ? Border.all(color: theme.colors.border) : null,
         ),
         child: Center(
           child: DefaultTextStyle.merge(

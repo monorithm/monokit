@@ -87,7 +87,7 @@ class MonoAlert extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: background,
-          borderRadius: BorderRadius.circular(theme.radii.md),
+          borderRadius: BorderRadius.circular(theme.radii.lg),
           border: Border.all(color: border),
         ),
         child: Padding(

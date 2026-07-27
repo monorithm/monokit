@@ -1,6 +1,13 @@
 /// Monokit is a compact, token-driven, widgets-first Flutter UI system.
 library;
 
+// The widget layer monokit builds on, re-exported so `package:monokit/monokit.dart`
+// is the single canonical import — mirroring how `material.dart`/`cupertino.dart`
+// re-export it. Only `widgets.dart` is surfaced; Material and Cupertino are never
+// re-exported, keeping the system Material-free by construction. Safe against name
+// collisions because every Monokit symbol carries the `Mono` prefix.
+export 'package:flutter/widgets.dart';
+
 export 'src/app/mono_screen.dart';
 export 'src/app/monokit_app.dart';
 export 'src/widgets/accordion.dart';

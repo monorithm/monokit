@@ -305,13 +305,11 @@ class _MonoNavigationMenuState extends State<MonoNavigationMenu> {
             widget.variant == MonoNavigationMenuVariant.pill && active
             ? theme.colors.primary
             : highlighted
-            ? theme.colors.accent
+            ? theme.colors.muted
             : theme.colors.background.withValues(alpha: 0);
         final foreground =
             widget.variant == MonoNavigationMenuVariant.pill && active
             ? theme.colors.primaryForeground
-            : highlighted
-            ? theme.colors.accentForeground
             : theme.colors.foreground;
         final border =
             widget.variant == MonoNavigationMenuVariant.line && selected
@@ -336,12 +334,7 @@ class _MonoNavigationMenuState extends State<MonoNavigationMenu> {
             borderRadius: BorderRadius.circular(theme.radii.md),
             border: border,
             boxShadow: states.contains(MonoState.focusVisible)
-                ? <BoxShadow>[
-                    BoxShadow(
-                      color: theme.colors.ring.withValues(alpha: 0.35),
-                      spreadRadius: theme.components.button.focusRingWidth,
-                    ),
-                  ]
+                ? theme.focus.ringShadow(theme.colors.ring)
                 : null,
           ),
           child: DefaultTextStyle.merge(

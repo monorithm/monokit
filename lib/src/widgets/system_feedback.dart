@@ -63,38 +63,99 @@ class MonoEmptyState extends StatelessWidget {
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: EdgeInsets.all(t.spacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ?icon,
-                DefaultTextStyle.merge(
-                  style: t.typography.titleLarge,
-                  textAlign: TextAlign.center,
-                  child: title,
-                ),
-                if (description != null) ...[
-                  SizedBox(height: t.spacing.sm),
-                  DefaultTextStyle.merge(
-                    style: t.typography.bodyMedium.copyWith(
-                      color: t.colors.mutedForeground,
+          // Dashed rounded-xl frame around the empty state, matching the
+          // reference's border-dashed container.
+          child: CustomPaint(
+            painter: _DashedRRectBorder(
+              color: t.colors.foreground.withValues(alpha: 0.1),
+              radius: t.radii.xl,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(t.spacing.xxl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (icon != null) ...[
+                    // Icon media chip (bg-muted rounded-lg) with foreground glyph.
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: t.colors.muted,
+                        borderRadius: BorderRadius.circular(t.radii.lg),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(t.spacing.sm),
+                        child: IconTheme.merge(
+                          data: IconThemeData(color: t.colors.foreground),
+                          child: icon!,
+                        ),
+                      ),
                     ),
+                    SizedBox(height: t.spacing.md),
+                  ],
+                  DefaultTextStyle.merge(
+                    style: t.typography.titleLarge,
                     textAlign: TextAlign.center,
-                    child: description!,
+                    child: title,
                   ),
+                  if (description != null) ...[
+                    SizedBox(height: t.spacing.sm),
+                    DefaultTextStyle.merge(
+                      style: t.typography.bodyMedium.copyWith(
+                        color: t.colors.mutedForeground,
+                      ),
+                      textAlign: TextAlign.center,
+                      child: description!,
+                    ),
+                  ],
+                  if (action != null) ...[
+                    SizedBox(height: t.spacing.lg),
+                    action!,
+                  ],
                 ],
-                if (action != null) ...[
-                  SizedBox(height: t.spacing.lg),
-                  action!,
-                ],
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Paints a dashed rounded-rectangle stroke, used for the empty-state frame.
+class _DashedRRectBorder extends CustomPainter {
+  _DashedRRectBorder({required this.color, required this.radius});
+
+  final Color color;
+  final double radius;
+
+  static const double _dash = 6;
+  static const double _gap = 4;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Path path = Path()..addRRect(
+      RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
+    );
+    final Paint paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final double next = distance + _dash;
+        canvas.drawPath(
+          metric.extractPath(distance, next.clamp(0, metric.length)),
+          paint,
+        );
+        distance = next + _gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRRectBorder oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.radius != radius;
 }
 
 class MonokitToastController extends ChangeNotifier {

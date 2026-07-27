@@ -50,17 +50,21 @@ class MonoCard extends StatelessWidget {
     final card = DecoratedBox(
       decoration: BoxDecoration(
         color: background ?? theme.colors.card,
-        borderRadius: BorderRadius.circular(theme.radii.lg),
+        borderRadius: BorderRadius.circular(theme.radii.xl),
         border: showBorder
             ? Border.all(
-                color: borderColor ?? theme.colors.border,
+                // Translucent foreground hairline (ring-1 ring-foreground/10),
+                // matching the reference rather than an opaque border.
+                color:
+                    borderColor ??
+                    theme.colors.foreground.withValues(alpha: 0.1),
                 width: theme.components.card.borderWidth,
               )
             : null,
         boxShadow: theme.elevation.resolve(resolvedTier),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(theme.radii.lg),
+        borderRadius: BorderRadius.circular(theme.radii.xl),
         child: DefaultTextStyle.merge(
           style: theme.typography.bodyMedium.copyWith(
             color: theme.colors.cardForeground,

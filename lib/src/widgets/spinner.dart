@@ -94,7 +94,7 @@ class _MonoSpinnerState extends State<MonoSpinner>
     final strokeWidth = (widget.strokeWidth ?? theme.spacing.xs / 2)
         .clamp(1.0, size / 2)
         .toDouble();
-    final color = widget.color ?? theme.colors.primary;
+    final color = widget.color ?? theme.colors.foreground;
     final animationsDisabled =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final isAnimated = widget.animate && !animationsDisabled;

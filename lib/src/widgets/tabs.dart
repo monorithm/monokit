@@ -504,7 +504,7 @@ class _MonoTabsState extends State<MonoTabs> {
     }
     return BoxDecoration(
       color: theme.colors.muted,
-      borderRadius: BorderRadius.circular(theme.radii.md),
+      borderRadius: BorderRadius.circular(theme.radii.lg),
     );
   }
 
@@ -661,13 +661,11 @@ class _MonoTabsTriggerStyle {
 
     if (variant == MonoTabsVariant.line) {
       final indicatorColor = selected
-          ? theme.colors.primary
+          ? theme.colors.foreground
           : const Color(0x00000000);
       final line = BorderSide(color: indicatorColor, width: 2);
       final decoration = BoxDecoration(
-        color: pressed
-            ? theme.colors.accent
-            : hovered && !selected
+        color: pressed || (hovered && !selected)
             ? theme.colors.muted
             : const Color(0x00000000),
         border: orientation == MonoTabsOrientation.horizontal
@@ -680,7 +678,7 @@ class _MonoTabsTriggerStyle {
                     ? line
                     : BorderSide.none,
               ),
-        borderRadius: BorderRadius.circular(theme.radii.sm),
+        borderRadius: BorderRadius.circular(theme.radii.md),
         boxShadow: focused
             ? <BoxShadow>[
                 BoxShadow(
@@ -692,7 +690,7 @@ class _MonoTabsTriggerStyle {
             : null,
       );
       return _MonoTabsTriggerStyle(
-        foreground: selected ? theme.colors.primary : foreground,
+        foreground: selected ? theme.colors.foreground : foreground,
         decoration: decoration,
       );
     }
@@ -702,13 +700,21 @@ class _MonoTabsTriggerStyle {
       decoration: BoxDecoration(
         color: selected
             ? theme.colors.background
-            : pressed
-            ? theme.colors.accent
-            : hovered
-            ? theme.colors.accent
+            : pressed || hovered
+            ? theme.colors.muted
             : const Color(0x00000000),
         border: focused ? Border.all(color: theme.colors.ring, width: 2) : null,
-        borderRadius: BorderRadius.circular(theme.radii.sm),
+        borderRadius: BorderRadius.circular(theme.radii.md),
+        // Reference active tab carries a subtle shadow-sm lift.
+        boxShadow: selected
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: theme.colors.foreground.withValues(alpha: 0.05),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
     );
   }

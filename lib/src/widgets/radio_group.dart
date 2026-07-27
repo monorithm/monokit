@@ -348,17 +348,15 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
             height: theme.spacing.xl,
             padding: EdgeInsets.all(theme.spacing.xs),
             decoration: BoxDecoration(
-              color: theme.colors.background.withAlpha(0),
+              // Selected radios fill with primary (with a primaryForeground
+              // dot) rather than a hollow ring, matching the reference.
+              color: _isSelected
+                  ? theme.colors.primary
+                  : theme.colors.background.withAlpha(0),
               border: Border.all(color: borderColor),
               shape: BoxShape.circle,
               boxShadow: _isFocusVisible
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colors.ring.withAlpha(72),
-                        blurRadius: 0,
-                        spreadRadius: 3,
-                      ),
-                    ]
+                  ? theme.focus.ringShadow(theme.colors.ring)
                   : null,
             ),
             child: AnimatedScale(
@@ -367,7 +365,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>> {
               curve: theme.motion.curve,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.colors.primary,
+                  color: theme.colors.primaryForeground,
                   shape: BoxShape.circle,
                 ),
               ),

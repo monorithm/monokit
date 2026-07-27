@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -573,7 +575,10 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: widget.dismissible ? widget.onDismiss : null,
-                child: ColoredBox(color: widget.theme.colors.overlayScrim),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                  child: ColoredBox(color: widget.theme.colors.overlayScrim),
+                ),
               ),
             ),
             Align(
