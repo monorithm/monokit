@@ -67,12 +67,21 @@ class MonoBadgeStyleResolver {
       ),
     };
 
+    // Every semantic status is a soft fill with its contrast-safe text, the
+    // same pairing MonoAlert and the destructive button already use. Through
+    // 2.1 this switch had `danger` soft while its three siblings were solid,
+    // so a row of status badges was half saturated fills and half tinted
+    // whispers, with the quiet one being the alarming one.
+    //
+    // `live` stays solid on purpose. It is not a status in the same sense; it
+    // is an attention signal, and the loudness is the point. `neutral` was
+    // already a soft fill.
     final (Color background, Color foreground) = switch (variant) {
       MonoBadgeVariant.neutral => (colors.fill, colors.foreground),
-      MonoBadgeVariant.success => (colors.success, colors.onStatus),
-      MonoBadgeVariant.warning => (colors.warning, colors.onStatus),
+      MonoBadgeVariant.success => (colors.successSoft, colors.successText),
+      MonoBadgeVariant.warning => (colors.warningSoft, colors.warningText),
       MonoBadgeVariant.danger => (colors.dangerSoft, colors.dangerText),
-      MonoBadgeVariant.info => (colors.info, colors.onStatus),
+      MonoBadgeVariant.info => (colors.infoSoft, colors.infoText),
       MonoBadgeVariant.live => (colors.live, colors.onLive),
     };
 
