@@ -32,5 +32,8 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Golden test failure output (transient, regenerated on each failing run)
+test/goldens/failures/
+
 # JavaScript tooling
 node_modules/
