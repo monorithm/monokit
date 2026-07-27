@@ -5,16 +5,13 @@ import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
 /// Semantic treatments for a compact [MonoBadge].
-enum MonoBadgeVariant {
-  primary,
-  secondary,
-  outline,
-  destructive,
-  success,
-  warning,
-  info,
-  live,
-}
+///
+/// A badge reports *state*, so the ladder is the state vocabulary and nothing
+/// else. 2.0 still carried `primary`, `secondary` and `outline` from the
+/// shadcn era: three ways to say "no particular status", one of which drew a
+/// hairline border that the grouped surface model had already abolished. They
+/// collapse into [neutral].
+enum MonoBadgeVariant { neutral, success, warning, danger, info, live }
 
 /// Density options for a [MonoBadge].
 enum MonoBadgeSize { sm, md, lg }
@@ -25,7 +22,6 @@ class MonoResolvedBadgeStyle {
   const MonoResolvedBadgeStyle({
     required this.background,
     required this.foreground,
-    required this.borderColor,
     required this.padding,
     required this.minimumHeight,
     required this.textStyle,
@@ -33,7 +29,6 @@ class MonoResolvedBadgeStyle {
 
   final Color background;
   final Color foreground;
-  final Color? borderColor;
   final EdgeInsets padding;
   final double minimumHeight;
   final TextStyle textStyle;
@@ -72,33 +67,18 @@ class MonoBadgeStyleResolver {
       ),
     };
 
-    final (
-      Color background,
-      Color foreground,
-      Color? borderColor,
-    ) = switch (variant) {
-      MonoBadgeVariant.primary => (colors.primary, colors.onPrimary, null),
-      MonoBadgeVariant.secondary => (colors.fill, colors.foreground, null),
-      MonoBadgeVariant.outline => (
-        colors.page.withValues(alpha: 0),
-        colors.foreground,
-        colors.separator,
-      ),
-      MonoBadgeVariant.destructive => (
-        colors.dangerSoft,
-        colors.dangerText,
-        null,
-      ),
-      MonoBadgeVariant.success => (colors.success, colors.onStatus, null),
-      MonoBadgeVariant.warning => (colors.warning, colors.onStatus, null),
-      MonoBadgeVariant.info => (colors.info, colors.onStatus, null),
-      MonoBadgeVariant.live => (colors.live, colors.onLive, null),
+    final (Color background, Color foreground) = switch (variant) {
+      MonoBadgeVariant.neutral => (colors.fill, colors.foreground),
+      MonoBadgeVariant.success => (colors.success, colors.onStatus),
+      MonoBadgeVariant.warning => (colors.warning, colors.onStatus),
+      MonoBadgeVariant.danger => (colors.dangerSoft, colors.dangerText),
+      MonoBadgeVariant.info => (colors.info, colors.onStatus),
+      MonoBadgeVariant.live => (colors.live, colors.onLive),
     };
 
     return MonoResolvedBadgeStyle(
       background: background,
       foreground: foreground,
-      borderColor: borderColor,
       padding: padding,
       minimumHeight: minimumHeight,
       textStyle: textStyle.copyWith(color: foreground),
@@ -111,7 +91,7 @@ class MonoBadge extends StatelessWidget {
   const MonoBadge({
     super.key,
     required this.child,
-    this.variant = MonoBadgeVariant.primary,
+    this.variant = MonoBadgeVariant.neutral,
     this.size = MonoBadgeSize.md,
     this.dot = false,
     this.dotColor,
@@ -123,7 +103,7 @@ class MonoBadge extends StatelessWidget {
   const MonoBadge.dot({
     super.key,
     this.child,
-    this.variant = MonoBadgeVariant.primary,
+    this.variant = MonoBadgeVariant.neutral,
     this.size = MonoBadgeSize.md,
     this.dotColor,
     this.semanticLabel,
@@ -170,9 +150,6 @@ class MonoBadge extends StatelessWidget {
         decoration: BoxDecoration(
           color: style.background,
           borderRadius: BorderRadius.circular(theme.radii.full),
-          border: style.borderColor == null
-              ? null
-              : Border.all(color: style.borderColor!),
         ),
         child: Padding(
           padding: style.padding,

@@ -1,3 +1,55 @@
+## 2.1.0
+
+The three things 2.0's plan specified and 2.0 shipped without. Small, but they
+are the last places where the system contradicted its own stated rules.
+
+> **Note on the version.** These are enum member removals, so by strict semver
+> this is a major. It is tagged 2.1.0 deliberately: monokit has one consumer,
+> which pins an exact tag, so nothing upgrades into the break unattended. Read
+> the migration below before bumping the pin.
+
+### Breaking
+
+- **`MonoBadgeVariant` 8 → 6:** `{neutral, success, warning, danger, info, live}`.
+  A badge reports state, so the ladder is the state vocabulary and nothing else.
+  `primary`, `secondary` and `outline` were three ways to say "no particular
+  status" — and `outline` drew a hairline border that the grouped surface model
+  had already abolished. All three collapse into `neutral`; `destructive`
+  renames to `danger`, matching the colour role it has resolved to since 2.0.
+- **The default badge is now `neutral`, not `primary`.** An emerald-filled badge
+  competed with the primary button for attention. Badges no longer solicit.
+- **`MonoResolvedBadgeStyle.borderColor` is gone.** `outline` was its only
+  setter, so after the trim it was permanently null.
+- **`MonoTabsVariant {defaultStyle, line}` → `{line, segmented}`, and `line` is
+  now the default.** `defaultStyle` was already documented as "a compact
+  segmented control", so this names what it always was. The default changed
+  because tabs usually sit on a card that is already the focus, where a filled
+  strip is a second competing surface; `segmented` remains right when the choice
+  itself is the content, as in a short filter row.
+
+### Fixed
+
+- **`MonoAccordion`'s panel height now springs.** It was the last spatial
+  animation still on a curve — `AnimatedSize` with `Cubic(0.2, 0, 0, 1)` — which
+  the 2.0 motion doctrine had ruled out and 2.0 then skipped. Height is now
+  driven by `MonoSpringController` on the `spatial` spring. The ceiling on
+  `heightFactor` is deliberately left open so the overshoot reads as momentum;
+  only the floor is clamped, because `Align` asserts on a negative factor and a
+  collapse undershoot is invisible anyway. Mounting an already-expanded item
+  still adopts its resting state outright rather than animating open.
+
+### Migration
+
+```dart
+MonoBadgeVariant.primary     → MonoBadgeVariant.neutral
+MonoBadgeVariant.secondary   → MonoBadgeVariant.neutral
+MonoBadgeVariant.outline     → MonoBadgeVariant.neutral
+MonoBadgeVariant.destructive → MonoBadgeVariant.danger
+MonoTabsVariant.defaultStyle → MonoTabsVariant.segmented
+```
+
+Tabs that relied on the old segmented default must now ask for it explicitly.
+
 ## 2.0.0
 
 Monokit stops mirroring the shadcn `base-nova` web reference and becomes its own

@@ -110,7 +110,7 @@ void main() {
     );
     final badge = const MonoBadgeStyleResolver().resolve(
       theme: theme,
-      variant: MonoBadgeVariant.destructive,
+      variant: MonoBadgeVariant.danger,
       size: MonoBadgeSize.md,
     );
     // Destructive controls use the soft tint (destructiveSoft) with the

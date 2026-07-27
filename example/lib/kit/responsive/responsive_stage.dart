@@ -177,7 +177,7 @@ class _Toolbar extends StatelessWidget {
             ),
           ),
         MonoBadge(
-          variant: MonoBadgeVariant.outline,
+          variant: MonoBadgeVariant.neutral,
           child: Text('$breakpoint · ${width.round()}pt'),
         ),
       ],

@@ -299,7 +299,7 @@ final List<_Scene> _scenes = <_Scene>[
             ),
           ),
           MonoCardContent(
-            child: Text('Honest states, borders, and light — not shadows.'),
+            child: Text('Separated by a step in light, not by a border.'),
           ),
         ],
       ),
