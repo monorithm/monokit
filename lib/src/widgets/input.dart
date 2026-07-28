@@ -7,6 +7,7 @@ import '../states/mono_states_controller.dart';
 import '../primitives/mono_text_scale.dart';
 import '../primitives/mono_text_selection.dart';
 import '../theme/monokit_theme.dart';
+import '../theme/monokit_theme_data.dart';
 
 /// A compact, token-driven text input built directly on [EditableText].
 ///
@@ -59,6 +60,7 @@ class MonoInput extends StatefulWidget {
     this.statesController,
     this.restorationId,
     this.showCounter = false,
+    this.dismissKeyboardOnTapOutside,
   }) : assert(
          controller == null || initialValue == null,
          'Specify either controller or initialValue, not both.',
@@ -135,6 +137,14 @@ class MonoInput extends StatefulWidget {
   /// [maxLength]. The count is always exposed to screen readers via
   /// `maxValueLength`/`currentValueLength` regardless of this flag.
   final bool showCounter;
+
+  /// Whether tapping outside this field drops its focus and the software
+  /// keyboard. Defaults to `MonokitFocus.dismissKeyboardOnTapOutside`.
+  ///
+  /// Set false for a field that must survive taps on the surrounding UI — a
+  /// chat composer whose message list is tappable, say — which restores
+  /// Flutter's platform default (desktop and non-touch pointers still unfocus).
+  final bool? dismissKeyboardOnTapOutside;
 
   @override
   State<MonoInput> createState() => _MonoInputState();
@@ -358,6 +368,32 @@ class _MonoInputState extends State<MonoInput>
     widget.onTap?.call();
   }
 
+  /// Handles a screen-reader activation (VoiceOver/TalkBack double-tap).
+  ///
+  /// [TextSelectionGestureDetector] builds with `excludeFromSemantics: true`,
+  /// so the pointer gestures below contribute no semantics action at all —
+  /// without this the field advertises `textField: true` with an empty action
+  /// set and assistive technology has no way to put the caret in it. Material's
+  /// `TextField` compensates the same way.
+  void _handleSemanticsTap() {
+    if (!_isEnabled) {
+      return;
+    }
+    if (!_controller.selection.isValid) {
+      _controller.selection = TextSelection.collapsed(
+        offset: _controller.text.length,
+      );
+    }
+    _editableTextKey.currentState?.requestKeyboard();
+    widget.onTap?.call();
+  }
+
+  /// Whether a pointer-down outside this field should drop focus. Per-field
+  /// override first, then the theme token.
+  bool _dismissesOnTapOutside(MonokitThemeData theme) =>
+      widget.dismissKeyboardOnTapOutside ??
+      theme.focus.dismissKeyboardOnTapOutside;
+
   /// Wraps the field body in the text-selection gesture detector (tap to place
   /// the caret, double-tap/long-press to select, drag to extend, secondary tap
   /// for the context menu) when selection is enabled; otherwise a plain
@@ -471,6 +507,15 @@ class _MonoInputState extends State<MonoInput>
           onChanged: widget.onChanged,
           onSubmitted: widget.onSubmitted,
           onEditingComplete: widget.onEditingComplete,
+          // Flutter's default ignores touch taps on native Android/iOS, which
+          // leaves the software keyboard up with no way to put it away. Passing
+          // a handler replaces that default outright; passing null restores it.
+          // Which pointers reach here is already decided by the framework's
+          // TextFieldTapRegion grouping, so a tap on another field — or on a
+          // combobox/command-palette panel — never lands in this callback.
+          onTapOutside: _dismissesOnTapOutside(theme)
+              ? (PointerDownEvent event) => _focusNode.unfocus()
+              : null,
         ),
       ],
     );
@@ -486,6 +531,7 @@ class _MonoInputState extends State<MonoInput>
       label: widget.semanticLabel ?? widget.placeholder,
       maxValueLength: widget.maxLength,
       currentValueLength: currentLength,
+      onTap: widget.readOnly ? null : _handleSemanticsTap,
       child: MouseRegion(
         cursor:
             widget.mouseCursor ??
@@ -557,29 +603,36 @@ class _MonoInputState extends State<MonoInput>
       ),
     );
 
-    if (!widget.showCounter || widget.maxLength == null) {
-      return field;
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        field,
-        Padding(
-          padding: EdgeInsets.only(top: theme.spacing.xs),
-          child: Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: ExcludeSemantics(
-              child: Text(
-                '$currentLength/${widget.maxLength}',
-                style: theme.typography.labelMedium.copyWith(
-                  color: theme.colors.foregroundMuted,
+    final Widget decorated = !widget.showCounter || widget.maxLength == null
+        ? field
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              field,
+              Padding(
+                padding: EdgeInsets.only(top: theme.spacing.xs),
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      '$currentLength/${widget.maxLength}',
+                      style: theme.typography.labelMedium.copyWith(
+                        color: theme.colors.foregroundMuted,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
-      ],
-    );
+            ],
+          );
+
+    // Everything the user reads as "the field" joins the tap region, not just
+    // the EditableText's own box: border, padding, prefix, suffix, counter.
+    // Without this a click on the field's own padding counts as a tap *outside*
+    // it — on desktop and the web that unfocuses and then immediately refocuses
+    // via the selection gestures, flickering the ring and tearing down the IME
+    // connection for no reason. Material's TextField wraps the same way.
+    return TextFieldTapRegion(child: decorated);
   }
 }

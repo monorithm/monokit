@@ -1,3 +1,83 @@
+## 3.0.0
+
+Focus handling had two halves and the system only ever shipped one. There were
+ring tokens, a traversal policy and a focus trap — and nothing anywhere that
+*dropped* text-input focus in response to a gesture. On a phone the software
+keyboard could only be closed with its own Done key.
+
+The framework is half the reason. `EditableText`'s default tap-outside action
+deliberately ignores a touch tap on native Android/iOS; it only unfocuses on
+desktop, on the web, or for a non-touch pointer. That is a considered default
+rather than a bug, but it means the policy has to come from the design system,
+and `MonoInput` never set `onTapOutside`. So it came from nowhere.
+
+### Breaking
+
+- **An open compact `MonoScreen` sidebar now makes the page inert.** It took
+  taps, keyboard traversal and screen-reader focus with no scrim in front of it,
+  so the sidebar only ever *looked* modal. The page is now excluded from
+  semantics while it is open, which means its own sidebar trigger no longer
+  appears in the tree or reports an expanded state. Hiding a disclosure control
+  with nothing in its place would strand screen-reader users, so the dismiss
+  barrier over the page is a labelled button instead — `MonokitLabels
+  .closeSidebar`, "Close sidebar" by default. Any test asserting the trigger
+  stays reachable while the sidebar is open needs updating.
+
+### Added
+
+- **`MonokitFocus.dismissKeyboardOnTapOutside`** (default `true`), the token
+  that owns the behaviour. It lives beside the ring geometry on purpose: this
+  group is the system's answer to "what does focus do", and for a long time it
+  only answered "what does focus look like".
+- **Per-field overrides** on `MonoInput`, `MonoTextarea` and `MonoInputOtp`, for
+  the case the token cannot cover — a chat composer whose message list is
+  tappable wants to survive taps on it. Setting `false` restores Flutter's
+  platform default rather than inventing a third behaviour.
+- **`MonoField.focusNode` and `MonoFieldLabel.focusNode`**, the `<label for>`
+  equivalent. Tapping an associated label focuses its control and the label
+  carries a semantics tap action. Opt-in, so existing labels are unchanged.
+- **`MonoOverlayFocusController.restoreTextInputFocus`**, to opt back into
+  full restoration on touch.
+
+### Fixed
+
+- **Tapping away drops the keyboard.** Dismissal lives on the field rather than
+  on the screen: `EditableText`'s `TextFieldTapRegion` already computes
+  "outside" with group semantics, so moving between two fields, or tapping a
+  combobox panel, is correct for free. A screen-level handler would have had to
+  reimplement that grouping and would still miss every field outside a
+  `MonoScreen`. Scroll-to-dismiss falls out of the same change, since a drag
+  opens with a pointer-down outside the region.
+- **`MonoInput` advertised `textField: true` with no semantics action at all.**
+  `TextSelectionGestureDetector` builds with `excludeFromSemantics: true`, so
+  the pointer gestures contribute nothing, and there was no `Semantics.onTap` to
+  make up for it — a VoiceOver or TalkBack double-tap on a Monokit field did
+  nothing. Material's `TextField` compensates the same way.
+- **The whole decorated field joins its tap region**, not just the
+  `EditableText`'s own box. Clicking a field's own padding read as a tap
+  *outside* it, which on desktop unfocused and then immediately refocused via
+  the selection gestures — flickering the ring and tearing down the IME
+  connection for nothing. The combobox and command-palette panels get the same
+  treatment, so picking an option cannot drop the query field out from under a
+  selection still in flight.
+- **Closing an overlay no longer re-raises the keyboard.** Restoring focus is a
+  keyboard-navigation contract and right on desktop; on touch it meant every
+  sheet, drawer, menu and popover close threw the keyboard back up. Restoration
+  into a text input is now declined on touch platforms — which needed saying
+  twice, because the enclosing scope still remembers the field as its most
+  recent focused child and replays that when the modal's own node is disposed.
+- **`MonoDialog` and `MonoCommandPalette` restore focus on close.** Both trapped
+  focus and then abandoned it, never having joined the shared controller.
+- **`MonoDialog` now takes focus when it opens.** `MonoFocusTrap`'s autofocus is
+  skipped when the enclosing scope already has a focused child — which is always
+  the case for an `OverlayEntry` over a live page. Sheet and drawer have always
+  worked around this with an explicit request; dialog had not, so Esc-to-dismiss
+  only worked if you had tabbed into it first.
+
+178 tests, up from 146. The new matrix is per-platform deliberately: every
+mobile row in it is Monokit policy rather than framework behaviour, so nothing
+but a test will notice if it regresses.
+
 ## 2.2.0
 
 One fix. The badge was the last component whose status treatment disagreed with

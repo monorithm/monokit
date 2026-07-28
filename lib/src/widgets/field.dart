@@ -32,6 +32,7 @@ class MonoField extends StatelessWidget {
     this.labelWidth = 144,
     this.responsiveBreakpoint = 600,
     this.spacing,
+    this.focusNode,
   }) : assert(labelWidth >= 0),
        assert(responsiveBreakpoint >= 0);
 
@@ -46,6 +47,11 @@ class MonoField extends StatelessWidget {
   final double responsiveBreakpoint;
   final double? spacing;
 
+  /// The [FocusNode] of the control in [child], forwarded to [MonoFieldLabel]
+  /// so tapping the label focuses the field. Pass the same node you gave the
+  /// control; omit it and the label stays presentation-only, as before.
+  final FocusNode? focusNode;
+
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
@@ -53,7 +59,12 @@ class MonoField extends StatelessWidget {
 
     final Widget labelWidget = label == null
         ? const SizedBox.shrink()
-        : MonoFieldLabel(required: required, enabled: enabled, child: label!);
+        : MonoFieldLabel(
+            required: required,
+            enabled: enabled,
+            focusNode: focusNode,
+            child: label!,
+          );
     final List<Widget> supporting = <Widget>[
       if (description != null)
         MonoFieldDescription(enabled: enabled, child: description!),
@@ -129,40 +140,70 @@ class MonoFieldLabel extends StatelessWidget {
     required this.child,
     this.required = false,
     this.enabled = true,
+    this.focusNode,
   });
 
   final Widget child;
   final bool required;
   final bool enabled;
 
+  /// The control this label names — the equivalent of the web's `label for`.
+  ///
+  /// Supply the same [FocusNode] you passed to the control and the label
+  /// becomes part of its hit target: tapping the text focuses the field, and
+  /// assistive technology gets a tap action on the label instead of a dead
+  /// run of text sitting next to an unrelated control.
+  final FocusNode? focusNode;
+
+  void _focusField() {
+    final node = focusNode;
+    if (!enabled || node == null || !node.canRequestFocus) {
+      return;
+    }
+    node.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
+    final bool associated = focusNode != null;
+    Widget label = Semantics(
+      container: true,
+      onTap: associated && enabled ? _focusField : null,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Flexible(child: child),
+          if (required)
+            Semantics(
+              label: 'required',
+              child: ExcludeSemantics(
+                child: Text(
+                  ' *',
+                  style: theme.typography.labelLarge.copyWith(
+                    color: theme.colors.danger,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (associated) {
+      label = GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _focusField,
+        // Joining the field's tap region keeps a label tap from reading as a
+        // tap *outside* the field it names, which would fight the focus
+        // request by dismissing the keyboard in the same gesture.
+        child: TextFieldTapRegion(child: label),
+      );
+    }
     return DefaultTextStyle.merge(
       style: theme.typography.labelLarge.copyWith(
         color: enabled ? theme.colors.foreground : theme.colors.foregroundMuted,
       ),
-      child: Semantics(
-        container: true,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Flexible(child: child),
-            if (required)
-              Semantics(
-                label: 'required',
-                child: ExcludeSemantics(
-                  child: Text(
-                    ' *',
-                    style: theme.typography.labelLarge.copyWith(
-                      color: theme.colors.danger,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+      child: label,
     );
   }
 }

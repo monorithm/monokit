@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_focus_trap.dart';
 import '../primitives/mono_pressable.dart';
 import '../primitives/mono_overlay_fade.dart';
+import '../primitives/mono_overlay_focus.dart';
 import '../theme/monokit_motion.dart';
 import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
@@ -137,8 +138,13 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
     _scheduleOverlaySync();
   }
 
+  /// Like [MonoDialog], the palette trapped focus but restored nothing on
+  /// close, so running a command dropped the user's place in the page behind.
+  final MonoOverlayFocusController _overlayFocus = MonoOverlayFocusController();
+
   @override
   void dispose() {
+    _overlayFocus.cancelRestore();
     _removeOverlayNow();
     super.dispose();
   }
@@ -161,6 +167,9 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
     }
     if (!_isControlled) {
       setState(() => _uncontrolledOpen = value);
+    }
+    if (!value) {
+      _overlayFocus.requestRestoreOnClose();
     }
     widget.onOpenChange?.call(value);
     if (_isControlled) {
@@ -213,6 +222,7 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
     if (overlay == null) {
       return;
     }
+    _overlayFocus.captureForOpen();
     _entry = OverlayEntry(builder: (context) => _buildOverlay());
     overlay.insert(_entry!);
   }
@@ -236,6 +246,7 @@ class _MonoCommandPaletteState extends State<MonoCommandPalette> {
     _entry?.remove();
     _entry?.dispose();
     _entry = null;
+    _overlayFocus.restoreIfRequested(mounted: mounted);
   }
 
   void _select(MonoCommand command) {
@@ -430,59 +441,64 @@ class _MonoCommandPaletteOverlayState
   Widget build(BuildContext context) {
     final theme = widget.theme;
     final commands = _filteredCommands;
-    final surface = ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: widget.width),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colors.elevated,
-          borderRadius: BorderRadius.circular(theme.radii.xl),
-          boxShadow: theme.elevation.resolve(MonoElevation.floating),
-        ),
-        child: MonoFocusTrap(
-          autofocus: true,
-          child: Focus(
-            onKeyEvent: _handleKey,
-            child: Semantics(
-              explicitChildNodes: true,
-              scopesRoute: true,
-              namesRoute: true,
-              label:
-                  widget.semanticLabel ??
-                  MonokitTheme.of(context).labels.commandPalette,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  _buildQuery(theme),
-                  DecoratedBox(
-                    decoration: BoxDecoration(color: theme.colors.separator),
-                    child: SizedBox(height: theme.spacing.xs / 4),
-                  ),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                    child: commands.isEmpty
-                        ? Padding(
-                            padding: EdgeInsets.all(theme.spacing.xxl),
-                            child:
-                                widget.empty ??
-                                DefaultTextStyle.merge(
-                                  style: theme.typography.bodyMedium.copyWith(
-                                    color: theme.colors.foregroundMuted,
+    // The whole panel joins the query field's tap region, so tapping a command
+    // row or the panel's padding is not a tap *outside* the query field and
+    // will not drop its focus mid-selection.
+    final surface = TextFieldTapRegion(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: widget.width),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colors.elevated,
+            borderRadius: BorderRadius.circular(theme.radii.xl),
+            boxShadow: theme.elevation.resolve(MonoElevation.floating),
+          ),
+          child: MonoFocusTrap(
+            autofocus: true,
+            child: Focus(
+              onKeyEvent: _handleKey,
+              child: Semantics(
+                explicitChildNodes: true,
+                scopesRoute: true,
+                namesRoute: true,
+                label:
+                    widget.semanticLabel ??
+                    MonokitTheme.of(context).labels.commandPalette,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _buildQuery(theme),
+                    DecoratedBox(
+                      decoration: BoxDecoration(color: theme.colors.separator),
+                      child: SizedBox(height: theme.spacing.xs / 4),
+                    ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: widget.maxHeight),
+                      child: commands.isEmpty
+                          ? Padding(
+                              padding: EdgeInsets.all(theme.spacing.xxl),
+                              child:
+                                  widget.empty ??
+                                  DefaultTextStyle.merge(
+                                    style: theme.typography.bodyMedium.copyWith(
+                                      color: theme.colors.foregroundMuted,
+                                    ),
+                                    child: const Text('No commands found.'),
                                   ),
-                                  child: const Text('No commands found.'),
-                                ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            padding: EdgeInsets.all(theme.spacing.xs),
-                            itemCount: commands.length,
-                            itemBuilder: (context, index) => _buildCommand(
-                              theme,
-                              commands[index],
-                              index == _highlightedIndex,
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              padding: EdgeInsets.all(theme.spacing.xs),
+                              itemCount: commands.length,
+                              itemBuilder: (context, index) => _buildCommand(
+                                theme,
+                                commands[index],
+                                index == _highlightedIndex,
+                              ),
                             ),
-                          ),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

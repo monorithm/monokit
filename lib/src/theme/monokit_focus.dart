@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-/// Token group describing Monokit's keyboard focus ring geometry.
+/// Token group describing Monokit's focus ring geometry **and** its focus
+/// dismissal policy.
 ///
 /// The ring color already comes from `MonokitColors.ring`; this group carries
 /// the stroke width, the gap between the focused widget and the ring, and the
@@ -9,12 +10,18 @@ import 'package:flutter/widgets.dart';
 ///
 /// The shadcn web reference paints its focus ring as a 3px band at 50% of the
 /// ring color (`ring/50`), so [ringWidth] defaults to 3 and [ringAlpha] to 0.5.
+///
+/// [dismissKeyboardOnTapOutside] is the one behavioral token here. It lives
+/// alongside the ring on purpose: this group is the system's answer to "what
+/// does focus do", and for a long time it only answered "what does focus look
+/// like" — which is how tap-away-to-dismiss ended up with no owner at all.
 @immutable
 class MonokitFocus {
   const MonokitFocus({
     this.ringWidth = 3,
     this.ringOffset = 2,
     this.ringAlpha = 0.5,
+    this.dismissKeyboardOnTapOutside = true,
   }) : assert(ringAlpha >= 0 && ringAlpha <= 1);
 
   /// Stroke width of the focus ring, in logical pixels.
@@ -26,6 +33,22 @@ class MonokitFocus {
   /// Opacity applied to `MonokitColors.ring` when painting the focus ring,
   /// as a 0–1 fraction. Matches the reference's `ring/50`.
   final double ringAlpha;
+
+  /// Whether a pointer-down outside a focused text field drops its focus, and
+  /// with it the software keyboard.
+  ///
+  /// Flutter's own default only does this on desktop, on the web, or for a
+  /// non-touch pointer — on native Android/iOS a finger tap outside a field is
+  /// deliberately ignored by the framework, which leaves the keyboard up until
+  /// something else takes focus. Monokit opts in by default, because a design
+  /// system that pads its screens around `viewInsets` should also be able to
+  /// put the keyboard away.
+  ///
+  /// "Outside" is computed by the framework's `TextFieldTapRegion` grouping, so
+  /// moving between two fields, or tapping a combobox/command-palette panel,
+  /// never counts as outside. Set false to restore Flutter's default, or
+  /// override a single field with `MonoInput.dismissKeyboardOnTapOutside`.
+  final bool dismissKeyboardOnTapOutside;
 
   /// Builds the focus/validation ring as a solid outset band, so every control
   /// draws the ring identically from these tokens instead of hardcoding the
@@ -46,10 +69,13 @@ class MonokitFocus {
     double? ringWidth,
     double? ringOffset,
     double? ringAlpha,
+    bool? dismissKeyboardOnTapOutside,
   }) => MonokitFocus(
     ringWidth: ringWidth ?? this.ringWidth,
     ringOffset: ringOffset ?? this.ringOffset,
     ringAlpha: ringAlpha ?? this.ringAlpha,
+    dismissKeyboardOnTapOutside:
+        dismissKeyboardOnTapOutside ?? this.dismissKeyboardOnTapOutside,
   );
 
   @override
@@ -57,8 +83,14 @@ class MonokitFocus {
       other is MonokitFocus &&
       ringWidth == other.ringWidth &&
       ringOffset == other.ringOffset &&
-      ringAlpha == other.ringAlpha;
+      ringAlpha == other.ringAlpha &&
+      dismissKeyboardOnTapOutside == other.dismissKeyboardOnTapOutside;
 
   @override
-  int get hashCode => Object.hash(ringWidth, ringOffset, ringAlpha);
+  int get hashCode => Object.hash(
+    ringWidth,
+    ringOffset,
+    ringAlpha,
+    dismissKeyboardOnTapOutside,
+  );
 }

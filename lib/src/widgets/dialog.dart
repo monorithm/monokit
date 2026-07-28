@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../motion/mono_spring_controller.dart';
 import '../primitives/mono_focus_trap.dart';
 import '../primitives/mono_heading.dart';
+import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_pressable.dart';
 import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
@@ -82,8 +83,14 @@ class _MonoDialogState extends State<MonoDialog> {
     _scheduleOverlaySync();
   }
 
+  /// Dialog was the one modal outside this contract: it trapped focus but
+  /// restored nothing on close, so dismissing it left focus wherever the tree
+  /// happened to put it instead of back on the control that opened it.
+  final MonoOverlayFocusController _overlayFocus = MonoOverlayFocusController();
+
   @override
   void dispose() {
+    _overlayFocus.cancelRestore();
     _removeOverlayNow();
     super.dispose();
   }
@@ -94,6 +101,9 @@ class _MonoDialogState extends State<MonoDialog> {
     }
     if (!_isControlled) {
       setState(() => _uncontrolledOpen = value);
+    }
+    if (!value) {
+      _overlayFocus.requestRestoreOnClose();
     }
     widget.onOpenChange?.call(value);
     _scheduleOverlaySync();
@@ -141,6 +151,7 @@ class _MonoDialogState extends State<MonoDialog> {
     if (overlay == null) {
       return;
     }
+    _overlayFocus.captureForOpen();
     _entry = OverlayEntry(builder: (overlayContext) => _buildOverlay());
     overlay.insert(_entry!);
   }
@@ -180,6 +191,7 @@ class _MonoDialogState extends State<MonoDialog> {
     _entry?.remove();
     _entry?.dispose();
     _entry = null;
+    _overlayFocus.restoreIfRequested(mounted: mounted);
   }
 
   @override
@@ -225,6 +237,16 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
   late final MonoSpringController _presence;
   bool _reportedExit = false;
 
+  /// The dialog's own scope node.
+  ///
+  /// `MonoFocusTrap`'s autofocus alone is not enough: an [OverlayEntry] modal
+  /// sits in a scope that already has a focused child whenever the page had
+  /// one, and an autofocus is skipped in that case. Sheet and drawer have
+  /// always requested focus explicitly for this reason; dialog did not, so it
+  /// left focus on the page behind it — Esc handling and focus restoration both
+  /// silently depended on the user having tabbed into the dialog first.
+  late final FocusNode _focusNode;
+
   /// Read through the token rather than
   /// `platformDispatcher.accessibilityFeatures` — that route bypassed
   /// MediaQuery entirely, so it also ignored any test or host override.
@@ -235,6 +257,12 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
   void initState() {
     super.initState();
     _presence = MonoSpringController(vsync: this)..addListener(_onTick);
+    _focusNode = FocusNode(debugLabel: 'MonoDialog');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -272,6 +300,7 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
   void dispose() {
     _presence.removeListener(_onTick);
     _presence.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -284,6 +313,7 @@ class _MonoDialogOverlayState extends State<_MonoDialogOverlay>
       child: MonoFocusTrap(
         autofocus: true,
         child: Focus(
+          focusNode: _focusNode,
           onKeyEvent: (_, event) {
             if (widget.dismissible &&
                 event is KeyDownEvent &&

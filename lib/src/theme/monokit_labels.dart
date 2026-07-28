@@ -25,6 +25,7 @@ class MonokitLabels {
     this.drawer = 'Drawer',
     this.openDrawer = 'Open drawer',
     this.closeDrawer = 'Close drawer',
+    this.closeSidebar = 'Close sidebar',
     this.togglePopover = 'Toggle popover',
     this.closePopover = 'Close popover',
     this.dismissPopover = 'Dismiss popover',
@@ -49,6 +50,11 @@ class MonokitLabels {
   final String drawer;
   final String openDrawer;
   final String closeDrawer;
+
+  /// Names the dismiss barrier over the page while a compact [MonoScreen]
+  /// sidebar is open. The page's own toggle is concealed behind the sidebar at
+  /// that point, so this is the labelled way back out.
+  final String closeSidebar;
   final String togglePopover;
   final String closePopover;
   final String dismissPopover;
@@ -76,6 +82,7 @@ class MonokitLabels {
     String? drawer,
     String? openDrawer,
     String? closeDrawer,
+    String? closeSidebar,
     String? togglePopover,
     String? closePopover,
     String? dismissPopover,
@@ -100,6 +107,7 @@ class MonokitLabels {
       drawer: drawer ?? this.drawer,
       openDrawer: openDrawer ?? this.openDrawer,
       closeDrawer: closeDrawer ?? this.closeDrawer,
+      closeSidebar: closeSidebar ?? this.closeSidebar,
       togglePopover: togglePopover ?? this.togglePopover,
       closePopover: closePopover ?? this.closePopover,
       dismissPopover: dismissPopover ?? this.dismissPopover,
@@ -128,6 +136,7 @@ class MonokitLabels {
       drawer == other.drawer &&
       openDrawer == other.openDrawer &&
       closeDrawer == other.closeDrawer &&
+      closeSidebar == other.closeSidebar &&
       togglePopover == other.togglePopover &&
       closePopover == other.closePopover &&
       dismissPopover == other.dismissPopover &&
@@ -153,6 +162,7 @@ class MonokitLabels {
     drawer,
     openDrawer,
     closeDrawer,
+    closeSidebar,
     togglePopover,
     closePopover,
     dismissPopover,

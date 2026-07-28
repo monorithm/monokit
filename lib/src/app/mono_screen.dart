@@ -508,7 +508,47 @@ class _MonoScreenState extends State<MonoScreen>
                     onHorizontalDragUpdate: (d) =>
                         _onSidebarDragUpdate(d, opensLeft),
                     onHorizontalDragEnd: (d) => _onSidebarDragEnd(d, opensLeft),
-                    child: pageChild,
+                    // The sidebar only *looks* modal: pushed aside, the page
+                    // kept taking taps, keyboard traversal and screen-reader
+                    // focus. Gate all three on the open state — the barrier
+                    // sits inside the drag detector so a swipe still closes,
+                    // and it is opaque so nothing reaches page content below.
+                    //
+                    // The barrier carries the dismiss affordance itself. It has
+                    // to: the page's own sidebar trigger is inside the region
+                    // being excluded, so without a labelled control here a
+                    // screen-reader user would have no way back out.
+                    child: ListenableBuilder(
+                      listenable: _sidebarController,
+                      child: pageChild,
+                      builder: (context, child) {
+                        final isOpen = _sidebarController.isOpen;
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            ExcludeFocus(
+                              excluding: isOpen,
+                              child: ExcludeSemantics(
+                                excluding: isOpen,
+                                child: child!,
+                              ),
+                            ),
+                            if (isOpen)
+                              Positioned.fill(
+                                child: Semantics(
+                                  button: true,
+                                  label: theme.labels.closeSidebar,
+                                  onTap: _sidebarController.close,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: _sidebarController.close,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                   )
                 : pageChild,
           );

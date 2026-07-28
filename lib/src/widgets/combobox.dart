@@ -676,53 +676,59 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final options = _filteredOptions;
-    final surface = DecoratedBox(
-      decoration: BoxDecoration(
-        color: theme.colors.elevated,
-        borderRadius: BorderRadius.circular(theme.radii.lg),
-        boxShadow: theme.elevation.resolve(MonoElevation.raised),
-      ),
-      child: FocusScope(
-        autofocus: true,
-        child: Focus(
-          onKeyEvent: _handleKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              _buildSearch(theme),
-              DecoratedBox(
-                decoration: BoxDecoration(color: theme.colors.separator),
-                child: SizedBox(height: theme.spacing.xs / 4),
-              ),
-              // Flexible lets the list yield to the search field when the
-              // whole popup is height-capped by the anchored layout, so the
-              // search + divider + list total never exceeds available space.
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                  child: options.isEmpty
-                      ? Padding(
-                          padding: EdgeInsets.all(theme.spacing.lg),
-                          child: DefaultTextStyle.merge(
-                            style: theme.typography.bodyMedium.copyWith(
-                              color: theme.colors.foregroundMuted,
-                            ),
-                            child: const Text('No options found.'),
-                          ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.all(theme.spacing.xs),
-                          itemCount: options.length,
-                          itemBuilder: (context, index) => _buildOption(
-                            theme,
-                            options[index],
-                            index == _highlightedIndex,
-                          ),
-                        ),
+    // The whole panel joins the text field's tap region, so tapping an option,
+    // the divider or the padding is not a tap *outside* the search field —
+    // otherwise picking an option would drop the query field's focus (and the
+    // keyboard) out from under the selection that is still in flight.
+    final surface = TextFieldTapRegion(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colors.elevated,
+          borderRadius: BorderRadius.circular(theme.radii.lg),
+          boxShadow: theme.elevation.resolve(MonoElevation.raised),
+        ),
+        child: FocusScope(
+          autofocus: true,
+          child: Focus(
+            onKeyEvent: _handleKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                _buildSearch(theme),
+                DecoratedBox(
+                  decoration: BoxDecoration(color: theme.colors.separator),
+                  child: SizedBox(height: theme.spacing.xs / 4),
                 ),
-              ),
-            ],
+                // Flexible lets the list yield to the search field when the
+                // whole popup is height-capped by the anchored layout, so the
+                // search + divider + list total never exceeds available space.
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: widget.maxHeight),
+                    child: options.isEmpty
+                        ? Padding(
+                            padding: EdgeInsets.all(theme.spacing.lg),
+                            child: DefaultTextStyle.merge(
+                              style: theme.typography.bodyMedium.copyWith(
+                                color: theme.colors.foregroundMuted,
+                              ),
+                              child: const Text('No options found.'),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.all(theme.spacing.xs),
+                            itemCount: options.length,
+                            itemBuilder: (context, index) => _buildOption(
+                              theme,
+                              options[index],
+                              index == _highlightedIndex,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

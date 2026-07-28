@@ -46,6 +46,7 @@ class MonoTextarea extends MonoInput {
     super.statesController,
     super.restorationId,
     super.showCounter,
+    super.dismissKeyboardOnTapOutside,
     TextInputType? keyboardType,
     TextInputAction? textInputAction,
   }) : assert(minLines != null && minLines > 0),
