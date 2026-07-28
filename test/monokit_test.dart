@@ -358,25 +358,57 @@ void main() {
         find.semantics.byLabel(RegExp('Sidebar destination')),
         findsOneWidget,
       );
-      final openTrigger = find.semantics
-          .byLabel(RegExp('Toggle navigation'))
-          .evaluate()
-          .single;
-      expect(
-        openTrigger.getSemanticsData().flagsCollection.toStrings().contains(
-          'hasExpandedState',
-        ),
-        isTrue,
-      );
-      expect(
-        openTrigger.getSemanticsData().flagsCollection.toStrings().contains(
-          'isExpanded',
-        ),
-        isTrue,
-      );
+      // The page — trigger included — is inert while the sidebar is open, so
+      // the trigger is no longer in the tree to report an expanded state. The
+      // barrier over the page carries the labelled way back out instead.
+      expect(find.semantics.byLabel(RegExp('Toggle navigation')), findsNothing);
+      expect(find.semantics.byLabel(RegExp('Close sidebar')), findsOneWidget);
       semantics.dispose();
     },
   );
+
+  testWidgets('open compact sidebar makes the page inert', (tester) async {
+    final controller = MonoSidebarController();
+    addTearDown(controller.dispose);
+    var pageTaps = 0;
+
+    await tester.pumpWidget(
+      _host(
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 390,
+            height: 600,
+            child: MonoScreen(
+              sidebarController: controller,
+              sidebar: const MonoSidebar(child: Text('Sidebar')),
+              body: MonoButton(
+                onPressed: () => pageTaps++,
+                child: const Text('Page action'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Page action'));
+    await tester.pump();
+    expect(pageTaps, 1, reason: 'page is live while the sidebar is closed');
+
+    controller.open();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // The page is translated aside, so tap the sliver of it still on screen
+    // rather than the button's original slot. The barrier takes the tap and
+    // closes; the button underneath must never see it.
+    await tester.tapAt(const Offset(370, 300));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(pageTaps, 1, reason: 'page must not take taps behind the sidebar');
+    expect(controller.isOpen, isFalse, reason: 'tapping the page dismisses');
+  });
 
   testWidgets('compact screen paints an opaque page over the concealed sidebar', (
     tester,

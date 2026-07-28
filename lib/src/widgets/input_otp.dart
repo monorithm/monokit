@@ -32,6 +32,7 @@ class MonoInputOtp extends StatefulWidget {
     this.obscuringCharacter = '•',
     this.cellSize,
     this.spacing,
+    this.dismissKeyboardOnTapOutside,
   }) : assert(length > 0),
        assert(
          !controlled || defaultValue == null,
@@ -52,6 +53,11 @@ class MonoInputOtp extends StatefulWidget {
   final bool enabled;
   final bool invalid;
   final bool autofocus;
+
+  /// Whether tapping outside the code drops focus and the software keyboard.
+  /// Defaults to `MonokitFocus.dismissKeyboardOnTapOutside`. Moving between
+  /// cells is never "outside" — every cell shares one tap region group.
+  final bool? dismissKeyboardOnTapOutside;
 
   /// Optional focus node for the first cell.
   final FocusNode? focusNode;
@@ -313,6 +319,9 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
     final bool focusVisible = _statesController.contains(
       MonoState.focusVisible,
     );
+    final bool dismissOnTapOutside =
+        widget.dismissKeyboardOnTapOutside ??
+        theme.focus.dismissKeyboardOnTapOutside;
     final List<Widget> fields = <Widget>[];
     for (int index = 0; index < _controllers.length; index++) {
       final bool focused = _focusNodes[index].hasFocus;
@@ -388,6 +397,13 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
                         _focusNodes[index + 1].requestFocus();
                       }
                     },
+                    // Every cell defaults to the same tap region group, so
+                    // this only fires for a tap outside the whole code —
+                    // hopping between cells never reaches it.
+                    onTapOutside: dismissOnTapOutside
+                        ? (PointerDownEvent event) =>
+                              _focusNodes[index].unfocus()
+                        : null,
                   ),
                 ),
               ),
@@ -398,10 +414,14 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
     }
     return FocusTraversalGroup(
       policy: WidgetOrderTraversalPolicy(),
-      child: Semantics(
-        container: true,
-        label: widget.semanticLabel ?? 'One-time code',
-        child: Wrap(spacing: gap, runSpacing: gap, children: fields),
+      // The gaps between cells belong to the code, not to the page behind it,
+      // so the whole row joins the tap region rather than just the cell boxes.
+      child: TextFieldTapRegion(
+        child: Semantics(
+          container: true,
+          label: widget.semanticLabel ?? 'One-time code',
+          child: Wrap(spacing: gap, runSpacing: gap, children: fields),
+        ),
       ),
     );
   }
