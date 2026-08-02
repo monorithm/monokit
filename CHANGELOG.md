@@ -1,3 +1,13 @@
+# Changelog
+
+All notable changes to monokit are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
+follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
+
+3.0.0 is the first version published to pub.dev. Everything below it was
+released privately, and is kept here because what changed in those versions is
+still the history of this API.
+
 ## 3.0.0
 
 Focus handling had two halves and the system only ever shipped one. There were
@@ -229,9 +239,11 @@ This is a hard break. There are no deprecation shims.
 - **`MonoSheet` drew a drag handle it could not honour** — there was no drag
   gesture anywhere in the library.
 
-## Unreleased
+## Unreleased (folded into 2.0.0)
 
-Balance the design tokens and components to the shadcn `base-nova` web reference.
+Balance the design tokens and components to the shadcn `base-nova` web
+reference. Never carried a version of its own — it landed before the 2.0.0 tag
+and shipped inside it.
 
 ### Changed
 - **Tokens.** `accent`/`accentForeground` now the bold brand green

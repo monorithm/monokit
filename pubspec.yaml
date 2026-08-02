@@ -1,16 +1,24 @@
 name: monokit
-description: A compact, token-driven, widgets-first Flutter design system for Monorithm.
+description: "A token-driven, widgets-first Flutter design system: light and dark themes, forms, overlays and app shells, built on widgets rather than Material."
 version: 3.0.0
-homepage: https://github.com/monorithm/monokit
 repository: https://github.com/monorithm/monokit
+issue_tracker: https://github.com/monorithm/monokit/issues
 topics:
   - design-system
+  - design-tokens
   - widgets
+  - theme
   - ui
 
 environment:
+  # The floor CI proves, not the floor the widgets would tolerate. `sdk:
+  # ^3.12.2` already excludes every Flutter below the 3.44 line -- 3.44.8 is
+  # the release that ships Dart 3.12.2 -- so the ">=3.35.0" this used to claim
+  # was never reachable. Lowering a floor later is safe for consumers; raising
+  # one is breaking, which is why it is worth being honest about now, before
+  # there is a published version to break.
   sdk: ^3.12.2
-  flutter: ">=3.35.0"
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:

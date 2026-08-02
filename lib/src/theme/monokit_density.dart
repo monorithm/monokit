@@ -37,10 +37,10 @@ final class MonokitDensity {
   /// Platform first, width second.
   ///
   /// A desktop platform is always pointer — it has a cursor regardless of
-  /// window size. A touch platform in a window at or past [MonokitBreakpoints
-  /// .expanded] is treated as pointer, because at that size it is an iPad with
-  /// a keyboard or an Android device in desktop mode far more often than it is
-  /// a phone. Below that, touch.
+  /// window size. A touch platform in a window at or past
+  /// [MonokitBreakpoints.expanded] is treated as pointer, because at that size
+  /// it is an iPad with a keyboard or an Android device in desktop mode far
+  /// more often than it is a phone. Below that, touch.
   ///
   /// Pure by design: no `BuildContext`, so it is table-testable directly.
   static MonoDensity resolveFrom({

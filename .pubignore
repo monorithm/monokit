@@ -1,0 +1,55 @@
+# NOTE: a `.pubignore` *replaces* `.gitignore` for the directory it sits in --
+# it does not add to it. So every rule the root `.gitignore` carries has to be
+# repeated here, or build output ships in the archive.
+
+# --- Mirrors .gitignore -----------------------------------------------------
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.work/
+migrate_working_dir/
+
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# NOTE: no leading slash on the build outputs, deliberately. An unanchored
+# pattern matches at any depth, which is what keeps `example/build/` (GBs) out
+# of the archive even though the root `.gitignore` anchors its own copy --
+# `example/.gitignore` is still in force for that subtree, but relying on it
+# alone means one deleted file away from a several-GB publish attempt.
+pubspec.lock
+**/doc/api/
+.dart_tool/
+.flutter-plugins-dependencies
+build/
+coverage/
+
+node_modules/
+
+# --- Published-archive only -------------------------------------------------
+# Reference-image baselines: 64 PNGs, generated on Linux CI and only meaningful
+# against that renderer's anti-aliasing (see .github/workflows/goldens.yml).
+# They are three quarters of the archive and nothing a consumer can run. The
+# directory goes whole rather than just `images/`, because `golden_test.dart`
+# is the only thing that reads them and a suite pointing at missing baselines
+# is worse than no suite.
+/test/goldens/
+
+# Commit tooling: commitlint and lefthook run in the repo, not for consumers.
+/.github/
+/package.json
+/bun.lock
+/commitlint.config.cjs
+/lefthook.yml
+
+# Tag configuration for `flutter test --exclude-tags golden`, which is a
+# contributor concern -- the archive no longer carries the golden suite.
+/dart_test.yaml
