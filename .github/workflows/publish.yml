@@ -1,0 +1,152 @@
+name: Publish to pub.dev
+
+# Tag pushes only. pub.dev authorises a publish by checking that the run was
+# triggered by a tag matching the pattern configured on the package's admin
+# page, so a `workflow_dispatch` run cannot publish however it is invoked -- it
+# would run the whole suite and then be refused at the OIDC exchange. Leaving
+# the option out is clearer than offering a button that always fails.
+#
+# PREREQUISITE: automated publishing has to be enabled on pub.dev first
+# (Admin ▸ Automated publishing ▸ GitHub Actions, repository `monorithm/monokit`,
+# tag pattern `v{{version}}`), and that page only exists once the package does.
+# The first release therefore goes out by hand -- `flutter pub publish` from a
+# logged-in machine -- and every version after it comes through here.
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+env:
+  FLUTTER_VERSION: "3.44.8"
+
+jobs:
+  # Publishing is irreversible -- a version number can never be reused on
+  # pub.dev -- so everything that gates a normal PR gates this too.
+  verify:
+    name: Verify the package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Verify formatting
+        run: git ls-files '*.dart' | xargs dart format --output=none --set-exit-if-changed
+
+      - run: flutter analyze
+
+      # Includes the golden suite. Its baselines are Linux-generated, which is
+      # exactly what this runner is -- the check would be meaningless anywhere
+      # else, and skipping it here would let a visual regression ship.
+      - run: flutter test
+
+      # The tag is the source of truth for what is being published; a mismatch
+      # against pubspec means the wrong thing is about to ship. Unconditional,
+      # because a tag push is the only way to get here.
+      - name: Verify the tag matches pubspec version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PUBSPEC_VERSION="$(grep '^version:' pubspec.yaml | cut -d' ' -f2)"
+          if [ "$TAG_VERSION" != "$PUBSPEC_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME implies $TAG_VERSION but pubspec.yaml says $PUBSPEC_VERSION."
+            exit 1
+          fi
+
+      # pub.dev rejects a duplicate version, but only after the archive is
+      # built and uploaded. Failing here instead says plainly that the version
+      # was never bumped, which is what actually happened.
+      - name: Verify the version is not already published
+        run: |
+          VERSION="$(grep '^version:' pubspec.yaml | cut -d' ' -f2)"
+          if curl -sf "https://pub.dev/api/packages/monokit/versions/$VERSION" >/dev/null; then
+            echo "::error::monokit $VERSION is already on pub.dev. A version number cannot be reused."
+            exit 1
+          fi
+
+      # pub.dev renders the CHANGELOG on the package page, and a release with
+      # nothing written about it is the easiest thing to forget.
+      - name: Verify the CHANGELOG mentions this version
+        run: |
+          VERSION="$(grep '^version:' pubspec.yaml | cut -d' ' -f2)"
+          if ! grep -qF "## $VERSION" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## $VERSION' section."
+            exit 1
+          fi
+
+      # The bundled IBM Plex fonts are the one part of this package not covered
+      # by its own MIT licence. Shipping them without the OFL text would breach
+      # the licence they are redistributed under, and the failure mode is a
+      # legal one rather than anything a test would catch.
+      - name: Verify the bundled fonts carry their licence
+        run: |
+          if [ ! -f fonts/OFL.txt ]; then
+            echo "::error::fonts/ ships IBM Plex but fonts/OFL.txt is missing."
+            exit 1
+          fi
+
+  # The example ships in the archive and is the first thing anyone runs. A
+  # broken one is a bad first impression that no amount of README makes up for.
+  example:
+    name: Verify the example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: example
+        run: flutter analyze
+
+      - name: Run tests
+        working-directory: example
+        run: flutter test
+
+      - name: Build web
+        working-directory: example
+        run: flutter build web --no-web-resources-cdn
+
+  publish:
+    needs: [verify, example]
+    runs-on: ubuntu-latest
+    # Gated on a GitHub environment with required reviewers: once automated
+    # publishing is enabled, a tag push is enough to release, so the approval
+    # is the last human checkpoint before an irreversible upload.
+    environment: pub.dev
+    permissions:
+      # The only permission the OIDC exchange needs. No long-lived pub.dev
+      # credential is stored anywhere.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      # NOT dart-lang/setup-dart/.github/workflows/publish.yml@v1: that reusable
+      # workflow provisions the Dart SDK alone, and this package depends on
+      # `flutter` and `flutter_test` from the SDK, so `pub get` cannot resolve
+      # there and validation fails before it starts.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      # With `id-token: write` GitHub injects ACTIONS_ID_TOKEN_REQUEST_URL and
+      # ACTIONS_ID_TOKEN_REQUEST_TOKEN, which pub detects and exchanges with
+      # pub.dev on its own. Nothing to configure, no secret to rotate.
+      - run: flutter pub publish --force

@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// Chrome, color, and opacity animate on **curves** (default [standard] /
 /// [monoOut]); genuine expressive moments — a confirmed outcome, going live —
-/// animate on **springs** ([spatialSpring] / [effectSpring] / [celebrateSpring]).
+/// animate on **springs** ([spatial] / [effect] / [celebrate]).
 /// Components should pull from here rather than hand-rolling durations.
 @immutable
 class MonokitMotion {
