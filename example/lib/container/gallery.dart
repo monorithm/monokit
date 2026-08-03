@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 import '../kit/responsive/viewport_controller.dart';
 import '../navigation/router.dart';

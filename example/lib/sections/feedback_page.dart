@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 import '../kit/component_section.dart';
 import '../kit/page_hero.dart';

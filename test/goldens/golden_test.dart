@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// Golden (reference-image) suite for the Monokit design language.
 ///
@@ -148,12 +148,12 @@ Future<void> _pumpOverlayScene(
 
 Future<void> _loadPlexFonts() async {
   const families = <String, List<String>>{
-    'packages/monokit/IBM Plex Sans': <String>['fonts/IBMPlexSans.ttf'],
-    'packages/monokit/IBM Plex Mono': <String>[
+    'packages/monokit_ui/IBM Plex Sans': <String>['fonts/IBMPlexSans.ttf'],
+    'packages/monokit_ui/IBM Plex Mono': <String>[
       'fonts/IBMPlexMono-Regular.ttf',
       'fonts/IBMPlexMono-Medium.ttf',
     ],
-    'packages/monokit/IBM Plex Serif': <String>[
+    'packages/monokit_ui/IBM Plex Serif': <String>[
       'fonts/IBMPlexSerif-Regular.ttf',
       'fonts/IBMPlexSerif-SemiBold.ttf',
     ],

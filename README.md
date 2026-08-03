@@ -26,13 +26,17 @@ registration and no network fetch.
 ## Install
 
 ```bash
-flutter pub add monokit
+flutter pub add monokit_ui
 ```
+
+The package is `monokit_ui` on pub.dev. The design system, its widgets and its
+theme classes are all still named Monokit — only the package and its import
+path carry the suffix.
 
 ## Start an app
 
 ```dart
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 void main() {
   runApp(
@@ -63,12 +67,12 @@ class DashboardPage extends StatelessWidget {
 }
 ```
 
-`package:monokit/monokit.dart` re-exports `package:flutter/widgets.dart`, the
-way `material.dart` does — one import gets you both. The trade-off is that every
-Flutter name in `widgets.dart` lands in monokit's namespace, so an app with its
-own `Page`, `Action` or `Route` will hit an ambiguous-import error and needs to
-`hide` one side. Prefixing monokit's own symbols with `Mono` does not help: the
-collision is between Flutter's names and yours.
+`package:monokit_ui/monokit_ui.dart` re-exports `package:flutter/widgets.dart`,
+the way `material.dart` does — one import gets you both. The trade-off is that
+every Flutter name in `widgets.dart` lands in monokit's namespace, so an app
+with its own `Page`, `Action` or `Route` will hit an ambiguous-import error and
+needs to `hide` one side. Prefixing monokit's own symbols with `Mono` does not
+help: the collision is between Flutter's names and yours.
 
 ## Theming
 

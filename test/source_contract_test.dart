@@ -44,11 +44,11 @@ void main() {
   });
 
   test('the barrel re-exports widgets.dart, and only widgets.dart', () {
-    // monokit.dart is the single canonical import, so it re-exports
+    // monokit_ui.dart is the single canonical import, so it re-exports
     // package:flutter/widgets.dart. Material and Cupertino must never be
     // re-exported — that is what keeps the system Material-free by
     // construction.
-    final barrel = File('lib/monokit.dart').readAsStringSync();
+    final barrel = File('lib/monokit_ui.dart').readAsStringSync();
     final flutterExports = RegExp(
       r"^\s*export\s+'package:flutter/([\w.]+)'",
       multiLine: true,

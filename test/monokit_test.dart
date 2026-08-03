@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 Widget _host(Widget child, {MonokitThemeData? theme}) {
   final data = theme ?? MonokitThemeData.light();

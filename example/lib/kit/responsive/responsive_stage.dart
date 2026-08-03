@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// A named breakpoint preset, resolved live against [MonokitBreakpoints].
 class _Preset {

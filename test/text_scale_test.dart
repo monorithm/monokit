@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 Widget _scaled(Widget child, double scale) {
   final MonokitThemeData theme = MonokitThemeData.light();

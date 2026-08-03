@@ -75,9 +75,9 @@ class MonokitTypography {
   /// works out of the box (no font registration required). This is the default
   /// typography for [MonokitThemeData.light]/[MonokitThemeData.dark].
   factory MonokitTypography.plex() => MonokitTypography.withFamilies(
-    sans: 'packages/monokit/IBM Plex Sans',
-    mono: 'packages/monokit/IBM Plex Mono',
-    serif: 'packages/monokit/IBM Plex Serif',
+    sans: 'packages/monokit_ui/IBM Plex Sans',
+    mono: 'packages/monokit_ui/IBM Plex Mono',
+    serif: 'packages/monokit_ui/IBM Plex Serif',
   );
 
   final String? sansFamily;

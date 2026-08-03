@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// Shared test host that installs the Monokit theme plus a Navigator/Overlay
 /// stack (via [MonokitApp]) without pulling in Material. Use for a11y and focus

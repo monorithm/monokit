@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 import '../../container/app_scope.dart';
 import 'viewport_controller.dart';

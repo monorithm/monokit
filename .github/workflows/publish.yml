@@ -63,8 +63,8 @@ jobs:
       - name: Verify the version is not already published
         run: |
           VERSION="$(grep '^version:' pubspec.yaml | cut -d' ' -f2)"
-          if curl -sf "https://pub.dev/api/packages/monokit/versions/$VERSION" >/dev/null; then
-            echo "::error::monokit $VERSION is already on pub.dev. A version number cannot be reused."
+          if curl -sf "https://pub.dev/api/packages/monokit_ui/versions/$VERSION" >/dev/null; then
+            echo "::error::monokit_ui $VERSION is already on pub.dev. A version number cannot be reused."
             exit 1
           fi
 

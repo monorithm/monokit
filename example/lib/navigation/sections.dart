@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// Sidebar metadata for a gallery destination. `★`-grouped sections are
 /// Monorithm's differentiator families.

@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 import '../kit/app_image.dart';
 import '../kit/asset_catalog.dart';

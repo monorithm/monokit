@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// Chrome for a scenario "app screen": a status-bar-aware header with an
 /// optional back button and actions, a body, and an optional pinned bottom bar.
