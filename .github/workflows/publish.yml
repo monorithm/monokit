@@ -25,7 +25,7 @@ jobs:
     name: Verify the package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:
@@ -89,13 +89,20 @@ jobs:
             exit 1
           fi
 
+      # Catches the packaging mistakes that only show up in the archive -- a
+      # `.pubignore` that swept up `fonts/` or `lib/`, or one that stopped
+      # excluding `example/build` and turned a 1 MB upload into gigabytes.
+      # Nothing else in this job looks at what actually ships.
+      - name: Validate the archive
+        run: flutter pub publish --dry-run
+
   # The example ships in the archive and is the first thing anyone runs. A
   # broken one is a bad first impression that no amount of README makes up for.
   example:
     name: Verify the example
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:
@@ -132,7 +139,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v5
 
       # NOT dart-lang/setup-dart/.github/workflows/publish.yml@v1: that reusable
       # workflow provisions the Dart SDK alone, and this package depends on
