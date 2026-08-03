@@ -1,4 +1,4 @@
-name: monokit
+name: monokit_ui
 description: "A token-driven, widgets-first Flutter design system: light and dark themes, forms, overlays and app shells, built on widgets rather than Material."
 version: 3.0.0
 repository: https://github.com/monorithm/monokit
@@ -36,7 +36,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   # The IBM Plex superfamily is bundled with the library (the canonical
-  # Monokit type). Reference it from code as `packages/monokit/IBM Plex Sans`
+  # Monokit type). Reference it from code as `packages/monokit_ui/IBM Plex Sans`
   # (this is what MonokitTypography.plex() does). Plex Sans is a variable font;
   # the wght axis is selected via TextStyle.fontWeight.
   fonts:

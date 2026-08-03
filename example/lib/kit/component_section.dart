@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// The self-documentation engine. Every component demo is a [ComponentSection]:
 /// a titled preview inside a card, the widget name as a badge, and an optional

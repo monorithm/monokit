@@ -23,6 +23,13 @@ and `MonoInput` never set `onTapOutside`. So it came from nowhere.
 
 ### Breaking
 
+- **The package is now `monokit_ui`.** Imports become
+  `package:monokit_ui/monokit_ui.dart`, and the bundled font families are
+  addressed as `packages/monokit_ui/IBM Plex Sans` (only relevant if you name
+  them directly rather than going through `MonokitTypography.plex()`). Nothing
+  else is renamed: every `Mono*` widget and `Monokit*` token class keeps its
+  name. Repositories that depend on this one by git ref are pinned to v2.x
+  tags, so they are unaffected until they bump.
 - **An open compact `MonoScreen` sidebar now makes the page inert.** It took
   taps, keyboard traversal and screen-reader focus with no scrim in front of it,
   so the sidebar only ever *looked* modal. The page is now excluded from

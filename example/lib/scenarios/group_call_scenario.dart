@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 class _Participant {
   const _Participant(this.initials, this.name, this.muted);

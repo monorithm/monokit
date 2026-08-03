@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// Anchored overlays must play an *exit* animation before their entry is
 /// removed — not snap out. Proof: after a close is requested, the content is

@@ -1,4 +1,4 @@
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 /// A fixed breakpoint pane for [ViewportRow].
 class ViewportSize {

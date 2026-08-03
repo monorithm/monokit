@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 void main() {
   final List<MonoSelectOption<int>> options = <MonoSelectOption<int>>[

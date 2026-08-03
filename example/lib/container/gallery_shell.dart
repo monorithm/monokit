@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:monokit/monokit.dart';
+import 'package:monokit_ui/monokit_ui.dart';
 
 import '../kit/responsive/device_canvas.dart';
 import '../kit/responsive/viewport_controller.dart';

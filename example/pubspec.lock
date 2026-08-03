@@ -184,7 +184,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.0"
-  monokit:
+  monokit_ui:
     dependency: "direct main"
     description:
       path: ".."
