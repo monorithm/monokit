@@ -129,6 +129,10 @@ jobs:
   publish:
     needs: [verify, example]
     runs-on: ubuntu-latest
+    # Without credentials pub falls back to an interactive browser sign-in
+    # and waits forever; the probe below catches the known cause, and this
+    # bounds anything it doesn't.
+    timeout-minutes: 15
     # Gated on a GitHub environment with required reviewers: once automated
     # publishing is enabled, a tag push is enough to release, so the approval
     # is the last human checkpoint before an irreversible upload.
@@ -152,6 +156,18 @@ jobs:
           cache: true
 
       - run: flutter pub get
+
+      # pub only attempts the OIDC exchange when GitHub has injected the
+      # token-request environment; without it, publish degrades to an
+      # interactive sign-in that hangs a runner. Refuse to start in that
+      # state and say so, rather than hanging.
+      - name: Fail fast if the OIDC grant is missing
+        run: |
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ] || [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
+            echo "::error::The OIDC token-request environment is missing — 'id-token: write' is not in effect for this job, so pub cannot exchange a token with pub.dev and would hang on an interactive sign-in. Check organization/repository Actions policies."
+            exit 1
+          fi
+          echo "OIDC token-request environment present."
 
       # With `id-token: write` GitHub injects ACTIONS_ID_TOKEN_REQUEST_URL and
       # ACTIONS_ID_TOKEN_REQUEST_TOKEN, which pub detects and exchanges with
