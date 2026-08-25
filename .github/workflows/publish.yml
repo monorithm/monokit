@@ -7,7 +7,7 @@ name: Publish to pub.dev
 # the option out is clearer than offering a button that always fails.
 #
 # PREREQUISITE: automated publishing has to be enabled on pub.dev first
-# (Admin ▸ Automated publishing ▸ GitHub Actions, repository `monorithm/monokit`,
+# (Admin ▸ Automated publishing ▸ GitHub Actions, repository `monorithm/monokit-ui`,
 # tag pattern `v{{version}}`), and that page only exists once the package does.
 # The first release therefore goes out by hand -- `flutter pub publish` from a
 # logged-in machine -- and every version after it comes through here.
