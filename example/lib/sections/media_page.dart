@@ -74,6 +74,57 @@ class MediaPage extends StatelessWidget {
           ),
         ),
         ComponentSection(
+          title: 'Immersive feed',
+          widgetName: 'MonoImmersiveFeed',
+          description:
+              'A primitive, not a component: one swipe advances one item '
+              'however hard the fling, items are told their phase so they own '
+              'decode and release, and exposure fires only on settle. Swipe '
+              'vertically.',
+          child: SizedBox(
+            width: 300,
+            height: 400,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(theme.radii.xl),
+              child: MonoImmersiveFeed(
+                itemCount: 3,
+                semanticLabel: 'Demo feed',
+                itemBuilder: (context, index, phase) => MonoMediaSurface(
+                  semanticLabel: 'Feed item ${index + 1}',
+                  overlay: Align(
+                    alignment: AlignmentDirectional.bottomStart,
+                    child: Padding(
+                      padding: EdgeInsets.all(theme.spacing.md),
+                      child: MonoMediaChrome(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: theme.spacing.md,
+                          vertical: theme.spacing.xs,
+                        ),
+                        radius: BorderRadius.circular(theme.radii.full),
+                        child: Text(
+                          'Item ${index + 1} · ${phase.name}',
+                          style: theme.typography.labelMedium.copyWith(
+                            color: theme.colors.onMedia,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: AppImage(
+                    asset: const <String>[
+                      AppAssets.live,
+                      AppAssets.food,
+                      AppAssets.travel,
+                    ][index],
+                    seed: 'feed$index',
+                    onMediaCanvas: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        ComponentSection(
           title: 'Waveform',
           widgetName: 'MonoWaveform',
           description:

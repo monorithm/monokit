@@ -8,6 +8,61 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 3.1.0
+
+The Makola realization finished its design work the way governance asks: the
+proposal register updated, nothing invented privately. This release builds
+that register — the three components it raised, and the smaller gaps the same
+screens stepped into on the way to them.
+
+### Added
+
+- **`MonoImmersiveFeed`**, a primitive rather than a component: a
+  full-viewport vertical feed that owns layout, gesture and resource policy,
+  and composes the item presentation as its child. One swipe advances one item
+  however hard the fling; the builder is told each item's phase (`active`,
+  `near`, `far`) so items own their own decode, prefetch and release;
+  `dataSaver` is a first-class input that switches neighbour keep-alive off;
+  `onExposure` fires only when scrolling settles, because an item scrolled
+  past was never actually seen; arrow and page keys page (jumping under
+  reduced motion); and `restorationId` carries the position across navigation.
+- **`MonoTrustBadge`**, the tiered credential: an ordered run of filled dots
+  plus the tier's name — always as text, dots-only is not permitted. Brand ink
+  on the soft brand fill on app surfaces, mist chrome and the on-media inks
+  over media, and `lapsed` mutes the badge in place without changing its
+  geometry. The lowest tier renders like every other tier: a starting point,
+  never a warning.
+- **`MonoMediaCard`**, the bounded media object with a lifecycle:
+  `live | ended | archived | sold`. A non-live card asserts without a
+  `stateLabel` — lifecycle is never carried by treatment alone — and a
+  historical price renders in the muted label register, never typographically
+  identical to a live one. The declared placeholder stands in for missing
+  media, and the caption lives outside the media box so it renders before
+  decode and survives text scaling.
+- **`MonoChip`**: selection by inversion — the chosen chip swaps to the
+  foreground fill — so a chip row reads without leaning on the brand colour.
+- **`MonoListRow` and `MonoListGroup`**: rows as wells between collapsed
+  hairlines at the 48/64 rhythm, with an optional muted footer for the
+  group's fine print.
+- **`MonoStepProgress`**: discrete progress for bounded flows — "which step of
+  how many", where `MonoProgress` answers "how much". The strip announces as
+  one progress semantic; the segments are presentation, not stops.
+- **`MonoButtonSize.cta`**: the block commitment control — the 48 rhythm at
+  the `xxl` radius. A size rather than a variant, because any weight can be
+  the commitment.
+- **`MonoBottomNav.showLabels` and `MonoBottomNav.onMedia`**: labels under the
+  icons at the label floor (semibold when selected — a second, non-colour
+  signal), and a translucent mist treatment for bars composed over the media
+  canvas. Icon-only on the page surface stays the default.
+- Eight `MonoIcons` roles: `back`, `store`, `camera`, `share`, `settings`,
+  `notification`, `edit` and `home`.
+
+### Changed
+
+- `MonoButtonSize` gained a value, so an exhaustive `switch` over it in
+  consuming code needs a `cta` arm. Nothing that already rendered changed how
+  it renders.
+
 ## 3.0.0
 
 Focus handling had two halves and the system only ever shipped one. There were

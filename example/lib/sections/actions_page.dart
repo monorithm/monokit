@@ -16,8 +16,8 @@ class ActionsPage extends StatelessWidget {
           eyebrow: 'Actions',
           title: 'Buttons & badges',
           tagline:
-              'Six button variants across the size ramp, honest status badges, '
-              'and keyboard hints — every state live, never faked.',
+              'Five button variants across the size ramp, honest status badges, '
+              'chips, and keyboard hints — every state live, never faked.',
           child: const _ActionHero(),
         ),
         const SectionDivider(),
@@ -34,7 +34,7 @@ class ActionsPage extends StatelessWidget {
           title: 'Every button variant × size',
           widgetName: 'MonoButton',
           description:
-              'Six variants across the size ramp. On touch, every size meets the '
+              'Five variants across the size ramp. On touch, every size meets the '
               '48dp minimum tap target, so sm/md/lg share a height — they differ '
               'in horizontal padding and glyph size. On pointer devices the '
               'heights separate.',
@@ -134,6 +134,45 @@ class ActionsPage extends StatelessWidget {
               const MonoBadge(dot: true, child: Text('3 nearby')),
             ],
           ),
+        ),
+        ComponentSection(
+          title: 'Commitment size',
+          widgetName: 'MonoButton',
+          description:
+              'MonoButtonSize.cta — the 48 rhythm at the xxl radius. One per '
+              'screen, usually pinned to the footer; any weight can be the '
+              'commitment.',
+          code:
+              "MonoButton(\n  size: MonoButtonSize.cta,\n  onPressed: () {},\n  child: const Text('Send the code'),\n)",
+          child: SizedBox(
+            width: 320,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                MonoButton(
+                  size: MonoButtonSize.cta,
+                  onPressed: () {},
+                  child: const Text('Send the code'),
+                ),
+                SizedBox(height: theme.spacing.sm),
+                MonoButton(
+                  variant: MonoButtonVariant.secondary,
+                  size: MonoButtonSize.cta,
+                  onPressed: () {},
+                  child: const Text('Save this seller'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const ComponentSection(
+          title: 'Chips',
+          widgetName: 'MonoChip',
+          description:
+              'Selection by inversion — the chosen chip swaps to the '
+              'foreground fill, so the row reads without the brand colour.',
+          code: "MonoChip(label: 'Ended · 4', selected: true, onPressed: …)",
+          child: _ChipRowDemo(),
         ),
         ComponentSection(
           title: 'Keyboard shortcut',
@@ -311,6 +350,36 @@ class _BarAction extends StatelessWidget {
                 child: Text(label),
               ),
             ),
+    );
+  }
+}
+
+class _ChipRowDemo extends StatefulWidget {
+  const _ChipRowDemo();
+
+  @override
+  State<_ChipRowDemo> createState() => _ChipRowDemoState();
+}
+
+class _ChipRowDemoState extends State<_ChipRowDemo> {
+  int _selected = 1;
+  static const _filters = <String>['Live · 1', 'Ended · 4', 'Older · 12'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Wrap(
+      spacing: theme.spacing.sm,
+      runSpacing: theme.spacing.sm,
+      children: <Widget>[
+        for (var i = 0; i < _filters.length; i++)
+          MonoChip(
+            label: _filters[i],
+            selected: i == _selected,
+            onPressed: () => setState(() => _selected = i),
+          ),
+        MonoChip(label: 'With photos', icon: MonoIcons.image, onPressed: () {}),
+      ],
     );
   }
 }

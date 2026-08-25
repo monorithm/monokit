@@ -1,5 +1,7 @@
 import 'package:monokit_ui/monokit_ui.dart';
 
+import '../kit/app_image.dart';
+import '../kit/asset_catalog.dart';
 import '../kit/component_section.dart';
 import '../kit/page_hero.dart';
 
@@ -34,6 +36,18 @@ class NavigationPage extends StatelessWidget {
           title: 'Bottom nav',
           widgetName: 'MonoBottomNav',
           child: _BottomNavDemo(),
+        ),
+        const ComponentSection(
+          title: 'Bottom nav — labelled, over media',
+          widgetName: 'MonoBottomNav',
+          description:
+              'showLabels puts each destination\'s name under its icon at the '
+              'label floor; onMedia composes the bar over the canvas in mist '
+              'with the on-media inks.',
+          code:
+              'MonoBottomNav(showLabels: true, onMedia: true, items: …, '
+              'selectedIndex: 0, onSelected: …)',
+          child: _LabelledBottomNavDemo(),
         ),
         ComponentSection(
           title: 'Tabs',
@@ -383,6 +397,70 @@ class _BottomNavDemoState extends State<_BottomNavDemo> {
               'index — including re-taps of the selected destination.',
               style: theme.typography.bodyMedium.copyWith(
                 color: theme.colors.foregroundMuted,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LabelledBottomNavDemo extends StatefulWidget {
+  const _LabelledBottomNavDemo();
+
+  @override
+  State<_LabelledBottomNavDemo> createState() => _LabelledBottomNavDemoState();
+}
+
+class _LabelledBottomNavDemoState extends State<_LabelledBottomNavDemo> {
+  int _selected = 0;
+  static const _items = <MonoBottomNavItem>[
+    MonoBottomNavItem(icon: MonoIcons.store, label: 'Market'),
+    MonoBottomNavItem(icon: MonoIcons.search, label: 'Search'),
+    MonoBottomNavItem(icon: MonoIcons.camera, label: 'Sell'),
+    MonoBottomNavItem(icon: MonoIcons.call, label: 'Callbacks'),
+    MonoBottomNavItem(icon: MonoIcons.user, label: 'You'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return SizedBox(
+      width: 390,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          MonoBottomNav(
+            items: _items,
+            selectedIndex: _selected,
+            onSelected: (i) => setState(() => _selected = i),
+            showLabels: true,
+          ),
+          SizedBox(height: theme.spacing.lg),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(theme.radii.lg),
+            child: ColoredBox(
+              color: theme.colors.canvas,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const SizedBox(
+                    height: 72,
+                    child: AppImage(
+                      asset: AppAssets.live,
+                      seed: 'nav-media',
+                      onMediaCanvas: true,
+                    ),
+                  ),
+                  MonoBottomNav(
+                    items: _items,
+                    selectedIndex: _selected,
+                    onSelected: (i) => setState(() => _selected = i),
+                    showLabels: true,
+                    onMedia: true,
+                  ),
+                ],
               ),
             ),
           ),
