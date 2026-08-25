@@ -22,7 +22,12 @@ enum MonoButtonVariant { filled, tinted, secondary, ghost, destructive }
 /// Icon-only buttons are no longer separate values; pass `iconOnly` instead.
 /// The old eight values were four sizes doubled, and at touch density `xs` and
 /// `sm` both clamped to the 44pt minimum target — identical in practice.
-enum MonoButtonSize { sm, md, lg }
+///
+/// [cta] is the block commitment control: the 48 rhythm at the `xxl` radius,
+/// one per screen, usually pinned to the screen footer. It exists as a size
+/// rather than a variant because any weight can be the commitment ("Send the
+/// code" is filled, "Save this seller" is secondary).
+enum MonoButtonSize { sm, md, lg, cta }
 
 /// The immutable visual result of resolving a [MonoButton]'s tokens and state.
 @immutable
@@ -136,7 +141,11 @@ class MonoButtonStyleResolver {
       background: background,
       foreground: foreground,
       borderColor: borderColor,
-      borderRadius: BorderRadius.circular(theme.radii.lg),
+      // The commitment control rounds up with its height; everything else
+      // keeps the control radius.
+      borderRadius: BorderRadius.circular(
+        size == MonoButtonSize.cta ? theme.radii.xxl : theme.radii.lg,
+      ),
       padding: sizeTokens.padding,
       minimumHeight: sizeTokens.minimumHeight < theme.density.minimumTarget
           ? theme.density.minimumTarget
@@ -169,6 +178,7 @@ class _MonoButtonSizeTokens {
       MonoButtonSize.sm => (spacing.md, spacing.xxxl, spacing.lg),
       MonoButtonSize.md => (spacing.lg, spacing.lg + spacing.xl, spacing.xl),
       MonoButtonSize.lg => (spacing.xl, spacing.huge, spacing.xxl),
+      MonoButtonSize.cta => (spacing.xl, spacing.giant, spacing.xl),
     };
     return _MonoButtonSizeTokens(
       padding: iconOnly
