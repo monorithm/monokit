@@ -172,4 +172,12 @@ jobs:
       # With `id-token: write` GitHub injects ACTIONS_ID_TOKEN_REQUEST_URL and
       # ACTIONS_ID_TOKEN_REQUEST_TOKEN, which pub detects and exchanges with
       # pub.dev on its own. Nothing to configure, no secret to rotate.
-      - run: flutter pub publish --force
+      #
+      # `dart pub`, not `flutter pub`: the flutter wrapper does not engage the
+      # GitHub Actions token exchange (observed on 3.44.8 — the OIDC request
+      # environment was present and the wrapper still fell back to the
+      # interactive sign-in). The automated-publishing docs use `dart pub
+      # publish` for Flutter packages too; it is the same pub from the same
+      # SDK, and resolving `sdk: flutter` dependencies works because this
+      # `dart` is Flutter's bundled one.
+      - run: dart pub publish --force
