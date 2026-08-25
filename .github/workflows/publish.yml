@@ -157,27 +157,34 @@ jobs:
 
       - run: flutter pub get
 
-      # pub only attempts the OIDC exchange when GitHub has injected the
-      # token-request environment; without it, publish degrades to an
-      # interactive sign-in that hangs a runner. Refuse to start in that
-      # state and say so, rather than hanging.
-      - name: Fail fast if the OIDC grant is missing
+      # With `id-token: write` GitHub injects ACTIONS_ID_TOKEN_REQUEST_URL and
+      # ACTIONS_ID_TOKEN_REQUEST_TOKEN -- but the pub client does NOT go
+      # looking for them. That exchange is done by `dart-lang/setup-dart`,
+      # which this workflow deliberately does not use because it provisions
+      # the Dart SDK alone and this package needs Flutter's. So the token has
+      # to be minted here, by hand, or `pub publish` finds no credential and
+      # falls back to interactive OAuth -- printing a localhost redirect URL
+      # nobody outside the runner can reach, and waiting there forever. That
+      # is exactly how v3.1.0's first publish attempts hung, and how
+      # monowave's 0.3.1 hung before its workflow grew this same step.
+      #
+      # Still no secret to rotate: the token is minted per run from the
+      # workflow's own identity and is worthless outside it.
+      - name: Mint a pub.dev credential from the workflow's OIDC identity
         run: |
-          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ] || [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
-            echo "::error::The OIDC token-request environment is missing — 'id-token: write' is not in effect for this job, so pub cannot exchange a token with pub.dev and would hang on an interactive sign-in. Check organization/repository Actions policies."
+          PUB_TOKEN="$(curl -sSf \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://pub.dev" \
+            | jq -r '.value')"
+          if [ -z "$PUB_TOKEN" ] || [ "$PUB_TOKEN" = "null" ]; then
+            echo "::error::Could not mint an OIDC token for pub.dev. Check that the publish job still has id-token: write."
             exit 1
           fi
-          echo "OIDC token-request environment present."
+          echo "::add-mask::$PUB_TOKEN"
+          echo "PUB_TOKEN=$PUB_TOKEN" >>"$GITHUB_ENV"
+          dart pub token add https://pub.dev --env-var PUB_TOKEN
 
-      # With `id-token: write` GitHub injects ACTIONS_ID_TOKEN_REQUEST_URL and
-      # ACTIONS_ID_TOKEN_REQUEST_TOKEN, which pub detects and exchanges with
-      # pub.dev on its own. Nothing to configure, no secret to rotate.
-      #
-      # `dart pub`, not `flutter pub`: the flutter wrapper does not engage the
-      # GitHub Actions token exchange (observed on 3.44.8 — the OIDC request
-      # environment was present and the wrapper still fell back to the
-      # interactive sign-in). The automated-publishing docs use `dart pub
-      # publish` for Flutter packages too; it is the same pub from the same
-      # SDK, and resolving `sdk: flutter` dependencies works because this
-      # `dart` is Flutter's bundled one.
-      - run: dart pub publish --force
+      # Fails rather than prompts if the credential is rejected, which is what
+      # pub.dev does when the package's Automated publishing settings do not
+      # name this repository and a tag pattern matching `v{{version}}`.
+      - run: flutter pub publish --force
