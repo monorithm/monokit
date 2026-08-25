@@ -158,6 +158,38 @@ abstract final class MonoIcons {
     HugeIcons.strokeRoundedDownload01,
     semanticLabel: 'Download',
   );
+  static const MonoIconData back = MonoIconData(
+    HugeIcons.strokeRoundedArrowLeft01,
+    semanticLabel: 'Back',
+  );
+  static const MonoIconData store = MonoIconData(
+    HugeIcons.strokeRoundedStore01,
+    semanticLabel: 'Shop',
+  );
+  static const MonoIconData camera = MonoIconData(
+    HugeIcons.strokeRoundedCamera01,
+    semanticLabel: 'Camera',
+  );
+  static const MonoIconData share = MonoIconData(
+    HugeIcons.strokeRoundedShare01,
+    semanticLabel: 'Share',
+  );
+  static const MonoIconData settings = MonoIconData(
+    HugeIcons.strokeRoundedSettings01,
+    semanticLabel: 'Settings',
+  );
+  static const MonoIconData notification = MonoIconData(
+    HugeIcons.strokeRoundedNotification02,
+    semanticLabel: 'Notifications',
+  );
+  static const MonoIconData edit = MonoIconData(
+    HugeIcons.strokeRoundedEdit02,
+    semanticLabel: 'Edit',
+  );
+  static const MonoIconData home = MonoIconData(
+    HugeIcons.strokeRoundedHome01,
+    semanticLabel: 'Home',
+  );
 }
 
 /// A token-aware vector icon.

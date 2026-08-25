@@ -18,14 +18,15 @@ class MonoBottomNavItem {
 
   final MonoIconData icon;
 
-  /// The accessibility name for this destination — the bar renders icons
-  /// only, so this is what assistive tech announces.
+  /// The destination's name. Always what assistive tech announces; rendered
+  /// under the icon when the bar has [MonoBottomNav.showLabels] on.
   final String label;
   final bool enabled;
   final String? tooltip;
 }
 
-/// An icon-only bottom navigation bar.
+/// A bottom navigation bar: icon-only by default, or icon-over-label with
+/// [showLabels].
 ///
 /// Controlled-only: the host (typically a router shell) owns [selectedIndex]
 /// and receives every tap through [onSelected] — including taps on the
@@ -43,11 +44,23 @@ class MonoBottomNav extends StatelessWidget {
     required this.selectedIndex,
     this.onSelected,
     this.iconSize = 24,
+    this.showLabels = false,
+    this.onMedia = false,
     this.semanticLabel = 'Primary navigation',
   });
 
   final List<MonoBottomNavItem> items;
   final int selectedIndex;
+
+  /// Renders each destination's label under its icon, at the label floor.
+  /// The selected label goes semibold, so selection carries a second,
+  /// non-colour signal.
+  final bool showLabels;
+
+  /// Composes the bar over media: translucent mist fill, hairline made of
+  /// light, and the mode-invariant on-media inks. For hosts whose content
+  /// region is the media canvas (an immersive feed).
+  final bool onMedia;
 
   /// Called with the tapped destination's index. When null the whole bar is
   /// non-interactive.
@@ -65,8 +78,12 @@ class MonoBottomNav extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.page,
-        border: Border(top: BorderSide(color: theme.colors.separator)),
+        color: onMedia ? theme.colors.mistFill : theme.colors.page,
+        border: Border(
+          top: BorderSide(
+            color: onMedia ? theme.colors.mistLine : theme.colors.separator,
+          ),
+        ),
       ),
       child: Padding(
         padding: EdgeInsets.only(
@@ -101,7 +118,11 @@ class MonoBottomNav extends StatelessWidget {
           focusRing: true,
           child: (context, states) {
             final hovered = states.contains(MonoState.hovered);
-            final foreground = selected
+            final foreground = onMedia
+                ? (selected || hovered
+                      ? theme.colors.onMedia
+                      : theme.colors.onMediaMuted)
+                : selected
                 ? theme.colors.primary
                 : hovered
                 ? theme.colors.foreground
@@ -133,12 +154,32 @@ class MonoBottomNav extends StatelessWidget {
                         // The icon's own semantics node would merge with the
                         // pressable's label and double-announce; the item
                         // label is the one source of truth.
+                        final ink = color ?? foreground;
+                        final icon = MonoIcon(
+                          item.icon,
+                          size: iconSize,
+                          color: ink,
+                        );
                         return ExcludeSemantics(
-                          child: MonoIcon(
-                            item.icon,
-                            size: iconSize,
-                            color: color ?? foreground,
-                          ),
+                          child: showLabels
+                              ? Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    icon,
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item.label,
+                                      style: theme.typography.labelMedium
+                                          .copyWith(
+                                            color: ink,
+                                            fontWeight: selected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                          ),
+                                    ),
+                                  ],
+                                )
+                              : icon,
                         );
                       },
                     ),
