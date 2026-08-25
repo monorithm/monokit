@@ -97,6 +97,55 @@ class _CommercePageState extends State<CommercePage> {
           ),
         ),
         ComponentSection(
+          title: 'Media card — lifecycle',
+          widgetName: 'MonoMediaCard',
+          description:
+              'Live, ended, sold: every non-live state carries at least two '
+              'signals, and a historical price is never dressed as a current '
+              'one.',
+          code:
+              "MonoMediaCard(\n  lifecycle: MonoMediaLifecycle.sold,\n  stateLabel: 'Sold',\n  title: const Text('Ahenema'),\n  price: 'Sold at GH₵ 250',\n)",
+          child: Wrap(
+            spacing: theme.spacing.xs,
+            runSpacing: theme.spacing.md,
+            children: <Widget>[
+              SizedBox(
+                width: 150,
+                child: MonoMediaCard(
+                  onPressed: () {},
+                  media: const AppImage(
+                    asset: AppAssets.sneakers,
+                    seed: 'kicks',
+                  ),
+                  title: const Text('Kente slippers'),
+                  price: 'GH₵ 240',
+                  meta: const Text('ends in 29h'),
+                ),
+              ),
+              SizedBox(
+                width: 150,
+                child: MonoMediaCard(
+                  onPressed: () {},
+                  lifecycle: MonoMediaLifecycle.ended,
+                  stateLabel: 'Ended 3d ago',
+                  title: const Text('Batik tote'),
+                  price: 'Last at GH₵ 90',
+                ),
+              ),
+              SizedBox(
+                width: 150,
+                child: MonoMediaCard(
+                  onPressed: () {},
+                  lifecycle: MonoMediaLifecycle.sold,
+                  stateLabel: 'Sold',
+                  title: const Text('Ahenema, kids'),
+                  price: 'Sold at GH₵ 250',
+                ),
+              ),
+            ],
+          ),
+        ),
+        ComponentSection(
           title: 'Quantity stepper',
           widgetName: 'MonoQuantityStepper',
           child: MonoQuantityStepper(

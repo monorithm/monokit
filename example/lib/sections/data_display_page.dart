@@ -89,6 +89,75 @@ class DataDisplayPage extends StatelessWidget {
           ),
         ),
         ComponentSection(
+          title: 'Trust badge',
+          widgetName: 'MonoTrustBadge',
+          description:
+              'A tiered credential: filled dots plus the tier\'s name, always '
+              'as text. Lapsed greys down in place — never a warning.',
+          code: "MonoTrustBadge(tier: 2, tierCount: 3, label: 'City ring')",
+          child: Wrap(
+            spacing: theme.spacing.sm,
+            runSpacing: theme.spacing.sm,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              const MonoTrustBadge(tier: 1, tierCount: 3, label: 'Street ring'),
+              const MonoTrustBadge(tier: 2, tierCount: 3, label: 'City ring'),
+              const MonoTrustBadge(tier: 3, tierCount: 3, label: 'Nation ring'),
+              const MonoTrustBadge(
+                tier: 2,
+                tierCount: 3,
+                label: 'City ring',
+                lapsed: true,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.colors.canvas,
+                  borderRadius: BorderRadius.circular(theme.radii.lg),
+                ),
+                padding: EdgeInsets.all(theme.spacing.md),
+                child: const MonoTrustBadge(
+                  tier: 2,
+                  tierCount: 3,
+                  label: 'City ring',
+                  onMedia: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ComponentSection(
+          title: 'List rows',
+          widgetName: 'MonoListRow',
+          description:
+              'Wells between collapsed hairlines at the 48/64 rhythm, with '
+              'the group\'s fine print as a muted footer.',
+          child: MonoListGroup(
+            footer: 'Say no to any of them and everything still works.',
+            children: <Widget>[
+              MonoListRow(
+                icon: MonoIcons.home,
+                title: 'Location',
+                subtitle: 'Only your area is shown',
+                trailing: MonoSwitch(value: true, onChanged: (_) {}),
+                onPressed: () {},
+              ),
+              MonoListRow(
+                icon: MonoIcons.notification,
+                title: 'Notifications',
+                subtitle: 'A callback request rings through right away',
+                trailing: MonoSwitch(value: false, onChanged: (_) {}),
+                onPressed: () {},
+              ),
+              MonoListRow(
+                title: 'English',
+                selected: true,
+                trailing: const MonoIcon(MonoIcons.check),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+        ComponentSection(
           title: 'Loading — skeleton, spinner, progress',
           widgetName: 'MonoSkeleton',
           description: 'The same card, filled and loading.',

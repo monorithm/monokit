@@ -1,6 +1,6 @@
 name: monokit_ui
 description: "A token-driven, widgets-first Flutter design system: light and dark themes, forms, overlays and app shells, built on widgets rather than Material."
-version: 3.0.0
+version: 3.1.0
 repository: https://github.com/monorithm/monokit
 issue_tracker: https://github.com/monorithm/monokit/issues
 topics:

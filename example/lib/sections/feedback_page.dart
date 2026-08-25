@@ -75,6 +75,21 @@ class FeedbackPage extends StatelessWidget {
           ),
         ),
         ComponentSection(
+          title: 'Step progress',
+          widgetName: 'MonoStepProgress',
+          description:
+              '"Which step of how many", where MonoProgress answers "how '
+              'much". One progress semantic; the segments are presentation.',
+          code: 'MonoStepProgress(length: 5, value: 2)',
+          child: Row(
+            children: <Widget>[
+              const MonoStepProgress(length: 5, value: 2),
+              SizedBox(width: theme.spacing.xl),
+              const MonoStepProgress(length: 3, value: 3),
+            ],
+          ),
+        ),
+        ComponentSection(
           title: 'Skeleton',
           widgetName: 'MonoSkeleton',
           description: 'Loading placeholders that shimmer.',

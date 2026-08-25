@@ -125,18 +125,21 @@ through previously visited routes.
   and overridable labels.
 - `MonokitApp` and `MonoScreen` — safe-area, keyboard inset, floating, sidebar
   and overlay layers.
-- Foundations: buttons, badges, cards, avatars, separators, skeletons, spinners,
-  keyboard hints.
+- Foundations: buttons, badges, trust badges, chips, cards, avatars,
+  separators, skeletons, spinners, keyboard hints.
 - Forms: `EditableText`-based inputs, textareas and OTP fields, plus fields,
   checkboxes, radio groups and switches.
-- Navigation: tabs, accordions, breadcrumbs, pagination, bottom nav, command
-  palette.
+- Navigation: tabs, accordions, breadcrumbs, pagination, bottom nav (labelled
+  and over-media variants included), step progress, command palette.
 - Overlays via `MonoAnchoredLayout`: select, dropdown, combobox, popover,
   context menu, tooltip, hover card — all viewport-aware.
 - Honest-state banner, toast host, empty state.
-- Engine-neutral media, communication, call, capture, document and gallery
-  surfaces.
-- Product, price, quantity and cart commerce components.
+- List rows and groups: wells between collapsed hairlines at the 48/64 rhythm.
+- An immersive vertical feed primitive — snap per item, phase-driven resource
+  policy, settle-only exposure, position restoration — plus engine-neutral
+  media, communication, call, capture, document and gallery surfaces.
+- Product, price, quantity and cart commerce components, and lifecycle-aware
+  media cards.
 
 Accessible focus, hover, pressed, selected, invalid and disabled states are part
 of the primitives, not something each component reinvents.
