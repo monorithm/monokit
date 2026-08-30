@@ -162,6 +162,34 @@ cd example
 flutter run -d chrome
 ```
 
+## What carries a contract
+
+monokit's specification lives at [monokit.monorithm.dev](https://monokit.monorithm.dev),
+and it is authoritative: where this package and the specification disagree, this
+package is what changes.
+
+**Specified.** Sixteen components have a written contract — Pressable, Icon, Modal,
+Button, Field, Input, InputOtp, Switch, ListGroup, ListRow, Screen, ScreenHeader,
+Sheet, Pager, PageDots, Avatar — along with every token family. Their behaviour is
+held to the clauses on those pages.
+
+**Provisional.** Everything else here — the messaging set, the desktop chrome, the
+commerce widgets, the media surfaces — ships without a contract yet. It works and it
+is tested, but it has not been through the system's review, so treat its API as
+less settled than the list above. Contracts for these are being written.
+
+As of 3.2.0 every specified **token name** resolves, including the ones this package
+had named differently. `background`, `mutedForeground`, `destructive`, `border`,
+`muted`, `mediaCanvas`, `glassFill` and the rest are the names to write against; the
+package-specific spellings they alias (`page`, `foregroundMuted`, `danger`,
+`separator`, `fill`, `canvas`, `mistFill`) are deprecated and go away in 4.0.0.
+
+A handful of token *values* still differ from the contract on purpose — this ground
+is mist where the contract's `background` is white, and the glass pair is mist-tinted
+rather than white. Those are written up as amendments for the system owner rather
+than changed quietly, so the names are stable even where a value is still being
+argued about.
+
 ## Development
 
 ```bash

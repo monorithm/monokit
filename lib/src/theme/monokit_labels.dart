@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 class MonokitLabels {
   const MonokitLabels({
     this.close = 'Close',
+    this.active = 'Active',
     this.previous = 'Previous',
     this.next = 'Next',
     this.dismiss = 'Dismiss',
@@ -38,6 +39,9 @@ class MonokitLabels {
   });
 
   final String close;
+
+  /// The label on a live/active badge. Sentence case, like every other badge.
+  final String active;
   final String previous;
   final String next;
   final String dismiss;

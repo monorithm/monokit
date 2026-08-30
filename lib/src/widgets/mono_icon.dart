@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:hugeicons/hugeicons.dart';
 
+import '../theme/monokit_layout.dart';
 import '../theme/monokit_theme.dart';
+import 'tooltip.dart';
 
 /// A portable icon descriptor used by [MonoIcon].
 ///
@@ -190,42 +192,159 @@ abstract final class MonoIcons {
     HugeIcons.strokeRoundedHome01,
     semanticLabel: 'Home',
   );
+
+  static const MonoIconData list = MonoIconData(
+    HugeIcons.strokeRoundedLeftToRightListBullet,
+    semanticLabel: 'List view',
+  );
+  static const MonoIconData shield = MonoIconData(
+    HugeIcons.strokeRoundedShield01,
+    semanticLabel: 'Verified',
+  );
+  static const MonoIconData trash = MonoIconData(
+    HugeIcons.strokeRoundedDelete02,
+    semanticLabel: 'Delete',
+  );
+  static const MonoIconData flag = MonoIconData(
+    HugeIcons.strokeRoundedFlag02,
+    semanticLabel: 'Report',
+  );
+  static const MonoIconData wifiOff = MonoIconData(
+    HugeIcons.strokeRoundedWifiDisconnected01,
+    semanticLabel: 'Offline',
+  );
+  static const MonoIconData eyeOff = MonoIconData(
+    HugeIcons.strokeRoundedViewOff,
+    semanticLabel: 'Hide',
+  );
+  static const MonoIconData zap = MonoIconData(
+    HugeIcons.strokeRoundedFlash,
+    semanticLabel: 'Activate',
+  );
+  static const MonoIconData phoneIncoming = MonoIconData(
+    HugeIcons.strokeRoundedCallIncoming01,
+    semanticLabel: 'Incoming call',
+  );
+  static const MonoIconData phoneOutgoing = MonoIconData(
+    HugeIcons.strokeRoundedCallOutgoing01,
+    semanticLabel: 'Outgoing call',
+  );
+  static const MonoIconData plus = MonoIconData(
+    HugeIcons.strokeRoundedPlusSign,
+    semanticLabel: 'Add',
+  );
+  static const MonoIconData refresh = MonoIconData(
+    HugeIcons.strokeRoundedRefresh,
+    semanticLabel: 'Retry',
+  );
+  static const MonoIconData crop = MonoIconData(
+    HugeIcons.strokeRoundedCrop,
+    semanticLabel: 'Crop',
+  );
 }
 
 /// A token-aware vector icon.
 ///
-/// Renders a HugeIcons stroke-rounded glyph at the given [size], defaulting to
-/// the theme foreground [color]. Stroke weight follows the design language
-/// (1.5 resting).
+/// Three things resolve themselves unless you override them, and each is a rule
+/// of the design language rather than a default anyone should have to remember:
+///
+/// * **Size follows density.** 20 at touch, 16 at pointer. A finger is a
+///   coarser instrument than a cursor, so a chrome icon it has to find is
+///   drawn larger. Hardcoding 16 everywhere quietly under-sizes every icon in
+///   a touch product.
+/// * **Stroke follows size.** 1.5 resting — except at 16, where the optical
+///   floor is 1.75, because the same stroke reads thinner at a smaller size.
+///   That correction is applied here, once, and never per-component.
+/// * **Direction follows the reading direction.** Icons that mean "back",
+///   "forward" or "onward" mirror in RTL. Icons that depict an object do not:
+///   a camera points the same way in Arabic.
+///
+/// [active] is stroke 2.0, and is always paired with a colour change by the
+/// caller — the weight alone is not a state signal.
 class MonoIcon extends StatelessWidget {
   const MonoIcon(
     this.icon, {
     super.key,
-    this.size = 16,
+    this.size,
     this.color,
-    this.strokeWidth = 1.5,
+    this.strokeWidth,
+    this.active = false,
     this.semanticLabel,
-  });
+    this.tooltip,
+  }) : assert(
+         size == null || (size >= 16 && size <= 32),
+         'Icons render between 16 and 32. Below 16 use nothing; above 32 it is '
+         'an illustration and has left the system.',
+       );
 
   final MonoIconData icon;
-  final double size;
+
+  /// Overrides the density-resolved default. One of 16, 20, 24, 28, 32.
+  final double? size;
+
   final Color? color;
-  final double strokeWidth;
+
+  /// Overrides the size-resolved stroke. Rarely correct to set.
+  final double? strokeWidth;
+
+  /// Renders at stroke 2.0. Pair it with a colour: weight alone never carries
+  /// a state.
+  final bool active;
+
   final String? semanticLabel;
+
+  /// Shown at pointer density only, where an icon-only control has no label
+  /// beside it to explain itself.
+  final String? tooltip;
+
+  /// The roles that mean direction rather than depict an object, and therefore
+  /// mirror when the reading direction flips.
+  static const Set<String> _mirroredLabels = <String>{
+    'Back',
+    'Previous',
+    'Next',
+    'Continue',
+    'Send',
+    'Reply',
+    'Forward',
+  };
+
+  bool get _mirrors => _mirroredLabels.contains(icon.semanticLabel);
 
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
+    final resolvedSize = size ?? theme.density.iconChrome;
+    final resolvedStroke =
+        strokeWidth ??
+        (active
+            ? MonokitIconSize.strokeActive
+            : resolvedSize <= MonokitIconSize.xs
+            ? MonokitIconSize.strokeXs
+            : MonokitIconSize.stroke);
+
+    Widget glyph = HugeIcon(
+      icon: icon.data,
+      size: resolvedSize,
+      color: color ?? theme.colors.foreground,
+      strokeWidth: resolvedStroke,
+    );
+
+    if (_mirrors && Directionality.of(context) == TextDirection.rtl) {
+      glyph = Transform.flip(flipX: true, child: glyph);
+    }
+
     final label = semanticLabel ?? icon.semanticLabel;
-    return Semantics(
+    Widget result = Semantics(
       label: label,
       excludeSemantics: true,
-      child: HugeIcon(
-        icon: icon.data,
-        size: size,
-        color: color ?? theme.colors.foreground,
-        strokeWidth: strokeWidth,
-      ),
+      child: glyph,
     );
+
+    final tip = tooltip;
+    if (tip != null && !theme.density.isTouch) {
+      result = MonoTooltip(message: tip, child: result);
+    }
+    return result;
   }
 }

@@ -138,14 +138,25 @@ class MonoActionRail extends StatelessWidget {
 }
 
 class MonoLiveBadge extends StatelessWidget {
-  const MonoLiveBadge({super.key, this.label = 'LIVE'});
-  final String label;
+  const MonoLiveBadge({super.key, this.label});
+
+  /// Falls back to `MonokitTheme.of(context).labels.active`.
+  ///
+  /// It used to default to the literal `'LIVE'`, which was wrong three ways in
+  /// one line: uppercase where the content rules call for sentence case,
+  /// English in a product that ships five languages, and the wrong word — the
+  /// state a merchant surface reports is **active**.
+  final String? label;
+
   @override
-  Widget build(BuildContext context) => MonoBadge(
-    variant: MonoBadgeVariant.live,
-    semanticLabel: 'Live',
-    child: Text(label),
-  );
+  Widget build(BuildContext context) {
+    final resolved = label ?? MonokitTheme.of(context).labels.active;
+    return MonoBadge(
+      variant: MonoBadgeVariant.live,
+      semanticLabel: resolved,
+      child: Text(resolved),
+    );
+  }
 }
 
 class MonoPresence extends StatelessWidget {
@@ -547,6 +558,14 @@ class MonoTypingIndicator extends StatelessWidget {
   );
 }
 
+/// Delivery receipts for a chat message.
+///
+/// Deprecated: three of these five values — `sent`, `delivered`, `read` — are
+/// facts about a transport rather than phases of a command, and the design
+/// language is explicit that a component accepts the phase and never the
+/// transport type. `MonoPhase` is the replacement. This stays until 4.0.0 so
+/// existing messaging surfaces keep compiling.
+@Deprecated('Use MonoPhase. Removed in 4.0.0.')
 enum MonoReceiptState { pending, sent, delivered, read, failed }
 
 class MonoReceipt extends StatelessWidget {

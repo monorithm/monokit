@@ -43,10 +43,14 @@ class MonokitTypography {
     String? sans,
     String? mono,
     String? serif,
+    List<String>? fallback,
   }) {
-    TextStyle s(TextStyle base) => base.copyWith(fontFamily: sans);
-    TextStyle m(TextStyle base) => base.copyWith(fontFamily: mono);
-    TextStyle f(TextStyle base) => base.copyWith(fontFamily: serif);
+    TextStyle s(TextStyle base) =>
+        base.copyWith(fontFamily: sans, fontFamilyFallback: fallback);
+    TextStyle m(TextStyle base) =>
+        base.copyWith(fontFamily: mono, fontFamilyFallback: fallback);
+    TextStyle f(TextStyle base) =>
+        base.copyWith(fontFamily: serif, fontFamilyFallback: fallback);
     return MonokitTypography(
       sansFamily: sans,
       monoFamily: mono,
@@ -78,7 +82,19 @@ class MonokitTypography {
     sans: 'packages/monokit_ui/IBM Plex Sans',
     mono: 'packages/monokit_ui/IBM Plex Mono',
     serif: 'packages/monokit_ui/IBM Plex Serif',
+    fallback: plexFallback,
   );
+
+  /// Families the engine falls through to when the primary family has no glyph.
+  ///
+  /// Arabic is the reason this exists. IBM Plex Sans has no Arabic block — the
+  /// Arabic cut is a separate family in the superfamily — so without a fallback
+  /// every Arabic string lands on whatever the platform supplies, at different
+  /// metrics and a different weight. Listing it here keeps the type system
+  /// whole in all five shipped languages without a single call site knowing.
+  static const List<String> plexFallback = <String>[
+    'packages/monokit_ui/IBM Plex Sans Arabic',
+  ];
 
   final String? sansFamily;
   final String? monoFamily;
@@ -135,7 +151,8 @@ class MonokitTypography {
     fontSize: 24,
     height: 1.2,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.35,
+    // -0.015em at 24px.
+    letterSpacing: -0.36,
   );
   static const TextStyle _kHeadlineMedium = TextStyle(
     fontSize: 20,
@@ -185,7 +202,8 @@ class MonokitTypography {
     fontSize: 22,
     height: 1.3,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.1,
+    // -0.01em at 22px. Was -0.1, which is less than half the specified track.
+    letterSpacing: -0.22,
   );
   static const TextStyle _kMediaTitle = TextStyle(
     fontSize: 16,

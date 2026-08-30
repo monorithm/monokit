@@ -66,6 +66,7 @@ class ChatPage extends StatelessWidget {
               ),
               const MonoMessage(
                 align: MonoMessageAlign.end,
+                // ignore: deprecated_member_use
                 child: MonoReceipt(state: MonoReceiptState.read),
               ),
             ],
@@ -165,6 +166,7 @@ class _ChatHero extends StatelessWidget {
         ),
         const MonoMessage(
           align: MonoMessageAlign.end,
+          // ignore: deprecated_member_use
           child: MonoReceipt(state: MonoReceiptState.read),
         ),
         SizedBox(height: theme.spacing.sm),

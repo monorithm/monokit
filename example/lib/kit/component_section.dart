@@ -165,7 +165,7 @@ class CodePeek extends StatelessWidget {
       trigger: MonoButton(
         variant: MonoButtonVariant.ghost,
         size: MonoButtonSize.sm,
-        leading: const MonoIcon(MonoIcons.grid, size: 14),
+        leading: const MonoIcon(MonoIcons.grid, size: 16),
         child: const Text('View code'),
       ),
       child: MonoSheetContent(

@@ -57,6 +57,26 @@ class MonokitMotion {
   static const Curve _accelerate = Cubic(0.3, 0, 0.8, 0.15);
   static const Curve _emphasized = Curves.easeInOutCubic;
 
+  // --- Specification role names -----------------------------------------------
+  //
+  // The durations below already match the specification; what did not match was
+  // the vocabulary. A requirement written as "`state` 100ms" had no word to bind
+  // to in this API. These are the specified names, resolving onto the same
+  // values, and they are what new code should animate against: a role survives a
+  // retune, a raw duration does not.
+
+  /// Press feedback. The shortest thing the eye still reads as a response.
+  Duration get press => instant;
+
+  /// A state flip — checked, selected, expanded.
+  Duration get state => fast;
+
+  /// A deliberate, noticed change.
+  Duration get emphasis => moderate;
+
+  /// A whole screen.
+  Duration get screen => slow;
+
   // --- Springs ---------------------------------------------------------------
   //
   // These were previously non-overridable getters with zero call sites — the

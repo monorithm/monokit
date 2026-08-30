@@ -305,7 +305,7 @@ class MonoAttachment extends StatelessWidget {
                   children: <Widget>[
                     MonoIcon(
                       MonoIcons.link,
-                      size: 12,
+                      size: 16,
                       color: theme.colors.foregroundMuted,
                     ),
                     SizedBox(width: theme.spacing.xs),

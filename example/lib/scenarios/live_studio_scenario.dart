@@ -56,7 +56,7 @@ class LiveStudioScenario extends StatelessWidget {
                     children: <Widget>[
                       MonoIcon(
                         MonoIcons.user,
-                        size: 14,
+                        size: 16,
                         color: theme.colors.onMedia,
                       ),
                       SizedBox(width: theme.spacing.xs),
