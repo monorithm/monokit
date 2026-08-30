@@ -87,7 +87,7 @@ class MonoBreadcrumbLink extends StatelessWidget {
         style: theme.typography.labelMedium.copyWith(
           color: highlighted
               ? theme.colors.foreground
-              : theme.colors.foregroundMuted,
+              : theme.colors.mutedForeground,
           decoration: highlighted
               ? TextDecoration.underline
               : TextDecoration.none,
@@ -151,7 +151,7 @@ class MonoBreadcrumbSeparator extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final separator = DefaultTextStyle.merge(
       style: theme.typography.labelMedium.copyWith(
-        color: theme.colors.foregroundMuted,
+        color: theme.colors.mutedForeground,
       ),
       child: child ?? const Text('/'),
     );
@@ -181,7 +181,7 @@ class MonoBreadcrumbEllipsis extends StatelessWidget {
       child: ExcludeSemantics(
         child: DefaultTextStyle.merge(
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.foregroundMuted,
+            color: theme.colors.mutedForeground,
           ),
           child: child ?? const Text('…'),
         ),

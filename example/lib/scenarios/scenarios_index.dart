@@ -85,7 +85,7 @@ class ScenariosIndexPage extends StatelessWidget {
             'one, then pin Phone, Tablet, or Desktop in the header to see it '
             'framed like a real device.',
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -160,7 +160,7 @@ class _ScenarioCard extends StatelessWidget {
               Text(
                 meta.description,
                 style: theme.typography.bodyMedium.copyWith(
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ],

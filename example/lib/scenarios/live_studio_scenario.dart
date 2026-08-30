@@ -13,7 +13,7 @@ class LiveStudioScenario extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     return ColoredBox(
-      color: theme.colors.canvas,
+      color: theme.colors.mediaCanvas,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[

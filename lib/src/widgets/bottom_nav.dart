@@ -78,10 +78,10 @@ class MonoBottomNav extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: onMedia ? theme.colors.mistFill : theme.colors.page,
+        color: onMedia ? theme.colors.glassFill : theme.colors.background,
         border: Border(
           top: BorderSide(
-            color: onMedia ? theme.colors.mistLine : theme.colors.separator,
+            color: onMedia ? theme.colors.glassBorder : theme.colors.border,
           ),
         ),
       ),
@@ -126,7 +126,7 @@ class MonoBottomNav extends StatelessWidget {
                 ? theme.colors.primary
                 : hovered
                 ? theme.colors.foreground
-                : theme.colors.foregroundMuted;
+                : theme.colors.mutedForeground;
             final disableAnimations = MonokitMotion.noAnimation(context);
             return ConstrainedBox(
               constraints: BoxConstraints(

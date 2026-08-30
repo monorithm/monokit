@@ -449,7 +449,7 @@ class _MonoCommandPaletteOverlayState
         constraints: BoxConstraints(maxWidth: widget.width),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: theme.colors.elevated,
+            color: theme.colors.popover,
             borderRadius: BorderRadius.circular(theme.radii.xl),
             boxShadow: theme.elevation.resolve(MonoElevation.floating),
           ),
@@ -469,7 +469,7 @@ class _MonoCommandPaletteOverlayState
                   children: <Widget>[
                     _buildQuery(theme),
                     DecoratedBox(
-                      decoration: BoxDecoration(color: theme.colors.separator),
+                      decoration: BoxDecoration(color: theme.colors.border),
                       child: SizedBox(height: theme.spacing.xs / 4),
                     ),
                     ConstrainedBox(
@@ -481,7 +481,7 @@ class _MonoCommandPaletteOverlayState
                                   widget.empty ??
                                   DefaultTextStyle.merge(
                                     style: theme.typography.bodyMedium.copyWith(
-                                      color: theme.colors.foregroundMuted,
+                                      color: theme.colors.mutedForeground,
                                     ),
                                     child: const Text('No commands found.'),
                                   ),
@@ -544,7 +544,7 @@ class _MonoCommandPaletteOverlayState
           Text(
             '⌕',
             style: theme.typography.titleMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
           SizedBox(width: theme.spacing.sm),
@@ -557,7 +557,7 @@ class _MonoCommandPaletteOverlayState
                     child: Text(
                       widget.placeholder,
                       style: theme.typography.bodyMedium.copyWith(
-                        color: theme.colors.foregroundMuted,
+                        color: theme.colors.mutedForeground,
                       ),
                     ),
                   ),
@@ -588,7 +588,7 @@ class _MonoCommandPaletteOverlayState
   ) {
     // Reference command items highlight on neutral muted (not the brand
     // accent), keeping the foreground unchanged.
-    final background = highlighted ? theme.colors.fill : theme.colors.elevated;
+    final background = highlighted ? theme.colors.muted : theme.colors.popover;
     final foreground = theme.colors.foreground;
     return Semantics(
       button: true,
@@ -632,7 +632,7 @@ class _MonoCommandPaletteOverlayState
                             style: theme.typography.labelMedium.copyWith(
                               color: highlighted
                                   ? foreground.withValues(alpha: 0.75)
-                                  : theme.colors.foregroundMuted,
+                                  : theme.colors.mutedForeground,
                             ),
                             child: command.description!,
                           ),

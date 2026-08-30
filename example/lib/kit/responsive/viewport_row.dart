@@ -80,7 +80,7 @@ class _Pane extends StatelessWidget {
               Text(
                 '${viewport.width.round()}pt',
                 style: theme.typography.mono.copyWith(
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ],
@@ -91,9 +91,9 @@ class _Pane extends StatelessWidget {
           height: height,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colors.page,
+              color: theme.colors.background,
               borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: theme.colors.separator),
+              border: Border.all(color: theme.colors.border),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(theme.radii.md),

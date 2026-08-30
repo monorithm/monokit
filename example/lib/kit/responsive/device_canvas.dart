@@ -47,7 +47,7 @@ class _FramedDevice extends StatelessWidget {
         : EdgeInsets.zero;
 
     return ColoredBox(
-      color: theme.colors.fill,
+      color: theme.colors.muted,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final pad = theme.spacing.xl;

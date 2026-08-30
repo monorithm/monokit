@@ -127,7 +127,7 @@ class _MonoTextMagnifier extends StatelessWidget {
         decoration: MagnifierDecoration(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(theme.radii.md),
-            side: BorderSide(color: theme.colors.separator),
+            side: BorderSide(color: theme.colors.border),
           ),
         ),
       ),
@@ -181,7 +181,7 @@ class MonoTextSelectionToolbar extends StatelessWidget {
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.elevated,
+          color: theme.colors.popover,
           borderRadius: BorderRadius.circular(theme.radii.md),
           boxShadow: theme.elevation.resolve(MonoElevation.raised),
         ),

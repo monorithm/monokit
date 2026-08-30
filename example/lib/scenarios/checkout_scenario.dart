@@ -85,7 +85,7 @@ class _CheckoutScenarioState extends State<CheckoutScenario> {
             Text(
               'Total',
               style: theme.typography.labelMedium.copyWith(
-                color: theme.colors.foregroundMuted,
+                color: theme.colors.mutedForeground,
               ),
             ),
             MonoPriceTag(currency: 'GH₵', price: '${_subtotal + _fee}'),
@@ -176,7 +176,7 @@ class _SummaryRow extends StatelessWidget {
     final style = bold
         ? theme.typography.titleMedium
         : theme.typography.bodyMedium.copyWith(
-            color: theme.colors.foregroundMuted,
+            color: theme.colors.mutedForeground,
           );
     return Padding(
       padding: EdgeInsets.symmetric(vertical: theme.spacing.xs),

@@ -627,7 +627,7 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
                 label: theme.labels.menuItems,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: theme.colors.elevated,
+                    color: theme.colors.popover,
                     borderRadius: BorderRadius.circular(theme.radii.lg),
                     boxShadow: theme.elevation.resolve(MonoElevation.raised),
                   ),
@@ -635,7 +635,7 @@ class _MonoDropdownOverlayState<T> extends State<_MonoDropdownOverlay<T>> {
                     constraints: BoxConstraints(maxHeight: widget.maxHeight),
                     child: RawScrollbar(
                       controller: _scrollController,
-                      thumbColor: theme.colors.separator,
+                      thumbColor: theme.colors.border,
                       radius: Radius.circular(theme.radii.full),
                       thickness: theme.spacing.xs,
                       child: ListView.builder(
@@ -700,11 +700,11 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
     // destructive tint instead, matching the reference.
     final bool isHi = highlighted && item.enabled;
     final Color foreground = !item.enabled
-        ? theme.colors.foregroundMuted
+        ? theme.colors.mutedForeground
         : item.destructive
-        ? (isHi ? theme.colors.dangerText : theme.colors.danger)
+        ? (isHi ? theme.colors.destructiveText : theme.colors.destructive)
         : isHi
-        ? theme.colors.onPrimary
+        ? theme.colors.primaryForeground
         : theme.colors.foreground;
     return Semantics(
       button: true,
@@ -727,9 +727,9 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: !isHi
-                  ? theme.colors.elevated.withAlpha(0)
+                  ? theme.colors.popover.withAlpha(0)
                   : item.destructive
-                  ? theme.colors.dangerSoft
+                  ? theme.colors.destructiveSoft
                   : theme.colors.primary,
               borderRadius: BorderRadius.circular(theme.radii.md),
             ),

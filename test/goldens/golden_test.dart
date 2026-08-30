@@ -81,12 +81,12 @@ Future<void> _pumpScene(
     MonokitApp(
       theme: theme,
       home: ColoredBox(
-        color: theme.colors.page,
+        color: theme.colors.background,
         child: Center(
           child: RepaintBoundary(
             key: _sceneKey,
             child: ColoredBox(
-              color: theme.colors.page,
+              color: theme.colors.background,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: SizedBox(
@@ -130,7 +130,7 @@ Future<void> _pumpOverlayScene(
     MonokitApp(
       theme: theme,
       home: ColoredBox(
-        color: theme.colors.page,
+        color: theme.colors.background,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

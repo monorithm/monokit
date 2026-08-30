@@ -50,9 +50,9 @@ class MonoSurface extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final resolvedRadius = radius ?? BorderRadius.circular(theme.radii.lg);
     final color = switch (role) {
-      MonoSurfaceRole.page => theme.colors.page,
+      MonoSurfaceRole.page => theme.colors.background,
       MonoSurfaceRole.card => theme.colors.card,
-      MonoSurfaceRole.elevated => theme.colors.elevated,
+      MonoSurfaceRole.elevated => theme.colors.popover,
     };
     return Container(
       clipBehavior: clipBehavior,
@@ -93,8 +93,8 @@ class MonoMediaChrome extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colors.mistFill,
-        border: Border.all(color: theme.colors.mistLine),
+        color: theme.colors.glassFill,
+        border: Border.all(color: theme.colors.glassBorder),
         borderRadius: radius ?? BorderRadius.circular(theme.radii.lg),
       ),
       padding: padding ?? EdgeInsets.all(theme.spacing.md),

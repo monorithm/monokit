@@ -84,7 +84,7 @@ class _MonoProgressState extends State<MonoProgress>
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
     final foreground = widget.color ?? theme.colors.primary;
-    final background = widget.trackColor ?? theme.colors.fill;
+    final background = widget.trackColor ?? theme.colors.muted;
     final value = widget.value;
     final excluded = widget.semanticLabel == null;
     final indicator = switch (widget.type) {

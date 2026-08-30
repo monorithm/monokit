@@ -121,7 +121,7 @@ class MonoPopoverContent extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.elevated,
+        color: theme.colors.popover,
         borderRadius: BorderRadius.circular(theme.radii.lg),
         boxShadow: theme.elevation.resolve(MonoElevation.raised),
       ),

@@ -45,7 +45,7 @@ class MonoTooltipContent extends StatelessWidget {
             ),
         child: DefaultTextStyle.merge(
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.page,
+            color: theme.colors.background,
           ),
           child: child,
         ),

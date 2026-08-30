@@ -89,7 +89,7 @@ class MonoMediaCard extends StatelessWidget {
         child: ColoredBox(
           // Live media sits on the true-black canvas; a non-live object moves
           // to the muted well — the first of the two lifecycle signals.
-          color: _live ? colors.canvas : colors.fill,
+          color: _live ? colors.mediaCanvas : colors.muted,
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
@@ -102,7 +102,7 @@ class MonoMediaCard extends StatelessWidget {
                     size: theme.spacing.xxl,
                     color: _live
                         ? colors.onMediaMuted
-                        : colors.foregroundMuted.withValues(alpha: 0.5),
+                        : colors.mutedForeground.withValues(alpha: 0.5),
                   ),
                 ),
               if (stateLabel != null)
@@ -124,7 +124,7 @@ class MonoMediaCard extends StatelessWidget {
             fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
           )
         : theme.typography.labelMedium.copyWith(
-            color: colors.foregroundMuted,
+            color: colors.mutedForeground,
             fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
           );
 
@@ -142,7 +142,7 @@ class MonoMediaCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   DefaultTextStyle.merge(
                     style: theme.typography.labelMedium.copyWith(
-                      color: _live ? colors.foreground : colors.foregroundMuted,
+                      color: _live ? colors.foreground : colors.mutedForeground,
                     ),
                     child: title,
                   ),
@@ -150,7 +150,7 @@ class MonoMediaCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     DefaultTextStyle.merge(
                       style: theme.typography.labelMedium.copyWith(
-                        color: colors.foregroundMuted,
+                        color: colors.mutedForeground,
                         fontFeatures: const <FontFeature>[
                           FontFeature.tabularFigures(),
                         ],
@@ -195,8 +195,8 @@ class _StateChip extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colors.page,
-        border: Border.all(color: theme.colors.separator),
+        color: theme.colors.background,
+        border: Border.all(color: theme.colors.border),
         borderRadius: BorderRadius.circular(theme.radii.full),
       ),
       padding: EdgeInsets.symmetric(horizontal: theme.spacing.sm - 2),
@@ -205,7 +205,7 @@ class _StateChip extends StatelessWidget {
       child: Text(
         label,
         style: theme.typography.labelMedium.copyWith(
-          color: theme.colors.foregroundMuted,
+          color: theme.colors.mutedForeground,
           fontWeight: FontWeight.w600,
           fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
         ),

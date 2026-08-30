@@ -204,8 +204,8 @@ class MonoPaginationLink extends StatelessWidget {
       // Active page is a bordered outline chip (not a filled brand chip);
       // hover is neutral muted, matching the reference.
       final background = hovered && !active
-          ? theme.colors.fill
-          : theme.colors.page.withValues(alpha: 0);
+          ? theme.colors.muted
+          : theme.colors.background.withValues(alpha: 0);
       final foreground = theme.colors.foreground;
       return AnimatedContainer(
         duration: MonokitMotion.noAnimation(context)
@@ -219,7 +219,7 @@ class MonoPaginationLink extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(theme.radii.md),
-          border: active ? Border.all(color: theme.colors.separator) : null,
+          border: active ? Border.all(color: theme.colors.border) : null,
         ),
         child: Center(
           child: DefaultTextStyle.merge(
@@ -269,7 +269,7 @@ class MonoPaginationEllipsis extends StatelessWidget {
             child: Text(
               '…',
               style: theme.typography.labelLarge.copyWith(
-                color: theme.colors.foregroundMuted,
+                color: theme.colors.mutedForeground,
               ),
             ),
           ),

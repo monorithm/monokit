@@ -49,7 +49,9 @@ class MonoListRow extends StatelessWidget {
           states.contains(MonoState.hovered) ||
           states.contains(MonoState.pressed);
       return ColoredBox(
-        color: transient ? colors.fill : colors.page.withValues(alpha: 0),
+        color: transient
+            ? colors.muted
+            : colors.background.withValues(alpha: 0),
         child: ConstrainedBox(
           constraints: BoxConstraints(
             minHeight: monoScaledExtent(context, minHeight),
@@ -65,7 +67,7 @@ class MonoListRow extends StatelessWidget {
                   MonoIcon(
                     icon!,
                     size: theme.spacing.xl,
-                    color: selected ? colors.tint : colors.foreground,
+                    color: selected ? colors.primaryText : colors.foreground,
                   ),
                   SizedBox(width: theme.spacing.md),
                 ],
@@ -77,7 +79,9 @@ class MonoListRow extends StatelessWidget {
                       Text(
                         title,
                         style: theme.typography.bodyMedium.copyWith(
-                          color: selected ? colors.tint : colors.foreground,
+                          color: selected
+                              ? colors.primaryText
+                              : colors.foreground,
                           fontWeight: selected
                               ? FontWeight.w600
                               : FontWeight.w500,
@@ -88,7 +92,7 @@ class MonoListRow extends StatelessWidget {
                         Text(
                           subtitle!,
                           style: theme.typography.labelMedium.copyWith(
-                            color: colors.foregroundMuted,
+                            color: colors.mutedForeground,
                           ),
                         ),
                       ],
@@ -151,7 +155,7 @@ class MonoListGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final line = BorderSide(color: theme.colors.separator);
+    final line = BorderSide(color: theme.colors.border);
     return Semantics(
       container: semanticLabel != null,
       label: semanticLabel,
@@ -179,7 +183,7 @@ class MonoListGroup extends StatelessWidget {
               child: Text(
                 footer!,
                 style: theme.typography.labelMedium.copyWith(
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ),

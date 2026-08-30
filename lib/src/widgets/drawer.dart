@@ -159,7 +159,7 @@ class MonoDrawerHeader extends StatelessWidget {
         if (description != null)
           DefaultTextStyle.merge(
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
             child: description!,
           ),
@@ -601,7 +601,7 @@ class _MonoDrawerOverlayState extends State<_MonoDrawerOverlay>
         height: double.infinity,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: widget.theme.colors.elevated,
+            color: widget.theme.colors.popover,
             borderRadius: radius,
             boxShadow: widget.theme.elevation.resolve(MonoElevation.floating),
           ),

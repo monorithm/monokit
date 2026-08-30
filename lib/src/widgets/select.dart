@@ -423,14 +423,14 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
     final MonoSelectOption<T>? selected = _selectedOption();
     final Color foreground = _isEnabled
         ? theme.colors.foreground
-        : theme.colors.foregroundMuted;
+        : theme.colors.mutedForeground;
     final Widget value = selected == null
         ? Text(
             widget.placeholder ?? widget.hint ?? 'Select an option',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           )
         : (widget.selectedBuilder?.call(context, selected) ?? selected.label);
@@ -474,12 +474,12 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
         listenable: _statesController,
         builder: (BuildContext context, Widget? _) {
           final Color borderColor = widget.invalid
-              ? theme.colors.danger
+              ? theme.colors.destructive
               : _isFocused || _isOpen
               ? theme.colors.ring
               : _isHovered && _isEnabled
               ? theme.colors.foreground
-              : theme.colors.separator;
+              : theme.colors.border;
 
           return Semantics(
             container: true,
@@ -513,12 +513,15 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
                 ),
                 decoration: BoxDecoration(
                   color: _isEnabled
-                      ? theme.colors.page.withAlpha(0)
-                      : theme.colors.fill.withAlpha(150),
+                      ? theme.colors.background.withAlpha(0)
+                      : theme.colors.muted.withAlpha(150),
                   borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
                   boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(theme.colors.danger, alpha: 0.2)
+                      ? theme.focus.ringShadow(
+                          theme.colors.destructive,
+                          alpha: 0.2,
+                        )
                       : _isFocusVisible || _isOpen
                       ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
@@ -542,8 +545,8 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
                         MonoIcons.chevronDown,
                         size: theme.spacing.lg,
                         color: _isEnabled
-                            ? theme.colors.foregroundMuted
-                            : theme.colors.foregroundMuted.withAlpha(150),
+                            ? theme.colors.mutedForeground
+                            : theme.colors.mutedForeground.withAlpha(150),
                         semanticLabel: _isOpen
                             ? theme.labels.closeOptions
                             : theme.labels.openOptions,
@@ -788,7 +791,7 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
               label: theme.labels.selectOptions,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.colors.elevated,
+                  color: theme.colors.popover,
                   borderRadius: BorderRadius.circular(theme.radii.lg),
                   boxShadow: theme.elevation.resolve(MonoElevation.raised),
                 ),
@@ -796,7 +799,7 @@ class _MonoSelectOverlayState<T> extends State<_MonoSelectOverlay<T>> {
                   constraints: BoxConstraints(maxHeight: widget.maxHeight),
                   child: RawScrollbar(
                     controller: _scrollController,
-                    thumbColor: theme.colors.separator,
+                    thumbColor: theme.colors.border,
                     radius: Radius.circular(theme.radii.full),
                     thickness: theme.spacing.xs,
                     child: ListView.builder(
@@ -886,13 +889,13 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
     // description, and check icon flip to accentForeground to stay legible.
     final bool onAccent = (selected || highlighted) && option.enabled;
     final Color foreground = !option.enabled
-        ? theme.colors.foregroundMuted
+        ? theme.colors.mutedForeground
         : onAccent
-        ? theme.colors.onPrimary
+        ? theme.colors.primaryForeground
         : theme.colors.foreground;
     final Color background = selected || highlighted
         ? theme.colors.primary
-        : theme.colors.elevated.withAlpha(0);
+        : theme.colors.popover.withAlpha(0);
     return Semantics(
       button: true,
       enabled: option.enabled,
@@ -932,8 +935,8 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
                       DefaultTextStyle.merge(
                         style: theme.typography.labelMedium.copyWith(
                           color: onAccent
-                              ? theme.colors.onPrimary
-                              : theme.colors.foregroundMuted,
+                              ? theme.colors.primaryForeground
+                              : theme.colors.mutedForeground,
                         ),
                         child: option.description!,
                       ),
@@ -946,7 +949,7 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
                 MonoIcon(
                   MonoIcons.check,
                   size: theme.spacing.lg,
-                  color: theme.colors.onPrimary,
+                  color: theme.colors.primaryForeground,
                   semanticLabel: 'Selected',
                 ),
               ],

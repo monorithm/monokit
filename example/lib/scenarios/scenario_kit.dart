@@ -30,7 +30,7 @@ class ScenarioShell extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     return ColoredBox(
-      color: backgroundColor ?? theme.colors.page,
+      color: backgroundColor ?? theme.colors.background,
       child: Column(
         children: <Widget>[
           Container(
@@ -41,8 +41,8 @@ class ScenarioShell extends StatelessWidget {
               theme.spacing.sm,
             ),
             decoration: BoxDecoration(
-              color: theme.colors.page,
-              border: Border(bottom: BorderSide(color: theme.colors.separator)),
+              color: theme.colors.background,
+              border: Border(bottom: BorderSide(color: theme.colors.border)),
             ),
             child: Row(
               children: <Widget>[
@@ -81,7 +81,7 @@ class ScenarioShell extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.typography.labelMedium.copyWith(
-                            color: theme.colors.foregroundMuted,
+                            color: theme.colors.mutedForeground,
                           ),
                         ),
                     ],
@@ -101,8 +101,8 @@ class ScenarioShell extends StatelessWidget {
                 media.padding.bottom + theme.spacing.sm,
               ),
               decoration: BoxDecoration(
-                color: theme.colors.page,
-                border: Border(top: BorderSide(color: theme.colors.separator)),
+                color: theme.colors.background,
+                border: Border(top: BorderSide(color: theme.colors.border)),
               ),
               child: bottom,
             ),
@@ -125,7 +125,7 @@ class ScenarioLabel extends StatelessWidget {
       child: Text(
         text.toUpperCase(),
         style: theme.typography.labelMedium.copyWith(
-          color: theme.colors.foregroundMuted,
+          color: theme.colors.mutedForeground,
         ),
       ),
     );

@@ -111,7 +111,7 @@ class DataDisplayPage extends StatelessWidget {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: theme.colors.canvas,
+                  color: theme.colors.mediaCanvas,
                   borderRadius: BorderRadius.circular(theme.radii.lg),
                 ),
                 padding: EdgeInsets.all(theme.spacing.md),
@@ -205,7 +205,7 @@ class _ProfileHero extends StatelessWidget {
         Text(
           'Accra · 4.9 ★ · 128 items sold',
           style: theme.typography.bodyMedium.copyWith(
-            color: theme.colors.foregroundMuted,
+            color: theme.colors.mutedForeground,
           ),
         ),
       ],
@@ -271,7 +271,7 @@ class _AvatarGroup extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: theme.colors.page, width: 2),
+                  border: Border.all(color: theme.colors.background, width: 2),
                 ),
                 child: MonoAvatar.initials(_people[i], size: MonoAvatarSize.sm),
               ),
@@ -344,7 +344,7 @@ class _StatGrid extends StatelessWidget {
                           Text(
                             label,
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.foregroundMuted,
+                              color: theme.colors.mutedForeground,
                             ),
                           ),
                         ],
@@ -382,7 +382,7 @@ class _FilledMini extends StatelessWidget {
                   Text(
                     'Replied 2m ago',
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.foregroundMuted,
+                      color: theme.colors.mutedForeground,
                     ),
                   ),
                 ],

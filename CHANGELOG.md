@@ -8,6 +8,81 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.0.0
+
+The removals 3.2.0 announced. 3.2.0 published the specification's token names
+alongside the ones this package had invented and deprecated the latter; this
+release deletes them, so there is one vocabulary rather than two. If you moved
+your call sites when the deprecation warnings appeared, there is nothing to do
+here.
+
+Two other things go with them: the icon catalogue stops leaking its vendor, and
+the chat receipt stops speaking in transport facts.
+
+### Breaking
+
+- **The package-specific colour names are gone.** Every one now carries the name
+  the specification gives it. Values did not move — this is a rename, and the
+  goldens are unchanged.
+- **`MonoIconData` is opaque.** It no longer exposes the vendor's path data as a
+  public field, and it can no longer be constructed from a raw vendor constant.
+  While it did, a change of icon vendor was a breaking change for every consumer
+  rather than an internal detail, which is exactly what the "accept a role,
+  never a vendor glyph" clause exists to prevent. `MonoIcons` is the API; a role
+  missing from it should be added to it. `withSemanticLabel` covers the case
+  where one call site needs a narrower announcement than the catalogue can know.
+- **`MonoReceiptState` is gone; `MonoReceipt` takes a `MonoPhase` and a label.**
+  Three of its five values described a pipe rather than an intent, and its
+  labels were hardcoded English in a system with translatable chrome.
+- **`onStatus` became four tokens** — `destructiveForeground`,
+  `successForeground`, `warningForeground`, `infoForeground` — as the contract
+  names them. They share a value today; naming them per family is what lets one
+  move later without dragging the other three.
+- **`lib/src/widgets/components.dart` is deleted.** A second barrel that nothing
+  imported, ten files out of date, and shipped in the archive regardless.
+
+### Migration
+
+```dart
+// colours — the name changes, the value does not
+colors.page            → colors.background
+colors.foregroundMuted → colors.mutedForeground
+colors.foregroundSubtle→ colors.mutedText
+colors.fill            → colors.muted
+colors.separator       → colors.border
+colors.elevated        → colors.popover
+colors.tint            → colors.primaryText
+colors.onPrimary       → colors.primaryForeground
+colors.danger          → colors.destructive
+colors.dangerSoft      → colors.destructiveSoft
+colors.dangerText      → colors.destructiveText
+colors.onLive          → colors.liveForeground
+colors.canvas          → colors.mediaCanvas
+colors.mistFill        → colors.glassFill
+colors.mistLine        → colors.glassBorder
+colors.onStatus        → colors.destructiveForeground   // or the family you meant
+
+// icons — construct from the catalogue, not from the vendor
+MonoIconData(HugeIcons.strokeRoundedSearch01)  → MonoIcons.search
+MonoIconData(x, semanticLabel: 'Find')         → MonoIcons.search.withSemanticLabel('Find')
+
+// receipts — a phase and your own copy
+MonoReceipt(state: MonoReceiptState.read)   → MonoReceipt(phase: MonoPhase.succeeded, label: 'Seen')
+MonoReceipt(state: MonoReceiptState.failed) → MonoReceipt(phase: MonoPhase.rejected,  label: 'Not sent')
+```
+
+### Still open
+
+Nine token **values** differ from the contract on purpose — this ground is mist
+where `background` is white, the glass pair is mist-tinted, `muted` and `border`
+are alpha rather than opaque. They are written up in monokit-spec's
+`record/AMENDMENTS.md` and are the system owner's to rule on; whichever way each
+goes, the names above are settled.
+
+129 exported classes across 41 files still ship without a contract. The README
+marks which parts of the API are specified and which are provisional, and
+contracts for the rest are being written.
+
 ## 3.2.0
 
 Conformance. An audit of this package against the specification at

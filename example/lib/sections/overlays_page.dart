@@ -219,7 +219,7 @@ class OverlaysPage extends StatelessWidget {
                           Text(
                             '12 active posts · Nima',
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.foregroundMuted,
+                              color: theme.colors.mutedForeground,
                             ),
                           ),
                         ],
@@ -254,7 +254,7 @@ class OverlaysPage extends StatelessWidget {
                   Text(
                     'Report',
                     style: theme.typography.bodyMedium.copyWith(
-                      color: theme.colors.dangerText,
+                      color: theme.colors.destructiveText,
                     ),
                   ),
                 ],
@@ -265,14 +265,14 @@ class OverlaysPage extends StatelessWidget {
               height: 88,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: theme.colors.fill,
+                color: theme.colors.muted,
                 borderRadius: BorderRadius.circular(theme.radii.md),
-                border: Border.all(color: theme.colors.separator),
+                border: Border.all(color: theme.colors.border),
               ),
               child: Text(
                 'Right-click me',
                 style: theme.typography.bodyMedium.copyWith(
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ),

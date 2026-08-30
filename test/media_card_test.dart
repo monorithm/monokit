@@ -53,7 +53,7 @@ void main() {
     final historical = tester.widget<Text>(find.text('Sold at GHS 250'));
     expect(historical.style?.fontWeight, isNot(FontWeight.w700));
     final theme = MonokitThemeData.light();
-    expect(historical.style?.color, theme.colors.foregroundMuted);
+    expect(historical.style?.color, theme.colors.mutedForeground);
   });
 
   testWidgets('a non-live card carries its state label chip', (tester) async {

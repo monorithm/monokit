@@ -482,7 +482,7 @@ class _MonoScreenState extends State<MonoScreen>
           // conceal the closed sidebar rather than let it show through.
           final pageChild = hasSidebar && isCompact
               ? ColoredBox(
-                  color: widget.background ?? theme.colors.page,
+                  color: widget.background ?? theme.colors.background,
                   child: page,
                 )
               : page;
@@ -570,7 +570,7 @@ class _MonoScreenState extends State<MonoScreen>
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              ColoredBox(color: widget.background ?? theme.colors.page),
+              ColoredBox(color: widget.background ?? theme.colors.background),
               if (widget.backdrop != null)
                 Positioned.fill(child: widget.backdrop!),
               if (hasSidebar && isCompact)

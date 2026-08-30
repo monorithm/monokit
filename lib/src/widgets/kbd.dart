@@ -68,14 +68,14 @@ class MonoKbd extends StatelessWidget {
       constraints: BoxConstraints(minHeight: minimumHeight),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.fill,
+          color: theme.colors.muted,
           borderRadius: BorderRadius.circular(theme.radii.sm),
         ),
         child: Padding(
           padding: padding,
           child: Center(
             child: DefaultTextStyle.merge(
-              style: textStyle.copyWith(color: theme.colors.foregroundMuted),
+              style: textStyle.copyWith(color: theme.colors.mutedForeground),
               child: child,
             ),
           ),

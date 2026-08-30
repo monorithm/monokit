@@ -62,7 +62,7 @@ class _GalleryHeader extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.colors.separator)),
+        border: Border(bottom: BorderSide(color: theme.colors.border)),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -98,7 +98,7 @@ class _GalleryHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.foregroundMuted,
+                      color: theme.colors.mutedForeground,
                     ),
                   ),
                 ],
@@ -151,9 +151,9 @@ class _ViewportSwitcher extends StatelessWidget {
           padding: EdgeInsets.only(right: theme.spacing.sm),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colors.fill,
+              color: theme.colors.muted,
               borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: theme.colors.separator),
+              border: Border.all(color: theme.colors.border),
             ),
             child: Padding(
               padding: EdgeInsets.all(theme.spacing.xs / 2),
@@ -211,7 +211,7 @@ class _SidebarHeader extends StatelessWidget {
                 child: MonoIcon(
                   MonoIcons.sparkles,
                   size: 16,
-                  color: theme.colors.onPrimary,
+                  color: theme.colors.primaryForeground,
                 ),
               ),
               if (!rail) ...<Widget>[
@@ -258,7 +258,7 @@ class _NavList extends StatelessWidget {
                   child: Text(
                     group.toUpperCase(),
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.foregroundMuted,
+                      color: theme.colors.mutedForeground,
                     ),
                   ),
                 ),

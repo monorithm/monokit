@@ -74,7 +74,7 @@ class _Pitch extends StatelessWidget {
             'a luminance step, not hairlines. Explore every component, watch it '
             'reflow across breakpoints, and see it composed into real products.',
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -149,7 +149,7 @@ class _Collage extends StatelessWidget {
                           Text(
                             'East Legon · like new',
                             style: theme.typography.labelMedium.copyWith(
-                              color: theme.colors.foregroundMuted,
+                              color: theme.colors.mutedForeground,
                             ),
                           ),
                         ],
@@ -334,7 +334,7 @@ class _Highlights extends StatelessWidget {
                         Text(
                           body,
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.foregroundMuted,
+                            color: theme.colors.mutedForeground,
                           ),
                         ),
                       ],

@@ -365,12 +365,12 @@ class _MonoRadioState<T> extends State<MonoRadio<T>>
         builder: (BuildContext context, Widget? _) {
           final Color foreground = _isEnabled
               ? theme.colors.foreground
-              : theme.colors.foregroundMuted;
+              : theme.colors.mutedForeground;
           final Color borderColor = _isSelected
               ? theme.colors.primary
               : _isHovered && _isEnabled
               ? theme.colors.foreground
-              : theme.colors.separator;
+              : theme.colors.border;
 
           final Widget marker = AnimatedContainer(
             duration: theme.motion.reduced(context, theme.motion.duration),
@@ -383,7 +383,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>>
               // dot) rather than a hollow ring, matching the reference.
               color: _isSelected
                   ? theme.colors.primary
-                  : theme.colors.page.withAlpha(0),
+                  : theme.colors.background.withAlpha(0),
               border: Border.all(color: borderColor),
               shape: BoxShape.circle,
               boxShadow: _isFocusVisible
@@ -396,7 +396,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>>
               scale: _dot.value.clamp(0.0, 1.2),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.colors.onPrimary,
+                  color: theme.colors.primaryForeground,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -428,7 +428,7 @@ class _MonoRadioState<T> extends State<MonoRadio<T>>
                           SizedBox(height: theme.spacing.xs),
                         DefaultTextStyle.merge(
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.foregroundMuted,
+                            color: theme.colors.mutedForeground,
                           ),
                           child: widget.description!,
                         ),

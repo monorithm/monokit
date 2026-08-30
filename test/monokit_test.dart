@@ -42,20 +42,20 @@ void main() {
       final dark = MonokitThemeData.dark();
 
       // Light: emerald on mist. The page is the mist step, cards sit above it.
-      expect(light.colors.page, const Color(0xFFF1F3F3));
+      expect(light.colors.background, const Color(0xFFF1F3F3));
       expect(light.colors.card, const Color(0xFFFFFFFF));
       expect(light.colors.foreground, const Color(0xFF090B0C));
       expect(light.colors.primary, const Color(0xFF007A55));
-      expect(light.colors.tint, const Color(0xFF007A55));
-      expect(light.colors.danger, const Color(0xFFE7000B));
+      expect(light.colors.primaryText, const Color(0xFF007A55));
+      expect(light.colors.destructive, const Color(0xFFE7000B));
       expect(light.colors.successSoft, const Color(0xFFD7F9DC));
 
       // Dark: lifted charcoal, not the old near-black #090B0C.
-      expect(dark.colors.page, const Color(0xFF161B1D));
+      expect(dark.colors.background, const Color(0xFF161B1D));
       expect(dark.colors.card, const Color(0xFF22292B));
       expect(dark.colors.ring, const Color(0xFF67787C));
       // tint and primary diverge in dark: text lightens, fill darkens.
-      expect(dark.colors.tint, const Color(0xFF00BC7D));
+      expect(dark.colors.primaryText, const Color(0xFF00BC7D));
       expect(dark.colors.primary, const Color(0xFF006045));
       expect(light.radii.lg, 10);
       expect(light.spacing.s4, 4);
@@ -443,7 +443,8 @@ void main() {
       find.ancestor(
         of: find.text('Page body'),
         matching: find.byWidgetPredicate(
-          (widget) => widget is ColoredBox && widget.color == theme.colors.page,
+          (widget) =>
+              widget is ColoredBox && widget.color == theme.colors.background,
         ),
       ),
       findsOneWidget,

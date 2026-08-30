@@ -119,8 +119,12 @@ class _MonoSkeletonState extends State<MonoSkeleton>
       ),
       MonoSkeletonShape.circle => BorderRadius.circular(theme.radii.full),
     };
-    final baseColor = theme.colors.fill;
-    final highlightColor = Color.lerp(baseColor, theme.colors.page, 0.62)!;
+    final baseColor = theme.colors.muted;
+    final highlightColor = Color.lerp(
+      baseColor,
+      theme.colors.background,
+      0.62,
+    )!;
 
     final skeleton = RepaintBoundary(
       child: AnimatedBuilder(

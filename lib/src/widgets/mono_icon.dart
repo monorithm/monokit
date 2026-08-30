@@ -5,239 +5,251 @@ import '../theme/monokit_layout.dart';
 import '../theme/monokit_theme.dart';
 import 'tooltip.dart';
 
-/// A portable icon descriptor used by [MonoIcon].
+/// An opaque handle to one icon in the system's catalogue.
 ///
-/// Monokit re-exports the **HugeIcons** stroke-rounded set (the canonical
-/// vendor) under semantic names, so product code references intent
-/// ([MonoIcons.like]) rather than a raw vendor constant. Apps can also supply
-/// any HugeIcons constant directly via [MonoIconData.new].
+/// A role, not a picture. Callers name intent — [MonoIcons.like] — and the
+/// mapping from role to glyph is the system's own business: which vendor set
+/// backs it, and whether that set ever changes, is not something a call site
+/// can see or depend on.
+///
+/// That opacity is the point. Until 4.0.0 this type carried the vendor's path
+/// data as a public field and invited callers to construct one from a raw
+/// vendor constant, which made a vendor swap a breaking change for everybody
+/// rather than an internal detail. The catalogue is the API; if a role is
+/// missing from it, the fix is to add the role.
 @immutable
 class MonoIconData {
-  const MonoIconData(this.data, {this.semanticLabel});
+  const MonoIconData._(this._data, {this.semanticLabel});
 
-  /// The HugeIcons path data (e.g. `HugeIcons.strokeRoundedSearch01`).
-  final List<List<dynamic>> data;
+  final List<List<dynamic>> _data;
+
+  /// What assistive technology announces, unless the call site overrides it.
   final String? semanticLabel;
+
+  /// Same glyph, different announcement — for a role whose meaning is narrower
+  /// at one call site than the catalogue can know.
+  MonoIconData withSemanticLabel(String label) =>
+      MonoIconData._(_data, semanticLabel: label);
 }
 
 /// A compact, semantic icon catalog mapped onto the HugeIcons stroke-rounded
 /// set. Names describe role, not glyph, so a vendor swap never touches call
 /// sites.
 abstract final class MonoIcons {
-  static const MonoIconData add = MonoIconData(
+  static const MonoIconData add = MonoIconData._(
     HugeIcons.strokeRoundedAdd01,
     semanticLabel: 'Add',
   );
-  static const MonoIconData close = MonoIconData(
+  static const MonoIconData close = MonoIconData._(
     HugeIcons.strokeRoundedCancel01,
     semanticLabel: 'Close',
   );
-  static const MonoIconData check = MonoIconData(
+  static const MonoIconData check = MonoIconData._(
     HugeIcons.strokeRoundedTick02,
     semanticLabel: 'Selected',
   );
-  static const MonoIconData chevronDown = MonoIconData(
+  static const MonoIconData chevronDown = MonoIconData._(
     HugeIcons.strokeRoundedArrowDown01,
     semanticLabel: 'Expand',
   );
-  static const MonoIconData chevronUp = MonoIconData(
+  static const MonoIconData chevronUp = MonoIconData._(
     HugeIcons.strokeRoundedArrowUp01,
     semanticLabel: 'Collapse',
   );
-  static const MonoIconData chevronLeft = MonoIconData(
+  static const MonoIconData chevronLeft = MonoIconData._(
     HugeIcons.strokeRoundedArrowLeft01,
     semanticLabel: 'Previous',
   );
-  static const MonoIconData chevronRight = MonoIconData(
+  static const MonoIconData chevronRight = MonoIconData._(
     HugeIcons.strokeRoundedArrowRight01,
     semanticLabel: 'Next',
   );
-  static const MonoIconData arrowRight = MonoIconData(
+  static const MonoIconData arrowRight = MonoIconData._(
     HugeIcons.strokeRoundedArrowRight01,
     semanticLabel: 'Continue',
   );
-  static const MonoIconData menu = MonoIconData(
+  static const MonoIconData menu = MonoIconData._(
     HugeIcons.strokeRoundedMenu01,
     semanticLabel: 'Menu',
   );
-  static const MonoIconData more = MonoIconData(
+  static const MonoIconData more = MonoIconData._(
     HugeIcons.strokeRoundedMoreHorizontal,
     semanticLabel: 'More options',
   );
-  static const MonoIconData sparkles = MonoIconData(
+  static const MonoIconData sparkles = MonoIconData._(
     HugeIcons.strokeRoundedAiMagic,
     semanticLabel: 'Sparkles',
   );
-  static const MonoIconData search = MonoIconData(
+  static const MonoIconData search = MonoIconData._(
     HugeIcons.strokeRoundedSearch01,
     semanticLabel: 'Search',
   );
-  static const MonoIconData send = MonoIconData(
+  static const MonoIconData send = MonoIconData._(
     HugeIcons.strokeRoundedSent,
     semanticLabel: 'Send',
   );
-  static const MonoIconData play = MonoIconData(
+  static const MonoIconData play = MonoIconData._(
     HugeIcons.strokeRoundedPlay,
     semanticLabel: 'Play',
   );
-  static const MonoIconData pause = MonoIconData(
+  static const MonoIconData pause = MonoIconData._(
     HugeIcons.strokeRoundedPause,
     semanticLabel: 'Pause',
   );
-  static const MonoIconData bag = MonoIconData(
+  static const MonoIconData bag = MonoIconData._(
     HugeIcons.strokeRoundedShoppingBag01,
     semanticLabel: 'Shop',
   );
-  static const MonoIconData receipt = MonoIconData(
+  static const MonoIconData receipt = MonoIconData._(
     HugeIcons.strokeRoundedInvoice01,
     semanticLabel: 'Orders',
   );
-  static const MonoIconData grid = MonoIconData(
+  static const MonoIconData grid = MonoIconData._(
     HugeIcons.strokeRoundedDashboardSquare01,
     semanticLabel: 'Workspace',
   );
-  static const MonoIconData video = MonoIconData(
+  static const MonoIconData video = MonoIconData._(
     HugeIcons.strokeRoundedVideo01,
     semanticLabel: 'Live video',
   );
-  static const MonoIconData message = MonoIconData(
+  static const MonoIconData message = MonoIconData._(
     HugeIcons.strokeRoundedMessage01,
     semanticLabel: 'Messages',
   );
-  static const MonoIconData call = MonoIconData(
+  static const MonoIconData call = MonoIconData._(
     HugeIcons.strokeRoundedCall,
     semanticLabel: 'Call',
   );
-  static const MonoIconData user = MonoIconData(
+  static const MonoIconData user = MonoIconData._(
     HugeIcons.strokeRoundedUser,
     semanticLabel: 'Account',
   );
-  static const MonoIconData like = MonoIconData(
+  static const MonoIconData like = MonoIconData._(
     HugeIcons.strokeRoundedFavourite,
     semanticLabel: 'Like',
   );
-  static const MonoIconData location = MonoIconData(
+  static const MonoIconData location = MonoIconData._(
     HugeIcons.strokeRoundedLocation01,
     semanticLabel: 'Location',
   );
-  static const MonoIconData filter = MonoIconData(
+  static const MonoIconData filter = MonoIconData._(
     HugeIcons.strokeRoundedFilterHorizontal,
     semanticLabel: 'Filter',
   );
-  static const MonoIconData mic = MonoIconData(
+  static const MonoIconData mic = MonoIconData._(
     HugeIcons.strokeRoundedMic01,
     semanticLabel: 'Voice note',
   );
-  static const MonoIconData image = MonoIconData(
+  static const MonoIconData image = MonoIconData._(
     HugeIcons.strokeRoundedImage01,
     semanticLabel: 'Photo',
   );
-  static const MonoIconData star = MonoIconData(
+  static const MonoIconData star = MonoIconData._(
     HugeIcons.strokeRoundedStar,
     semanticLabel: 'Featured',
   );
-  static const MonoIconData bookmark = MonoIconData(
+  static const MonoIconData bookmark = MonoIconData._(
     HugeIcons.strokeRoundedBookmark01,
     semanticLabel: 'Save',
   );
-  static const MonoIconData mute = MonoIconData(
+  static const MonoIconData mute = MonoIconData._(
     HugeIcons.strokeRoundedVolumeMute01,
     semanticLabel: 'Mute',
   );
-  static const MonoIconData clock = MonoIconData(
+  static const MonoIconData clock = MonoIconData._(
     HugeIcons.strokeRoundedClock01,
     semanticLabel: 'Time',
   );
-  static const MonoIconData document = MonoIconData(
+  static const MonoIconData document = MonoIconData._(
     HugeIcons.strokeRoundedFile01,
     semanticLabel: 'Document',
   );
-  static const MonoIconData link = MonoIconData(
+  static const MonoIconData link = MonoIconData._(
     HugeIcons.strokeRoundedLink01,
     semanticLabel: 'Link',
   );
-  static const MonoIconData download = MonoIconData(
+  static const MonoIconData download = MonoIconData._(
     HugeIcons.strokeRoundedDownload01,
     semanticLabel: 'Download',
   );
-  static const MonoIconData back = MonoIconData(
+  static const MonoIconData back = MonoIconData._(
     HugeIcons.strokeRoundedArrowLeft01,
     semanticLabel: 'Back',
   );
-  static const MonoIconData store = MonoIconData(
+  static const MonoIconData store = MonoIconData._(
     HugeIcons.strokeRoundedStore01,
     semanticLabel: 'Shop',
   );
-  static const MonoIconData camera = MonoIconData(
+  static const MonoIconData camera = MonoIconData._(
     HugeIcons.strokeRoundedCamera01,
     semanticLabel: 'Camera',
   );
-  static const MonoIconData share = MonoIconData(
+  static const MonoIconData share = MonoIconData._(
     HugeIcons.strokeRoundedShare01,
     semanticLabel: 'Share',
   );
-  static const MonoIconData settings = MonoIconData(
+  static const MonoIconData settings = MonoIconData._(
     HugeIcons.strokeRoundedSettings01,
     semanticLabel: 'Settings',
   );
-  static const MonoIconData notification = MonoIconData(
+  static const MonoIconData notification = MonoIconData._(
     HugeIcons.strokeRoundedNotification02,
     semanticLabel: 'Notifications',
   );
-  static const MonoIconData edit = MonoIconData(
+  static const MonoIconData edit = MonoIconData._(
     HugeIcons.strokeRoundedEdit02,
     semanticLabel: 'Edit',
   );
-  static const MonoIconData home = MonoIconData(
+  static const MonoIconData home = MonoIconData._(
     HugeIcons.strokeRoundedHome01,
     semanticLabel: 'Home',
   );
 
-  static const MonoIconData list = MonoIconData(
+  static const MonoIconData list = MonoIconData._(
     HugeIcons.strokeRoundedLeftToRightListBullet,
     semanticLabel: 'List view',
   );
-  static const MonoIconData shield = MonoIconData(
+  static const MonoIconData shield = MonoIconData._(
     HugeIcons.strokeRoundedShield01,
     semanticLabel: 'Verified',
   );
-  static const MonoIconData trash = MonoIconData(
+  static const MonoIconData trash = MonoIconData._(
     HugeIcons.strokeRoundedDelete02,
     semanticLabel: 'Delete',
   );
-  static const MonoIconData flag = MonoIconData(
+  static const MonoIconData flag = MonoIconData._(
     HugeIcons.strokeRoundedFlag02,
     semanticLabel: 'Report',
   );
-  static const MonoIconData wifiOff = MonoIconData(
+  static const MonoIconData wifiOff = MonoIconData._(
     HugeIcons.strokeRoundedWifiDisconnected01,
     semanticLabel: 'Offline',
   );
-  static const MonoIconData eyeOff = MonoIconData(
+  static const MonoIconData eyeOff = MonoIconData._(
     HugeIcons.strokeRoundedViewOff,
     semanticLabel: 'Hide',
   );
-  static const MonoIconData zap = MonoIconData(
+  static const MonoIconData zap = MonoIconData._(
     HugeIcons.strokeRoundedFlash,
     semanticLabel: 'Activate',
   );
-  static const MonoIconData phoneIncoming = MonoIconData(
+  static const MonoIconData phoneIncoming = MonoIconData._(
     HugeIcons.strokeRoundedCallIncoming01,
     semanticLabel: 'Incoming call',
   );
-  static const MonoIconData phoneOutgoing = MonoIconData(
+  static const MonoIconData phoneOutgoing = MonoIconData._(
     HugeIcons.strokeRoundedCallOutgoing01,
     semanticLabel: 'Outgoing call',
   );
-  static const MonoIconData plus = MonoIconData(
+  static const MonoIconData plus = MonoIconData._(
     HugeIcons.strokeRoundedPlusSign,
     semanticLabel: 'Add',
   );
-  static const MonoIconData refresh = MonoIconData(
+  static const MonoIconData refresh = MonoIconData._(
     HugeIcons.strokeRoundedRefresh,
     semanticLabel: 'Retry',
   );
-  static const MonoIconData crop = MonoIconData(
+  static const MonoIconData crop = MonoIconData._(
     HugeIcons.strokeRoundedCrop,
     semanticLabel: 'Crop',
   );
@@ -324,7 +336,7 @@ class MonoIcon extends StatelessWidget {
             : MonokitIconSize.stroke);
 
     Widget glyph = HugeIcon(
-      icon: icon.data,
+      icon: icon._data,
       size: resolvedSize,
       color: color ?? theme.colors.foreground,
       strokeWidth: resolvedStroke,

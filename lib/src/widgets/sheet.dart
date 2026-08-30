@@ -158,7 +158,7 @@ class MonoSheetHeader extends StatelessWidget {
         if (description != null)
           DefaultTextStyle.merge(
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
             child: description!,
           ),
@@ -619,7 +619,7 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
       constraints: baseConstraints.copyWith(maxHeight: maxHeight),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: widget.theme.colors.elevated,
+          color: widget.theme.colors.popover,
           borderRadius: radius,
           boxShadow: widget.theme.elevation.resolve(MonoElevation.floating),
         ),
@@ -648,7 +648,7 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
                         width: widget.theme.spacing.xxl,
                         height: widget.theme.spacing.xs,
                         decoration: BoxDecoration(
-                          color: widget.theme.colors.foregroundMuted.withAlpha(
+                          color: widget.theme.colors.mutedForeground.withAlpha(
                             120,
                           ),
                           borderRadius: BorderRadius.circular(

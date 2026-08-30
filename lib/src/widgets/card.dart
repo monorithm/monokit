@@ -54,7 +54,7 @@ class MonoCard extends StatelessWidget {
         // ground, or one over media.
         border: showBorder
             ? Border.all(
-                color: borderColor ?? theme.colors.separator,
+                color: borderColor ?? theme.colors.border,
                 width: theme.components.card.borderWidth,
               )
             : null,
@@ -190,7 +190,7 @@ class MonoCardDescription extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DefaultTextStyle.merge(
       style: theme.typography.bodyMedium.copyWith(
-        color: theme.colors.foregroundMuted,
+        color: theme.colors.mutedForeground,
       ),
       textAlign: textAlign,
       maxLines: maxLines,

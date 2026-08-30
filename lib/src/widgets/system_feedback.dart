@@ -88,7 +88,7 @@ class MonoEmptyState extends StatelessWidget {
                       // Icon media chip (bg-muted rounded-lg) with foreground glyph.
                       DecoratedBox(
                         decoration: BoxDecoration(
-                          color: t.colors.fill,
+                          color: t.colors.muted,
                           borderRadius: BorderRadius.circular(t.radii.lg),
                         ),
                         child: Padding(
@@ -110,7 +110,7 @@ class MonoEmptyState extends StatelessWidget {
                       SizedBox(height: t.spacing.sm),
                       DefaultTextStyle.merge(
                         style: t.typography.bodyMedium.copyWith(
-                          color: t.colors.foregroundMuted,
+                          color: t.colors.mutedForeground,
                         ),
                         textAlign: TextAlign.center,
                         child: description!,

@@ -374,14 +374,14 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
     final selected = _selectedOption();
     final foreground = _isEnabled
         ? theme.colors.foreground
-        : theme.colors.foregroundMuted;
+        : theme.colors.mutedForeground;
     final display = selected == null
         ? Text(
             widget.placeholder,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           )
         : (widget.selectedBuilder?.call(context, selected) ?? selected.label);
@@ -427,12 +427,12 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
           final focused = _statesController.contains(MonoState.focused);
           final hovered = _statesController.contains(MonoState.hovered);
           final borderColor = widget.invalid
-              ? theme.colors.danger
+              ? theme.colors.destructive
               : focused || _isOpen
               ? theme.colors.ring
               : hovered
               ? theme.colors.foreground
-              : theme.colors.separator;
+              : theme.colors.border;
           return Semantics(
             container: true,
             button: true,
@@ -466,12 +466,15 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
                 ),
                 decoration: BoxDecoration(
                   color: _isEnabled
-                      ? theme.colors.page.withValues(alpha: 0)
-                      : theme.colors.fill.withValues(alpha: 0.6),
+                      ? theme.colors.background.withValues(alpha: 0)
+                      : theme.colors.muted.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(theme.radii.lg),
                   border: Border.all(color: borderColor),
                   boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(theme.colors.danger, alpha: 0.2)
+                      ? theme.focus.ringShadow(
+                          theme.colors.destructive,
+                          alpha: 0.2,
+                        )
                       : _statesController.contains(MonoState.focusVisible)
                       ? theme.focus.ringShadow(theme.colors.ring)
                       : null,
@@ -487,7 +490,7 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
                       Text(
                         _isOpen ? '⌃' : '⌄',
                         style: theme.typography.labelLarge.copyWith(
-                          color: theme.colors.foregroundMuted,
+                          color: theme.colors.mutedForeground,
                         ),
                       ),
                     ],
@@ -683,7 +686,7 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
     final surface = TextFieldTapRegion(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.elevated,
+          color: theme.colors.popover,
           borderRadius: BorderRadius.circular(theme.radii.lg),
           boxShadow: theme.elevation.resolve(MonoElevation.raised),
         ),
@@ -696,7 +699,7 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
               children: <Widget>[
                 _buildSearch(theme),
                 DecoratedBox(
-                  decoration: BoxDecoration(color: theme.colors.separator),
+                  decoration: BoxDecoration(color: theme.colors.border),
                   child: SizedBox(height: theme.spacing.xs / 4),
                 ),
                 // Flexible lets the list yield to the search field when the
@@ -710,7 +713,7 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
                             padding: EdgeInsets.all(theme.spacing.lg),
                             child: DefaultTextStyle.merge(
                               style: theme.typography.bodyMedium.copyWith(
-                                color: theme.colors.foregroundMuted,
+                                color: theme.colors.mutedForeground,
                               ),
                               child: const Text('No options found.'),
                             ),
@@ -763,7 +766,7 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
               child: Text(
                 widget.searchPlaceholder,
                 style: theme.typography.bodyMedium.copyWith(
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ),
@@ -792,9 +795,9 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
     final selected = option.value == widget.selectedValue;
     final background = highlighted
         ? theme.colors.primary
-        : theme.colors.elevated;
+        : theme.colors.popover;
     final foreground = highlighted
-        ? theme.colors.onPrimary
+        ? theme.colors.primaryForeground
         : theme.colors.foreground;
     final custom = widget.optionBuilder?.call(
       context,
@@ -845,7 +848,7 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
                                 style: theme.typography.labelMedium.copyWith(
                                   color: highlighted
                                       ? foreground.withValues(alpha: 0.75)
-                                      : theme.colors.foregroundMuted,
+                                      : theme.colors.mutedForeground,
                                 ),
                                 child: option.description!,
                               ),

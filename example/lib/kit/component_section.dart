@@ -60,7 +60,7 @@ class ComponentSection extends StatelessWidget {
             Text(
               description!,
               style: theme.typography.bodyMedium.copyWith(
-                color: theme.colors.foregroundMuted,
+                color: theme.colors.mutedForeground,
               ),
             ),
           ],
@@ -110,7 +110,7 @@ class VariantMatrix<R, C> extends StatelessWidget {
               child: Text(
                 rowLabel!(r),
                 style: theme.typography.labelMedium.copyWith(
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ),
@@ -145,7 +145,7 @@ class DemoTile extends StatelessWidget {
         Text(
           label,
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.foregroundMuted,
+            color: theme.colors.mutedForeground,
           ),
         ),
       ],

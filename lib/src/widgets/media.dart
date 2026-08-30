@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import '../primitives/mono_pressable.dart';
 import '../primitives/mono_surfaces.dart';
 import '../motion/mono_spring_controller.dart';
+import '../states/mono_phase.dart';
 import '../theme/monokit_theme.dart';
 import 'badge.dart';
 import 'button.dart';
@@ -66,7 +67,7 @@ class MonoMediaSurface extends StatelessWidget {
       label: semanticLabel,
       image: true,
       child: ColoredBox(
-        color: MonokitTheme.of(context).colors.canvas,
+        color: MonokitTheme.of(context).colors.mediaCanvas,
         child: Stack(fit: StackFit.expand, children: <Widget>[child, ?overlay]),
       ),
     );
@@ -180,8 +181,8 @@ class MonoPresence extends StatelessWidget {
               height: 10,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: online ? t.colors.success : t.colors.foregroundMuted,
-                border: Border.all(color: t.colors.page, width: 2),
+                color: online ? t.colors.success : t.colors.mutedForeground,
+                border: Border.all(color: t.colors.background, width: 2),
               ),
             ),
           ),
@@ -224,7 +225,7 @@ class _WaveformPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
     final step = size.width / values.length;
-    final muted = Paint()..color = colors.foregroundMuted;
+    final muted = Paint()..color = colors.mutedForeground;
     final active = Paint()..color = colors.primary;
     for (var i = 0; i < values.length; i++) {
       final h = values[i].clamp(0, 1) * size.height;
@@ -310,7 +311,7 @@ class MonoCameraShutter extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: t.colors.onMedia,
-            border: Border.all(color: t.colors.mistLine, width: 6),
+            border: Border.all(color: t.colors.glassBorder, width: 6),
           ),
         ),
       ),
@@ -462,7 +463,7 @@ class _MonoGalleryViewerState extends State<MonoGalleryViewer>
   @override
   Widget build(BuildContext context) {
     final Widget viewer = ColoredBox(
-      color: MonokitTheme.of(context).colors.canvas,
+      color: MonokitTheme.of(context).colors.mediaCanvas,
       child: PageView.builder(
         controller: widget.controller,
         itemCount: widget.itemCount,
@@ -558,37 +559,37 @@ class MonoTypingIndicator extends StatelessWidget {
   );
 }
 
-/// Delivery receipts for a chat message.
+/// A message's delivery state, in phases.
 ///
-/// Deprecated: three of these five values — `sent`, `delivered`, `read` — are
-/// facts about a transport rather than phases of a command, and the design
-/// language is explicit that a component accepts the phase and never the
-/// transport type. `MonoPhase` is the replacement. This stays until 4.0.0 so
-/// existing messaging surfaces keep compiling.
-@Deprecated('Use MonoPhase. Removed in 4.0.0.')
-enum MonoReceiptState { pending, sent, delivered, read, failed }
-
+/// `MonoReceiptState` is gone. Three of its five values — `sent`, `delivered`,
+/// `read` — were facts about a transport, and the language is explicit that a
+/// component takes the phase and never the transport type. A receipt that
+/// announces "delivered" is describing a pipe; the user is asking whether their
+/// message got there.
+///
+/// The label is the caller's, because "Sending" and "Not sent" are copy, and
+/// copy is neither English by default nor the design system's to write.
 class MonoReceipt extends StatelessWidget {
-  const MonoReceipt({super.key, required this.state});
-  final MonoReceiptState state;
+  const MonoReceipt({super.key, required this.phase, required this.label});
+
+  final MonoPhase phase;
+
+  /// What this phase is called here, in the user's language.
+  final String label;
+
   @override
   Widget build(BuildContext context) {
     final t = MonokitTheme.of(context);
-    final label = switch (state) {
-      MonoReceiptState.pending => 'Pending',
-      MonoReceiptState.sent => 'Sent',
-      MonoReceiptState.delivered => 'Delivered',
-      MonoReceiptState.read => 'Read',
-      MonoReceiptState.failed => 'Failed',
-    };
     return Semantics(
       label: label,
       child: Text(
         label,
         style: t.typography.labelMedium.copyWith(
-          color: state == MonoReceiptState.failed
-              ? t.colors.dangerText
-              : t.colors.foregroundMuted,
+          color: switch (phase) {
+            MonoPhase.rejected => t.colors.destructiveText,
+            MonoPhase.stalled => t.colors.warningText,
+            _ => t.colors.mutedForeground,
+          },
         ),
       ),
     );

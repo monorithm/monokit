@@ -494,7 +494,7 @@ class _MonoAccordionState extends State<MonoAccordion>
       for (var index = 0; index < _items.length; index++) ...<Widget>[
         if (index > 0)
           ColoredBox(
-            color: theme.colors.separator,
+            color: theme.colors.border,
             child: const SizedBox(height: 1),
           ),
         _buildItem(
@@ -761,12 +761,12 @@ class _MonoAccordionTriggerStyle {
     final pressed = states.contains(MonoState.pressed);
     final focused = states.contains(MonoState.focusVisible);
     final foreground = !enabled
-        ? theme.colors.foregroundMuted
+        ? theme.colors.mutedForeground
         : theme.colors.foreground;
     final background = !enabled
         ? theme.colors.card
         : pressed || hovered || expanded
-        ? theme.colors.fill
+        ? theme.colors.muted
         : theme.colors.card;
 
     return _MonoAccordionTriggerStyle(

@@ -271,7 +271,7 @@ class _ActionBarDemo extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: theme.colors.card,
                   borderRadius: BorderRadius.circular(theme.radii.lg),
-                  border: Border.all(color: theme.colors.separator),
+                  border: Border.all(color: theme.colors.border),
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(theme.spacing.sm),
