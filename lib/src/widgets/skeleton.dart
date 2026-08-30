@@ -15,6 +15,7 @@ class MonoSkeleton extends StatefulWidget {
     this.borderRadius,
     this.shape = MonoSkeletonShape.rectangle,
     this.animate = true,
+    this.sweepOnce = false,
     this.semanticLabel = 'Loading',
     this.excludeFromSemantics = false,
   });
@@ -29,6 +30,7 @@ class MonoSkeleton extends StatefulWidget {
   }) : width = size,
        height = size,
        borderRadius = null,
+       sweepOnce = false,
        shape = MonoSkeletonShape.circle;
 
   final double? width;
@@ -36,6 +38,15 @@ class MonoSkeleton extends StatefulWidget {
   final double? borderRadius;
   final MonoSkeletonShape shape;
   final bool animate;
+
+  /// One sweep instead of a loop.
+  ///
+  /// The distinction is load-bearing and easy to lose: **a looping shimmer
+  /// means loading; a single sweep means settled.** A surface that is
+  /// reconciling — the server has the write, the read model is catching up —
+  /// sweeps once and stops. A surface that is still waiting loops. Rendering
+  /// one as the other tells the user the opposite of what is true.
+  final bool sweepOnce;
   final String? semanticLabel;
   final bool excludeFromSemantics;
 
@@ -62,7 +73,8 @@ class _MonoSkeletonState extends State<MonoSkeleton>
   @override
   void didUpdateWidget(covariant MonoSkeleton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.animate != widget.animate) {
+    if (oldWidget.animate != widget.animate ||
+        oldWidget.sweepOnce != widget.sweepOnce) {
       _syncAnimation();
     }
   }
@@ -83,7 +95,11 @@ class _MonoSkeletonState extends State<MonoSkeleton>
         TickerMode.valuesOf(context).enabled;
     if (shouldAnimate) {
       if (!_controller.isAnimating) {
-        _controller.repeat();
+        if (widget.sweepOnce) {
+          _controller.forward(from: 0);
+        } else {
+          _controller.repeat();
+        }
       }
     } else {
       _controller.stop();

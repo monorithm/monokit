@@ -142,7 +142,9 @@ class _ProceduralArt extends StatelessWidget {
             Center(
               child: MonoIcon(
                 icon!,
-                size: 40,
+                // 32 is the ceiling: past it a glyph is an illustration and
+                // has left the system.
+                size: 32,
                 color: onArt.withValues(alpha: 0.55),
               ),
             ),

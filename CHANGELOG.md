@@ -8,6 +8,108 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 3.2.0
+
+Conformance. An audit of this package against the specification at
+monokit.monorithm.dev found twenty divergences, and the structural one was that the
+two had stopped sharing a vocabulary: forty-three specified colour tokens did not
+resolve under their specified names. Governance is not ambiguous about which side
+moves — *"where a realization contradicts this site, the realization is what
+changes"* — so the specified names are now the API, published alongside the ones
+this package invented. Nothing is removed here and no value moved, so this is
+additive; the old names go away in 4.0.0.
+
+Three components the specification names were missing outright, and the two the
+design boards depend on were among them. Two more findings were fixed by the tests
+written for this release rather than by the audit: the pager's drag surface was only
+as tall as its content, and the modal's Escape key never fired because its shortcut
+sat below the focus scope rather than above it.
+
+### Added
+
+- **`MonoPager`, `MonoPageDots`, `MonoModal`** — specified components that had no
+  implementation. The pager commits past 30% of its width or 700px/s, rubber-bands
+  at 0.55 past the end stops, claims one gesture axis, and ships arrow keys and
+  pointer-density chevrons in the same change as the gesture. The dots widen the
+  active dot rather than only recolouring it, and expose one semantics node
+  reporting position and length instead of a row of anonymous stops. The modal owns
+  the focus trap, the exclusion triad, focus restoration and a labelled dismiss
+  barrier — `MonoModalBarrierScope` applies focus, pointer and semantics exclusion
+  together, since any subset leaves the overlay reachable by whichever modality was
+  missed.
+- **`MonoPhase`** — the five visible phases of a command: pending, reconciling,
+  succeeded, rejected, stalled. None of them existed, which meant *rejected* and
+  *stalled* could not be told apart: a declined payment and a dropped connection
+  rendered the same and call for opposite responses. `MonoPhaseBadge` renders one,
+  quietly.
+- **`MonoSkeleton.sweepOnce`** — a single sweep rather than a loop. A looping
+  shimmer means loading; one sweep means settled.
+- **The specified colour names.** `background`, `cardForeground`, `popover`,
+  `popoverForeground`, `mutedForeground`, `mutedText`, `muted`, `accent`,
+  `accentForeground`, `border`, `primaryForeground`, `primaryText`, `destructive`,
+  `destructiveSoft`, `destructiveText`, the four status foregrounds,
+  `liveForeground`, `mediaCanvas`, `glassFill` and `glassBorder` all resolve.
+- **Nineteen tokens that were simply absent**: `input`, `secondary`,
+  `secondaryForeground`, `overlayScrim`, `glassFillLight`, `glassBorderLight`,
+  `chart1`–`chart5`, and the eight `sidebar*` roles, plus `MonokitColors.glassBlur`.
+- **Semantic layout tokens** — `MonokitContainers`, `MonokitChrome`,
+  `MonokitPageInset`, `MonokitGutter`, `MonokitIconSize`, `MonokitList` and
+  `MonoReachSide`, mirroring the shape the specification's own generator emits. The
+  raw four-point scale was already here; what was missing was every number the
+  language actually names, so a developer reading "a 64px list row" had nothing to
+  reach for. Density now resolves `minTarget`, `controlHeight`, `gap`, `row1`–`row3`
+  and `iconChrome`.
+- **Motion role names** — `press`, `state`, `emphasis`, `screen`, at the values they
+  already had.
+- **`MonokitRadii.xs`** (4), which the scale was missing.
+- **IBM Plex Sans Arabic**, bundled and wired as a fallback on every register. IBM
+  Plex Sans has no Arabic block — the Arabic cut is a separate family — so until now
+  every Arabic string fell back to a platform face at different metrics, in a
+  product that ships Arabic as one of five languages.
+- **Twelve icon roles** the design boards needed and had to reach past the catalogue
+  for: `list`, `shield`, `trash`, `flag`, `wifiOff`, `eyeOff`, `zap`,
+  `phoneIncoming`, `phoneOutgoing`, `plus`, `refresh`, `crop`.
+- `MonokitLabels.active`, so the live badge has a localisable label.
+
+### Changed
+
+- **`MonoIcon` resolves its own size and stroke.** The default size now comes from
+  density — 20 at touch, 16 at pointer — where it was hardcoded to 16, which
+  under-sized every default icon in a touch product. The optical stroke floor of
+  1.75 is applied at 16 and only at 16, `active` renders at 2.0, and the
+  constructor asserts the five sanctioned sizes. Icons that mean direction —
+  back, forward, the chevrons, send, reply — now mirror in RTL; icons that depict
+  an object do not.
+- **`MonoLiveBadge` no longer defaults to `'LIVE'`.** That string was uppercase
+  where the content rules call for sentence case, English in a five-language
+  product, and the wrong word: the state a merchant surface reports is *active*. It
+  now falls back to `MonokitLabels.active`.
+- **`proseHeading` tracking is -0.22**, not -0.1 — the contract sets -0.01em at
+  22px, so it had been running at less than half the specified track.
+  `headlineLarge` is -0.36, not -0.35.
+- `MonoPager`'s panes fill the frame, so the drag surface is the whole pager rather
+  than only as tall as the content inside it.
+
+### Deprecated
+
+Both removed in 4.0.0:
+
+- The package-specific colour names, in favour of the specified ones: `page`,
+  `foregroundMuted`, `foregroundSubtle`, `fill`, `separator`, `danger`,
+  `dangerSoft`, `dangerText`, `onPrimary`, `onLive`, `onStatus`, `canvas`,
+  `elevated`, `tint`, `mistFill`, `mistLine`.
+- `MonoReceiptState`. Three of its five values — `sent`, `delivered`, `read` — are
+  facts about a transport rather than phases of a command, and a component takes
+  the phase, never the transport type. Use `MonoPhase`.
+
+### Known gaps
+
+Not fixed here, and tracked for 4.0.0 because each is breaking: `MonoIconData`
+still exposes raw vendor path data publicly, which is the leak the "never a vendor
+glyph name" clause exists to prevent; and 129 exported classes across 41 files
+still ship without a contract — the README now marks which parts of the API are
+specified and which are provisional.
+
 ## 3.1.0
 
 The Makola realization finished its design work the way governance asks: the

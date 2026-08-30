@@ -92,6 +92,7 @@ class _ConversationScenarioState extends State<ConversationScenario> {
             if (m.mine && m.read)
               const MonoMessage(
                 align: MonoMessageAlign.end,
+                // ignore: deprecated_member_use
                 child: MonoReceipt(state: MonoReceiptState.read),
               ),
           ],

@@ -34,6 +34,25 @@ final class MonokitDensity {
 
   bool get isTouch => mode != MonoDensity.pointer;
 
+  /// The specification's name for [minimumTarget]. The visual glyph may be
+  /// smaller than this; the hit area may not.
+  double get minTarget => minimumTarget;
+
+  /// The height of a standard control — a button, an input, a select.
+  double get controlHeight => isTouch ? 44 : 36;
+
+  /// The gap between adjacent controls in a group.
+  double get gap => isTouch ? 8 : 4;
+
+  /// The three list-row heights. One line, two lines, and a media row.
+  double get row1 => isTouch ? 48 : 40;
+  double get row2 => isTouch ? 64 : 56;
+  double get row3 => isTouch ? 88 : 76;
+
+  /// The default size for a chrome icon at this density. Touch gets the larger
+  /// glyph because a finger is a coarser instrument than a cursor.
+  double get iconChrome => isTouch ? 20 : 16;
+
   /// Platform first, width second.
   ///
   /// A desktop platform is always pointer — it has a cursor regardless of

@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 class MonokitRadii {
   const MonokitRadii({
     this.base = 10,
+    this.xs = 4,
     this.sm = 6,
     this.md = 8,
     this.lg = 10,
@@ -19,6 +20,10 @@ class MonokitRadii {
   });
 
   final double base;
+
+  /// The smallest radius in the scale — chips, swatches, tiny tiles.
+  final double xs;
+
   final double sm;
   final double md;
   final double lg;
@@ -28,6 +33,7 @@ class MonokitRadii {
   final double xxxxl;
   final double full;
 
+  BorderRadius get borderRadiusXs => BorderRadius.circular(xs);
   BorderRadius get borderRadiusSm => BorderRadius.circular(sm);
   BorderRadius get borderRadiusMd => BorderRadius.circular(md);
   BorderRadius get borderRadiusLg => BorderRadius.circular(lg);
@@ -39,6 +45,7 @@ class MonokitRadii {
 
   MonokitRadii copyWith({
     double? base,
+    double? xs,
     double? sm,
     double? md,
     double? lg,
@@ -50,6 +57,7 @@ class MonokitRadii {
   }) {
     return MonokitRadii(
       base: base ?? this.base,
+      xs: xs ?? this.xs,
       sm: sm ?? this.sm,
       md: md ?? this.md,
       lg: lg ?? this.lg,
@@ -65,6 +73,7 @@ class MonokitRadii {
   bool operator ==(Object other) =>
       other is MonokitRadii &&
       base == other.base &&
+      xs == other.xs &&
       sm == other.sm &&
       md == other.md &&
       lg == other.lg &&
@@ -75,5 +84,6 @@ class MonokitRadii {
       full == other.full;
 
   @override
-  int get hashCode => Object.hash(base, sm, md, lg, xl, xxl, xxxl, xxxxl, full);
+  int get hashCode =>
+      Object.hash(base, xs, sm, md, lg, xl, xxl, xxxl, xxxxl, full);
 }

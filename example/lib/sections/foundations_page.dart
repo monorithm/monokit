@@ -158,22 +158,23 @@ class _PaletteRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    // The 2.0 role names. The old labels survived the rename and had started
-    // lying — `secondary` and `muted` both pointed at `fill`, and `accent` at
-    // `primary`, so three swatches were duplicates of two others.
+    // The specified role names, as of 3.2.0. These labels are string literals
+    // paired with values by hand, so nothing catches them drifting — analyze
+    // and the whole test suite pass just as happily with a wrong one. Change
+    // them only alongside the token they name.
     final entries = <(String, Color)>[
-      ('page', colors.page),
+      ('background', colors.background),
       ('card', colors.card),
-      ('elevated', colors.elevated),
+      ('popover', colors.popover),
       ('foreground', colors.foreground),
-      ('foregroundMuted', colors.foregroundMuted),
-      ('foregroundSubtle', colors.foregroundSubtle),
-      ('fill', colors.fill),
-      ('separator', colors.separator),
-      ('tint', colors.tint),
+      ('mutedForeground', colors.mutedForeground),
+      ('mutedText', colors.mutedText),
+      ('muted', colors.muted),
+      ('border', colors.border),
+      ('primaryText', colors.primaryText),
       ('primary', colors.primary),
       ('primarySoft', colors.primarySoft),
-      ('danger', colors.danger),
+      ('destructive', colors.destructive),
       ('success', colors.success),
       ('warning', colors.warning),
       ('info', colors.info),
@@ -331,7 +332,7 @@ class _MotionDemoState extends State<_MotionDemo>
               onPressed: () => _controller
                 ..reset()
                 ..repeat(),
-              leading: const MonoIcon(MonoIcons.play, size: 14),
+              leading: const MonoIcon(MonoIcons.play, size: 16),
               child: const Text('Replay'),
             ),
             const MonoBadge(

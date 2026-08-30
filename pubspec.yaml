@@ -1,6 +1,6 @@
 name: monokit_ui
 description: "A token-driven, widgets-first Flutter design system: light and dark themes, forms, overlays and app shells, built on widgets rather than Material."
-version: 3.1.0
+version: 3.2.0
 repository: https://github.com/monorithm/monokit-ui
 issue_tracker: https://github.com/monorithm/monokit-ui/issues
 topics:
@@ -43,6 +43,17 @@ flutter:
     - family: IBM Plex Sans
       fonts:
         - asset: fonts/IBMPlexSans.ttf
+    # IBM Plex Sans carries no Arabic — Arabic is a separate family in the
+    # superfamily, not a subset of the Latin one. Without this an Arabic string
+    # silently falls back to whatever the platform offers, at different metrics
+    # and a different colour, which is a visible break in a product that ships
+    # Arabic as one of five languages. `MonokitTypography` lists it as the
+    # fallback, so nothing at a call site has to know it exists.
+    - family: IBM Plex Sans Arabic
+      fonts:
+        - asset: fonts/IBMPlexSansArabic-Regular.ttf
+        - asset: fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
     - family: IBM Plex Mono
       fonts:
         - asset: fonts/IBMPlexMono-Regular.ttf

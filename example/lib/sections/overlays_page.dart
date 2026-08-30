@@ -163,7 +163,7 @@ class OverlaysPage extends StatelessWidget {
               placement: MonoPlacement.rightStart,
               trigger: MonoButton(
                 variant: MonoButtonVariant.secondary,
-                trailing: const MonoIcon(MonoIcons.chevronRight, size: 14),
+                trailing: const MonoIcon(MonoIcons.chevronRight, size: 16),
                 child: const Text('Opens toward the edge'),
               ),
               child: Padding(
@@ -286,7 +286,7 @@ class OverlaysPage extends StatelessWidget {
           child: MonoDropdownMenu<String>(
             trigger: MonoButton(
               variant: MonoButtonVariant.tinted,
-              trailing: const MonoIcon(MonoIcons.chevronDown, size: 14),
+              trailing: const MonoIcon(MonoIcons.chevronDown, size: 16),
               child: const Text('Actions'),
             ),
             items: <MonoDropdownMenuItem<String>>[
@@ -369,7 +369,7 @@ class _OverlaysHero extends StatelessWidget {
                 trigger: MonoButton(
                   variant: MonoButtonVariant.tinted,
                   size: MonoButtonSize.sm,
-                  trailing: const MonoIcon(MonoIcons.chevronDown, size: 14),
+                  trailing: const MonoIcon(MonoIcons.chevronDown, size: 16),
                   child: const Text('More'),
                 ),
               ),
