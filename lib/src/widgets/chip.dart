@@ -55,15 +55,15 @@ class MonoChip extends StatelessWidget {
           child: (context, states) {
             final hovered = states.contains(MonoState.hovered);
             final pressed = states.contains(MonoState.pressed);
-            var background = selected ? colors.foreground : colors.fill;
+            var background = selected ? colors.foreground : colors.muted;
             if (hovered || pressed) {
               background = Color.lerp(
                 background,
-                selected ? colors.page : colors.foreground,
+                selected ? colors.background : colors.foreground,
                 pressed ? 0.1 : 0.05,
               )!;
             }
-            final ink = selected ? colors.page : colors.foreground;
+            final ink = selected ? colors.background : colors.foreground;
             return Opacity(
               opacity: enabled ? 1 : 0.5,
               child: Container(

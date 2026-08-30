@@ -25,7 +25,7 @@ class GroupCallScenario extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = MediaQuery.of(context);
     return ColoredBox(
-      color: theme.colors.canvas,
+      color: theme.colors.mediaCanvas,
       child: Column(
         children: <Widget>[
           Padding(
@@ -149,7 +149,7 @@ class _Tile extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.lg),
-        border: Border.all(color: theme.colors.mistLine),
+        border: Border.all(color: theme.colors.glassBorder),
       ),
       child: Stack(
         fit: StackFit.expand,

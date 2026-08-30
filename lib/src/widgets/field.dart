@@ -181,7 +181,7 @@ class MonoFieldLabel extends StatelessWidget {
                 child: Text(
                   ' *',
                   style: theme.typography.labelLarge.copyWith(
-                    color: theme.colors.danger,
+                    color: theme.colors.destructive,
                   ),
                 ),
               ),
@@ -201,7 +201,7 @@ class MonoFieldLabel extends StatelessWidget {
     }
     return DefaultTextStyle.merge(
       style: theme.typography.labelLarge.copyWith(
-        color: enabled ? theme.colors.foreground : theme.colors.foregroundMuted,
+        color: enabled ? theme.colors.foreground : theme.colors.mutedForeground,
       ),
       child: label,
     );
@@ -225,8 +225,8 @@ class MonoFieldDescription extends StatelessWidget {
     return DefaultTextStyle.merge(
       style: theme.typography.bodyMedium.copyWith(
         color: enabled
-            ? theme.colors.foregroundMuted
-            : theme.colors.foregroundMuted.withAlpha(150),
+            ? theme.colors.mutedForeground
+            : theme.colors.mutedForeground.withAlpha(150),
       ),
       child: child,
     );
@@ -246,7 +246,9 @@ class MonoFieldError extends StatelessWidget {
       container: true,
       liveRegion: true,
       child: DefaultTextStyle.merge(
-        style: theme.typography.bodyMedium.copyWith(color: theme.colors.danger),
+        style: theme.typography.bodyMedium.copyWith(
+          color: theme.colors.destructive,
+        ),
         child: child,
       ),
     );
@@ -306,7 +308,7 @@ class MonoFieldSet extends StatelessWidget {
       container: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border.all(color: theme.colors.separator),
+          border: Border.all(color: theme.colors.border),
           borderRadius: BorderRadius.circular(theme.radii.md),
         ),
         child: Padding(
@@ -365,7 +367,7 @@ class MonoFieldSeparator extends StatelessWidget {
       return Padding(
         padding: resolvedPadding,
         child: DecoratedBox(
-          decoration: BoxDecoration(color: theme.colors.separator),
+          decoration: BoxDecoration(color: theme.colors.border),
           child: const SizedBox(height: 1),
         ),
       );
@@ -373,7 +375,7 @@ class MonoFieldSeparator extends StatelessWidget {
 
     Widget divider() {
       return DecoratedBox(
-        decoration: BoxDecoration(color: theme.colors.separator),
+        decoration: BoxDecoration(color: theme.colors.border),
         child: const SizedBox(height: 1),
       );
     }
@@ -381,7 +383,7 @@ class MonoFieldSeparator extends StatelessWidget {
     Widget labelContent() {
       return DefaultTextStyle.merge(
         style: theme.typography.labelMedium.copyWith(
-          color: theme.colors.foregroundMuted,
+          color: theme.colors.mutedForeground,
         ),
         child: label!,
       );

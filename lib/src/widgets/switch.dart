@@ -187,19 +187,19 @@ class _MonoSwitchState extends State<MonoSwitch>
         builder: (BuildContext context, Widget? _) {
           final Color foreground = _isEnabled
               ? theme.colors.foreground
-              : theme.colors.foregroundMuted;
+              : theme.colors.mutedForeground;
           final Color trackColor = widget.value
               ? theme.colors.primary
               : _isEnabled
-              ? theme.colors.separator
-              : theme.colors.separator.withAlpha(150);
+              ? theme.colors.border
+              : theme.colors.border.withAlpha(150);
           final Color trackBorder = widget.value
               ? theme.colors.primary
               : _isHovered && _isEnabled
               ? theme.colors.foreground
-              : theme.colors.separator;
+              : theme.colors.border;
           final Color thumbColor = widget.value
-              ? theme.colors.onPrimary
+              ? theme.colors.primaryForeground
               : theme.colors.card;
 
           final Widget toggle = AnimatedContainer(
@@ -265,7 +265,7 @@ class _MonoSwitchState extends State<MonoSwitch>
                           SizedBox(height: theme.spacing.xs),
                         DefaultTextStyle.merge(
                           style: theme.typography.bodyMedium.copyWith(
-                            color: theme.colors.foregroundMuted,
+                            color: theme.colors.mutedForeground,
                           ),
                           child: widget.description!,
                         ),

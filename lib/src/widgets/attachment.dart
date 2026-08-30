@@ -172,7 +172,7 @@ class MonoAttachment extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final media = AspectRatio(
       aspectRatio: aspectRatio ?? 4 / 3,
-      child: ColoredBox(color: theme.colors.canvas, child: thumbnail),
+      child: ColoredBox(color: theme.colors.mediaCanvas, child: thumbnail),
     );
     if (description == null) {
       return ClipRRect(
@@ -253,7 +253,7 @@ class MonoAttachment extends StatelessWidget {
                     SizedBox(height: theme.spacing.xs / 2),
                     DefaultTextStyle.merge(
                       style: theme.typography.labelMedium.copyWith(
-                        color: theme.colors.foregroundMuted,
+                        color: theme.colors.mutedForeground,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -267,7 +267,7 @@ class MonoAttachment extends StatelessWidget {
             trailing ??
                 MonoIcon(
                   MonoIcons.download,
-                  color: theme.colors.foregroundMuted,
+                  color: theme.colors.mutedForeground,
                 ),
           ],
         ),
@@ -292,7 +292,10 @@ class MonoAttachment extends StatelessWidget {
           if (thumbnail != null)
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: ColoredBox(color: theme.colors.canvas, child: thumbnail),
+              child: ColoredBox(
+                color: theme.colors.mediaCanvas,
+                child: thumbnail,
+              ),
             ),
           Padding(
             padding: EdgeInsets.all(theme.spacing.sm),
@@ -306,7 +309,7 @@ class MonoAttachment extends StatelessWidget {
                     MonoIcon(
                       MonoIcons.link,
                       size: 16,
-                      color: theme.colors.foregroundMuted,
+                      color: theme.colors.mutedForeground,
                     ),
                     SizedBox(width: theme.spacing.xs),
                     Flexible(
@@ -315,7 +318,7 @@ class MonoAttachment extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.typography.labelMedium.copyWith(
-                          color: theme.colors.foregroundMuted,
+                          color: theme.colors.mutedForeground,
                         ),
                       ),
                     ),
@@ -334,7 +337,7 @@ class MonoAttachment extends StatelessWidget {
                   SizedBox(height: theme.spacing.xs / 2),
                   DefaultTextStyle.merge(
                     style: theme.typography.labelMedium.copyWith(
-                      color: theme.colors.foregroundMuted,
+                      color: theme.colors.mutedForeground,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -355,11 +358,11 @@ class MonoAttachment extends StatelessWidget {
       width: theme.spacing.giant,
       height: theme.spacing.giant,
       decoration: BoxDecoration(
-        color: theme.colors.fill,
+        color: theme.colors.muted,
         borderRadius: BorderRadius.circular(theme.radii.sm),
       ),
       alignment: Alignment.center,
-      child: MonoIcon(icon, color: theme.colors.foregroundMuted),
+      child: MonoIcon(icon, color: theme.colors.mutedForeground),
     );
   }
 
@@ -376,7 +379,7 @@ class MonoAttachment extends StatelessWidget {
           : theme.motion.fast,
       curve: theme.motion.standard,
       decoration: BoxDecoration(
-        color: active ? theme.colors.fill : theme.colors.card,
+        color: active ? theme.colors.muted : theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.md),
       ),
       child: child,

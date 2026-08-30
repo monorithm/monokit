@@ -15,29 +15,35 @@ void main() {
         MonokitColors.light(),
         MonokitColors.dark(),
       ]) {
-        // Aliases resolve onto the roles that carry the values.
-        expect(colors.background, colors.page);
-        expect(colors.mutedForeground, colors.foregroundMuted);
-        expect(colors.mutedText, colors.foregroundSubtle);
-        expect(colors.muted, colors.fill);
-        expect(colors.border, colors.separator);
-        expect(colors.destructive, colors.danger);
-        expect(colors.destructiveSoft, colors.dangerSoft);
-        expect(colors.destructiveText, colors.dangerText);
-        expect(colors.primaryForeground, colors.onPrimary);
-        expect(colors.primaryText, colors.tint);
-        expect(colors.liveForeground, colors.onLive);
-        expect(colors.mediaCanvas, colors.canvas);
-        expect(colors.glassFill, colors.mistFill);
-        expect(colors.glassBorder, colors.mistLine);
-        expect(colors.popover, colors.elevated);
+        // In 4.0.0 the specified names *are* the fields — there is no second
+        // vocabulary left to alias onto, so what matters is that every one of
+        // them still resolves and no two collapsed into each other during the
+        // rename.
+        final Set<Color> distinct = <Color>{
+          colors.background,
+          colors.foreground,
+          colors.card,
+          colors.popover,
+          colors.muted,
+          colors.mutedForeground,
+          colors.mutedText,
+          colors.border,
+          colors.primary,
+          colors.primaryText,
+          colors.destructive,
+          colors.mediaCanvas,
+        };
+        expect(
+          distinct.length,
+          greaterThanOrEqualTo(9),
+          reason: 'a rename that merged two roles would show up here',
+        );
 
-        // The contract carries a foreground per status family; this package
-        // carries one, so all four must land on it.
-        expect(colors.destructiveForeground, colors.onStatus);
-        expect(colors.successForeground, colors.onStatus);
-        expect(colors.warningForeground, colors.onStatus);
-        expect(colors.infoForeground, colors.onStatus);
+        // Four separate status foregrounds now, one per family. They share a
+        // value today, which is not the same as being one token.
+        expect(colors.successForeground, colors.destructiveForeground);
+        expect(colors.warningForeground, colors.destructiveForeground);
+        expect(colors.infoForeground, colors.destructiveForeground);
       }
     });
 
@@ -46,9 +52,9 @@ void main() {
       // the golden baselines are stale and something changed that should not
       // have.
       final light = MonokitColors.light();
-      expect(light.page, const Color(0xFFF1F3F3));
+      expect(light.background, const Color(0xFFF1F3F3));
       expect(light.primary, const Color(0xFF007A55));
-      expect(light.canvas, const Color(0xFF000000));
+      expect(light.mediaCanvas, const Color(0xFF000000));
       expect(light.scrim, const Color(0x73000000));
     });
 

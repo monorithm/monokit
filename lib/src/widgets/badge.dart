@@ -77,12 +77,15 @@ class MonoBadgeStyleResolver {
     // is an attention signal, and the loudness is the point. `neutral` was
     // already a soft fill.
     final (Color background, Color foreground) = switch (variant) {
-      MonoBadgeVariant.neutral => (colors.fill, colors.foreground),
+      MonoBadgeVariant.neutral => (colors.muted, colors.foreground),
       MonoBadgeVariant.success => (colors.successSoft, colors.successText),
       MonoBadgeVariant.warning => (colors.warningSoft, colors.warningText),
-      MonoBadgeVariant.danger => (colors.dangerSoft, colors.dangerText),
+      MonoBadgeVariant.danger => (
+        colors.destructiveSoft,
+        colors.destructiveText,
+      ),
       MonoBadgeVariant.info => (colors.infoSoft, colors.infoText),
-      MonoBadgeVariant.live => (colors.live, colors.onLive),
+      MonoBadgeVariant.live => (colors.live, colors.liveForeground),
     };
 
     return MonoResolvedBadgeStyle(

@@ -72,18 +72,18 @@ class MonoButtonStyleResolver {
     final isPressed = states.contains(MonoState.pressed);
     final isDisabled = states.contains(MonoState.disabled);
 
-    var background = colors.page.withValues(alpha: 0);
+    var background = colors.background.withValues(alpha: 0);
     var foreground = colors.foreground;
     Color? borderColor;
 
     switch (variant) {
       case MonoButtonVariant.filled:
         background = colors.primary;
-        foreground = colors.onPrimary;
+        foreground = colors.primaryForeground;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
-            colors.page,
+            colors.background,
             isPressed ? 0.18 : 0.1,
           )!;
         }
@@ -93,7 +93,7 @@ class MonoButtonStyleResolver {
         // presence without a border, since the grouped model has no borders
         // to lean on.
         background = colors.primarySoft;
-        foreground = colors.tint;
+        foreground = colors.primaryText;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
@@ -103,7 +103,7 @@ class MonoButtonStyleResolver {
         }
         break;
       case MonoButtonVariant.secondary:
-        background = colors.fill;
+        background = colors.muted;
         foreground = colors.foreground;
         if (isHovered || isPressed) {
           background = Color.lerp(
@@ -117,19 +117,19 @@ class MonoButtonStyleResolver {
         // Absorbs the former `link` variant: a bare interactive label. It
         // takes the tint rather than the plain foreground, which is what made
         // `link` distinct in the first place.
-        foreground = colors.tint;
+        foreground = colors.primaryText;
         if (isHovered || isPressed) {
-          background = colors.fill;
+          background = colors.muted;
         }
         break;
       case MonoButtonVariant.destructive:
         // Soft tint rather than a solid fill; hover deepens it toward solid.
-        background = colors.dangerSoft;
-        foreground = colors.dangerText;
+        background = colors.destructiveSoft;
+        foreground = colors.destructiveText;
         if (isHovered || isPressed) {
           background = Color.lerp(
             background,
-            colors.danger,
+            colors.destructive,
             isPressed ? 0.24 : 0.14,
           )!;
         }

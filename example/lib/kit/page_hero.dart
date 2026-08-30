@@ -41,7 +41,7 @@ class PageHero extends StatelessWidget {
           child: Text(
             tagline,
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -90,7 +90,7 @@ class StageBlock extends StatelessWidget {
           Text(
             description!,
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ],

@@ -390,7 +390,7 @@ class MonoDialogContent extends StatelessWidget {
       constraints: constraints,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.elevated,
+          color: theme.colors.popover,
           borderRadius: BorderRadius.circular(theme.radii.xl),
           // No border: in the grouped model `elevated` already steps above the
           // card behind it, and the shadow carries the rest. The shadow colour
@@ -447,7 +447,7 @@ class MonoDialogHeader extends StatelessWidget {
         if (description != null)
           DefaultTextStyle.merge(
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
             child: description!,
           ),

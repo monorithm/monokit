@@ -66,8 +66,7 @@ class ChatPage extends StatelessWidget {
               ),
               const MonoMessage(
                 align: MonoMessageAlign.end,
-                // ignore: deprecated_member_use
-                child: MonoReceipt(state: MonoReceiptState.read),
+                child: MonoReceipt(phase: MonoPhase.succeeded, label: 'Seen'),
               ),
             ],
           ),
@@ -166,8 +165,7 @@ class _ChatHero extends StatelessWidget {
         ),
         const MonoMessage(
           align: MonoMessageAlign.end,
-          // ignore: deprecated_member_use
-          child: MonoReceipt(state: MonoReceiptState.read),
+          child: MonoReceipt(phase: MonoPhase.succeeded, label: 'Seen'),
         ),
         SizedBox(height: theme.spacing.sm),
         const MonoMessage(

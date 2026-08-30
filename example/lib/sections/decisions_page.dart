@@ -171,7 +171,7 @@ class _SpringFacts extends StatelessWidget {
                   child: Text(
                     detail,
                     style: theme.typography.bodyMedium.copyWith(
-                      color: theme.colors.foregroundMuted,
+                      color: theme.colors.mutedForeground,
                     ),
                   ),
                 ),
@@ -207,7 +207,7 @@ class _DensityColumn extends StatelessWidget {
                 '$label · row ${theme.rowHeight.toInt()} · '
                 'body ${theme.bodyText.fontSize?.toInt()}',
                 style: outer.typography.mono.copyWith(
-                  color: outer.colors.foregroundMuted,
+                  color: outer.colors.mutedForeground,
                 ),
               ),
               SizedBox(height: outer.spacing.sm),
@@ -239,11 +239,11 @@ class _TintCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final isDark = colors.page == MonokitColors.dark().page;
+    final isDark = colors.background == MonokitColors.dark().background;
     return Container(
       padding: EdgeInsets.all(theme.spacing.lg),
       decoration: BoxDecoration(
-        color: colors.page,
+        color: colors.background,
         borderRadius: BorderRadius.circular(theme.radii.lg),
       ),
       child: Column(
@@ -268,7 +268,7 @@ class _TintCard extends StatelessWidget {
                 Text(
                   'tint — interactive text',
                   style: theme.typography.bodyMedium.copyWith(
-                    color: colors.tint,
+                    color: colors.primaryText,
                   ),
                 ),
                 SizedBox(height: theme.spacing.sm),
@@ -284,7 +284,7 @@ class _TintCard extends StatelessWidget {
                   child: Text(
                     'primary — solid fill',
                     style: theme.typography.button.copyWith(
-                      color: colors.onPrimary,
+                      color: colors.primaryForeground,
                     ),
                   ),
                 ),

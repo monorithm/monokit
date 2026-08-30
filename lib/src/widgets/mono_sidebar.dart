@@ -48,9 +48,7 @@ class MonoSidebar extends StatelessWidget {
     final content = DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colors.card,
-        border: BorderDirectional(
-          end: BorderSide(color: theme.colors.separator),
-        ),
+        border: BorderDirectional(end: BorderSide(color: theme.colors.border)),
       ),
       child: Padding(
         padding: padding ?? EdgeInsets.all(theme.spacing.md),

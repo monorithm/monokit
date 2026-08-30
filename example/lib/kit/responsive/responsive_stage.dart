@@ -67,9 +67,9 @@ class _ResponsiveStageState extends State<ResponsiveStage> {
         if (constraints.maxWidth < bp.medium) {
           return DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colors.page,
+              color: theme.colors.background,
               borderRadius: BorderRadius.circular(theme.radii.md),
-              border: Border.all(color: theme.colors.separator),
+              border: Border.all(color: theme.colors.border),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(theme.radii.md),
@@ -105,9 +105,9 @@ class _ResponsiveStageState extends State<ResponsiveStage> {
             SizedBox(height: theme.spacing.md),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: theme.colors.fill,
+                color: theme.colors.muted,
                 borderRadius: BorderRadius.circular(theme.radii.lg),
-                border: Border.all(color: theme.colors.separator),
+                border: Border.all(color: theme.colors.border),
               ),
               child: Padding(
                 padding: EdgeInsets.all(theme.spacing.md),
@@ -205,9 +205,9 @@ class _Frame extends StatelessWidget {
       height: height,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colors.page,
+          color: theme.colors.background,
           borderRadius: BorderRadius.circular(theme.radii.md),
-          border: Border.all(color: theme.colors.separator),
+          border: Border.all(color: theme.colors.border),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(theme.radii.md),
@@ -247,7 +247,7 @@ class _DragHandle extends StatelessWidget {
               width: 4,
               height: 40,
               decoration: BoxDecoration(
-                color: theme.colors.foregroundMuted,
+                color: theme.colors.mutedForeground,
                 borderRadius: BorderRadius.circular(theme.radii.full),
               ),
             ),

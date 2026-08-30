@@ -29,7 +29,7 @@ class MonoPriceTag extends StatelessWidget {
             Text(
               currency!,
               style: t.typography.labelMedium.copyWith(
-                color: t.colors.foregroundMuted,
+                color: t.colors.mutedForeground,
               ),
             ),
           Text(
@@ -41,7 +41,7 @@ class MonoPriceTag extends StatelessWidget {
             Text(
               compareAt!,
               style: t.typography.bodyMedium.copyWith(
-                color: t.colors.foregroundMuted,
+                color: t.colors.mutedForeground,
                 decoration: TextDecoration.lineThrough,
               ),
             ),

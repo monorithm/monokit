@@ -151,7 +151,7 @@ class MonoAvatar extends StatelessWidget {
       dimension: dimension,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: backgroundColor ?? theme.colors.fill,
+          color: backgroundColor ?? theme.colors.muted,
           borderRadius: borderRadius,
           border: Border.all(
             color:
@@ -208,7 +208,7 @@ class MonoAvatar extends StatelessWidget {
     return Center(
       child: DefaultTextStyle.merge(
         style: theme.typography.labelLarge.copyWith(
-          color: foregroundColor ?? theme.colors.foregroundMuted,
+          color: foregroundColor ?? theme.colors.mutedForeground,
           fontSize: dimension / 2.5,
           fontWeight: FontWeight.w600,
         ),

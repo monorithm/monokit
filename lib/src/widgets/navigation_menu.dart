@@ -306,11 +306,11 @@ class _MonoNavigationMenuState extends State<MonoNavigationMenu> {
             widget.variant == MonoNavigationMenuVariant.pill && active
             ? theme.colors.primary
             : highlighted
-            ? theme.colors.fill
-            : theme.colors.page.withValues(alpha: 0);
+            ? theme.colors.muted
+            : theme.colors.background.withValues(alpha: 0);
         final foreground =
             widget.variant == MonoNavigationMenuVariant.pill && active
-            ? theme.colors.onPrimary
+            ? theme.colors.primaryForeground
             : theme.colors.foreground;
         final border =
             widget.variant == MonoNavigationMenuVariant.line && selected

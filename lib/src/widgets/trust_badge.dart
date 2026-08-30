@@ -55,13 +55,13 @@ class MonoTrustBadge extends StatelessWidget {
 
     final (Color background, Color? border, Color ink) = onMedia
         ? (
-            colors.mistFill,
-            colors.mistLine,
+            colors.glassFill,
+            colors.glassBorder,
             lapsed ? colors.onMediaMuted : colors.onMedia,
           )
         : lapsed
-        ? (colors.fill, null, colors.foregroundMuted)
-        : (colors.primarySoft, null, colors.tint);
+        ? (colors.muted, null, colors.mutedForeground)
+        : (colors.primarySoft, null, colors.primaryText);
 
     return Semantics(
       label:

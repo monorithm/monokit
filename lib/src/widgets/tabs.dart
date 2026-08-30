@@ -507,7 +507,7 @@ class _MonoTabsState extends State<MonoTabs> {
       return const BoxDecoration();
     }
     return BoxDecoration(
-      color: theme.colors.fill,
+      color: theme.colors.muted,
       borderRadius: BorderRadius.circular(theme.radii.lg),
     );
   }
@@ -658,10 +658,10 @@ class _MonoTabsTriggerStyle {
     final hovered = states.contains(MonoState.hovered);
     final pressed = states.contains(MonoState.pressed);
     final foreground = !enabled
-        ? theme.colors.foregroundMuted
+        ? theme.colors.mutedForeground
         : selected
         ? theme.colors.foreground
-        : theme.colors.foregroundMuted;
+        : theme.colors.mutedForeground;
 
     if (variant == MonoTabsVariant.line) {
       final indicatorColor = selected
@@ -670,7 +670,7 @@ class _MonoTabsTriggerStyle {
       final line = BorderSide(color: indicatorColor, width: 2);
       final decoration = BoxDecoration(
         color: pressed || (hovered && !selected)
-            ? theme.colors.fill
+            ? theme.colors.muted
             : const Color(0x00000000),
         border: orientation == MonoTabsOrientation.horizontal
             ? Border(bottom: line)
@@ -703,9 +703,9 @@ class _MonoTabsTriggerStyle {
       foreground: foreground,
       decoration: BoxDecoration(
         color: selected
-            ? theme.colors.page
+            ? theme.colors.background
             : pressed || hovered
-            ? theme.colors.fill
+            ? theme.colors.muted
             : const Color(0x00000000),
         border: focused ? Border.all(color: theme.colors.ring, width: 2) : null,
         borderRadius: BorderRadius.circular(theme.radii.md),

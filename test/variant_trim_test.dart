@@ -33,7 +33,7 @@ void main() {
         variant: MonoBadgeVariant.neutral,
         size: MonoBadgeSize.md,
       );
-      expect(neutral.background, theme.colors.fill);
+      expect(neutral.background, theme.colors.muted);
       expect(neutral.foreground, theme.colors.foreground);
 
       // The old default was an emerald fill, which competed with the primary
@@ -59,7 +59,7 @@ void main() {
         final expected = <MonoBadgeVariant, (Color, Color)>{
           MonoBadgeVariant.success: (c.successSoft, c.successText),
           MonoBadgeVariant.warning: (c.warningSoft, c.warningText),
-          MonoBadgeVariant.danger: (c.dangerSoft, c.dangerText),
+          MonoBadgeVariant.danger: (c.destructiveSoft, c.destructiveText),
           MonoBadgeVariant.info: (c.infoSoft, c.infoText),
         };
         expected.forEach((variant, pair) {
@@ -89,7 +89,7 @@ void main() {
         size: MonoBadgeSize.md,
       );
       expect(live.background, theme.colors.live);
-      expect(live.foreground, theme.colors.onLive);
+      expect(live.foreground, theme.colors.liveForeground);
     });
 
     test('badges and alerts agree on what a status looks like', () {
@@ -134,7 +134,7 @@ void main() {
       final lineFills = tester
           .widgetList<DecoratedBox>(find.byType(DecoratedBox))
           .where(
-            (b) => (b.decoration as BoxDecoration).color == theme.colors.fill,
+            (b) => (b.decoration as BoxDecoration).color == theme.colors.muted,
           );
       expect(lineFills, isEmpty);
 
@@ -145,7 +145,7 @@ void main() {
       final segmentedFills = tester
           .widgetList<DecoratedBox>(find.byType(DecoratedBox))
           .where(
-            (b) => (b.decoration as BoxDecoration).color == theme.colors.fill,
+            (b) => (b.decoration as BoxDecoration).color == theme.colors.muted,
           );
       expect(segmentedFills, isNotEmpty);
     });

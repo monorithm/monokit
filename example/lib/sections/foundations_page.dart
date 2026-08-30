@@ -199,7 +199,7 @@ class _PaletteRow extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(theme.radii.sm),
-                      border: Border.all(color: theme.colors.separator),
+                      border: Border.all(color: theme.colors.border),
                     ),
                   ),
                   SizedBox(height: theme.spacing.xs),
@@ -209,7 +209,7 @@ class _PaletteRow extends StatelessWidget {
                       name,
                       textAlign: TextAlign.center,
                       style: theme.typography.labelMedium.copyWith(
-                        color: theme.colors.foregroundMuted,
+                        color: theme.colors.mutedForeground,
                       ),
                     ),
                   ),
@@ -239,7 +239,7 @@ class _TypeRow extends StatelessWidget {
           Text(
             name,
             style: theme.typography.labelMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
           Text(sample ?? 'The quick brown fox', style: style),
@@ -263,9 +263,9 @@ class _RadiusTile extends StatelessWidget {
         width: 56,
         height: 56,
         decoration: BoxDecoration(
-          color: theme.colors.fill,
+          color: theme.colors.muted,
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: theme.colors.separator),
+          border: Border.all(color: theme.colors.border),
         ),
       ),
     );
@@ -367,7 +367,7 @@ class _Track extends StatelessWidget {
           child: Text(
             label,
             style: theme.typography.mono.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -393,7 +393,7 @@ class _Track extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: Container(
                             height: 2,
-                            color: theme.colors.separator,
+                            color: theme.colors.border,
                           ),
                         ),
                         Positioned(

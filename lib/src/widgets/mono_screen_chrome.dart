@@ -69,9 +69,9 @@ class MonoScreenFooter extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.page,
+        color: theme.colors.background,
         border: showBorder
-            ? Border(top: BorderSide(color: theme.colors.separator))
+            ? Border(top: BorderSide(color: theme.colors.border))
             : null,
       ),
       child: Padding(

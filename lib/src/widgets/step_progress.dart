@@ -44,9 +44,7 @@ class MonoStepProgress extends StatelessWidget {
               width: _segmentWidth,
               height: _segmentHeight,
               decoration: BoxDecoration(
-                color: i < value
-                    ? theme.colors.primary
-                    : theme.colors.separator,
+                color: i < value ? theme.colors.primary : theme.colors.border,
                 borderRadius: BorderRadius.circular(theme.radii.sm / 3),
               ),
             ),

@@ -178,11 +178,11 @@ commerce widgets, the media surfaces — ships without a contract yet. It works 
 is tested, but it has not been through the system's review, so treat its API as
 less settled than the list above. Contracts for these are being written.
 
-As of 3.2.0 every specified **token name** resolves, including the ones this package
-had named differently. `background`, `mutedForeground`, `destructive`, `border`,
-`muted`, `mediaCanvas`, `glassFill` and the rest are the names to write against; the
-package-specific spellings they alias (`page`, `foregroundMuted`, `danger`,
-`separator`, `fill`, `canvas`, `mistFill`) are deprecated and go away in 4.0.0.
+As of 4.0.0 there is one token vocabulary, and it is the specification's:
+`background`, `mutedForeground`, `destructive`, `border`, `muted`, `mediaCanvas`,
+`glassFill` and the rest. The package-specific spellings that stood alongside them
+through 3.2.x (`page`, `foregroundMuted`, `danger`, `separator`, `fill`, `canvas`,
+`mistFill`) are removed — the CHANGELOG carries the mapping.
 
 A handful of token *values* still differ from the contract on purpose — this ground
 is mist where the contract's `background` is white, and the glass pair is mist-tinted

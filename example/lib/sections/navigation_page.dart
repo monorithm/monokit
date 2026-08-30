@@ -183,7 +183,7 @@ class NavigationPage extends StatelessWidget {
     return Text(
       text,
       style: theme.typography.bodyMedium.copyWith(
-        color: theme.colors.foregroundMuted,
+        color: theme.colors.mutedForeground,
       ),
     );
   }
@@ -261,7 +261,7 @@ class _NavShellDemoState extends State<_NavShellDemo> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     border: Border(
-                      right: BorderSide(color: theme.colors.separator),
+                      right: BorderSide(color: theme.colors.border),
                     ),
                   ),
                   child: Padding(
@@ -300,9 +300,7 @@ class _NavShellDemoState extends State<_NavShellDemo> {
           children: <Widget>[
             DecoratedBox(
               decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: theme.colors.separator),
-                ),
+                border: Border(bottom: BorderSide(color: theme.colors.border)),
               ),
               child: Padding(
                 padding: EdgeInsets.all(theme.spacing.md),
@@ -352,7 +350,7 @@ class _Content extends StatelessWidget {
             'The $label destination. On wide viewports this sits beside a side '
             'rail; on compact it fills the screen with a bottom nav below.',
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ],
@@ -396,7 +394,7 @@ class _BottomNavDemoState extends State<_BottomNavDemo> {
               'Icon-only, controlled by the host; every tap reports its '
               'index — including re-taps of the selected destination.',
               style: theme.typography.bodyMedium.copyWith(
-                color: theme.colors.foregroundMuted,
+                color: theme.colors.mutedForeground,
               ),
             ),
           ),
@@ -441,7 +439,7 @@ class _LabelledBottomNavDemoState extends State<_LabelledBottomNavDemo> {
           ClipRRect(
             borderRadius: BorderRadius.circular(theme.radii.lg),
             child: ColoredBox(
-              color: theme.colors.canvas,
+              color: theme.colors.mediaCanvas,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[

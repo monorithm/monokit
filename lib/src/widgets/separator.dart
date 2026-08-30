@@ -36,7 +36,7 @@ class MonoSeparator extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final resolvedThickness = thickness ?? theme.spacing.xs / 4;
     final line = DecoratedBox(
-      decoration: BoxDecoration(color: color ?? theme.colors.separator),
+      decoration: BoxDecoration(color: color ?? theme.colors.border),
     );
 
     final separator = switch (orientation) {

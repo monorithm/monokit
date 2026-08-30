@@ -196,7 +196,7 @@ class MonokitApp extends StatelessWidget {
   Widget build(BuildContext context) {
     if (routerConfig != null || routerDelegate != null) {
       return WidgetsApp.router(
-        color: theme.colors.page,
+        color: theme.colors.background,
         routerConfig: routerConfig,
         routerDelegate: routerDelegate,
         routeInformationParser: routeInformationParser,
@@ -220,7 +220,7 @@ class MonokitApp extends StatelessWidget {
       'Do not provide both home and a route for \'/\'.',
     );
     return WidgetsApp(
-      color: theme.colors.page,
+      color: theme.colors.background,
       home: home,
       routes: routes,
       initialRoute: initialRoute,

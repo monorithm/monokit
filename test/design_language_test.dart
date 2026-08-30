@@ -26,16 +26,22 @@ void main() {
     for (final theme in [MonokitThemeData.light(), MonokitThemeData.dark()]) {
       final c = theme.colors;
       expect(
-        <Color>{c.page, c.card, c.elevated}.length,
+        <Color>{c.background, c.card, c.popover}.length,
         greaterThan(1),
         reason: '${theme.brightness} surfaces must not all be the same value',
       );
     }
     // Dark deliberately does not bottom out at black.
-    expect(MonokitThemeData.dark().colors.page, isNot(const Color(0xFF000000)));
+    expect(
+      MonokitThemeData.dark().colors.background,
+      isNot(const Color(0xFF000000)),
+    );
     // ...but the media canvas always is, in both modes.
-    expect(MonokitThemeData.dark().colors.canvas, const Color(0xFF000000));
-    expect(MonokitThemeData.light().colors.canvas, const Color(0xFF000000));
+    expect(MonokitThemeData.dark().colors.mediaCanvas, const Color(0xFF000000));
+    expect(
+      MonokitThemeData.light().colors.mediaCanvas,
+      const Color(0xFF000000),
+    );
   });
 
   test('theme equality is structural, not identity', () {
@@ -53,11 +59,17 @@ void main() {
   test('theme lerp moves colours and snaps discrete groups', () {
     final a = MonokitThemeData.light();
     final b = MonokitThemeData.dark();
-    expect(MonokitThemeData.lerp(a, b, 0).colors.page, a.colors.page);
-    expect(MonokitThemeData.lerp(a, b, 1).colors.page, b.colors.page);
+    expect(
+      MonokitThemeData.lerp(a, b, 0).colors.background,
+      a.colors.background,
+    );
+    expect(
+      MonokitThemeData.lerp(a, b, 1).colors.background,
+      b.colors.background,
+    );
     final mid = MonokitThemeData.lerp(a, b, 0.5);
-    expect(mid.colors.page, isNot(a.colors.page));
-    expect(mid.colors.page, isNot(b.colors.page));
+    expect(mid.colors.background, isNot(a.colors.background));
+    expect(mid.colors.background, isNot(b.colors.background));
   });
 
   test('density resolves from platform first, then width', () {
@@ -115,9 +127,9 @@ void main() {
     );
     // Destructive controls use the soft tint (destructiveSoft) with the
     // contrast-safe destructiveText foreground, matching the reference.
-    expect(button.background, theme.colors.dangerSoft);
-    expect(button.foreground, theme.colors.dangerText);
-    expect(badge.foreground, theme.colors.dangerText);
+    expect(button.background, theme.colors.destructiveSoft);
+    expect(button.foreground, theme.colors.destructiveText);
+    expect(badge.foreground, theme.colors.destructiveText);
   });
 
   testWidgets('toast host owns transient event surfaces', (tester) async {

@@ -24,7 +24,7 @@ class ResponsivePage extends StatelessWidget {
             'breakpoint below drives real reflow — drag the stage, scan the '
             'panes, or pin the whole app with the device switcher up top.',
             style: theme.typography.bodyLarge.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -71,7 +71,7 @@ class _SectionTitle extends StatelessWidget {
           child: Text(
             subtitle,
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -140,7 +140,7 @@ class _TierChip extends StatelessWidget {
         color: active ? theme.colors.primarySoft : theme.colors.card,
         borderRadius: BorderRadius.circular(theme.radii.lg),
         border: Border.all(
-          color: active ? theme.colors.primary : theme.colors.separator,
+          color: active ? theme.colors.primary : theme.colors.border,
         ),
       ),
       child: Padding(
@@ -170,7 +170,7 @@ class _TierChip extends StatelessWidget {
             Text(
               '$range pt',
               style: theme.typography.mono.copyWith(
-                color: theme.colors.foregroundMuted,
+                color: theme.colors.mutedForeground,
               ),
             ),
           ],
@@ -276,7 +276,7 @@ class _Grid extends StatelessWidget {
                         Text(
                           label,
                           style: theme.typography.labelMedium.copyWith(
-                            color: theme.colors.foregroundMuted,
+                            color: theme.colors.mutedForeground,
                           ),
                         ),
                       ],
@@ -312,7 +312,7 @@ class _SummaryRail extends StatelessWidget {
                 ? 'Rail stacks above the grid on compact.'
                 : 'Rail sits beside the grid from medium up.',
             style: theme.typography.bodyMedium.copyWith(
-              color: theme.colors.foregroundMuted,
+              color: theme.colors.mutedForeground,
             ),
           ),
           SizedBox(height: theme.spacing.md),

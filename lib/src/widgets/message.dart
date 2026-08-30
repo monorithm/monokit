@@ -163,7 +163,7 @@ class MonoMessageHeader extends StatelessWidget {
             : AlignmentDirectional.centerStart,
         child: DefaultTextStyle.merge(
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.foregroundMuted,
+            color: theme.colors.mutedForeground,
           ),
           child: child,
         ),
@@ -192,7 +192,7 @@ class MonoMessageFooter extends StatelessWidget {
             : AlignmentDirectional.centerStart,
         child: DefaultTextStyle.merge(
           style: theme.typography.labelMedium.copyWith(
-            color: theme.colors.foregroundMuted,
+            color: theme.colors.mutedForeground,
           ),
           child: child,
         ),

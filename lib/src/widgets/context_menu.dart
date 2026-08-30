@@ -59,7 +59,7 @@ class MonoContextMenuContent extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colors.elevated,
+        color: theme.colors.popover,
         borderRadius: BorderRadius.circular(theme.radii.lg),
         boxShadow: theme.elevation.resolve(MonoElevation.raised),
       ),
@@ -132,17 +132,17 @@ class MonoContextMenuItem extends StatelessWidget {
         final focused = states.contains(MonoState.focusVisible);
         final bool isHi = (pressed || hovered) && isEnabled;
         final foreground = !isEnabled
-            ? theme.colors.foregroundMuted
+            ? theme.colors.mutedForeground
             : destructive
-            ? (isHi ? theme.colors.dangerText : theme.colors.danger)
+            ? (isHi ? theme.colors.destructiveText : theme.colors.destructive)
             : isHi
-            ? theme.colors.onPrimary
+            ? theme.colors.primaryForeground
             : theme.colors.foreground;
         // On the accent-highlighted row, the trailing/shortcut glyph flips to
         // accentForeground too; otherwise it stays muted.
         final trailingColor = isHi && !destructive
-            ? theme.colors.onPrimary
-            : theme.colors.foregroundMuted;
+            ? theme.colors.primaryForeground
+            : theme.colors.mutedForeground;
         return AnimatedContainer(
           duration: theme.motion.fast,
           curve: theme.motion.curve,
@@ -154,7 +154,7 @@ class MonoContextMenuItem extends StatelessWidget {
             color: !isHi
                 ? const Color(0x00000000)
                 : destructive
-                ? theme.colors.dangerSoft
+                ? theme.colors.destructiveSoft
                 : theme.colors.primary,
             borderRadius: BorderRadius.circular(theme.radii.md),
             boxShadow: focused
@@ -219,7 +219,7 @@ class MonoContextMenuSeparator extends StatelessWidget {
     return Padding(
       padding: padding ?? EdgeInsets.symmetric(vertical: theme.spacing.xs),
       child: ColoredBox(
-        color: theme.colors.separator,
+        color: theme.colors.border,
         child: const SizedBox(height: 1, width: double.infinity),
       ),
     );
