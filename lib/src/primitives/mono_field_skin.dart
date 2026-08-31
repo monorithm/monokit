@@ -161,6 +161,18 @@ class MonoFieldSkin {
     return enabled ? theme.colors.foreground : theme.colors.mutedForeground;
   }
 
+  /// The ink a placeholder takes. On an invalid field this is
+  /// `destructiveText` too, not the neutral muted ink: the Atlas sets the
+  /// colour on the well's container so everything inside inherits it, and a
+  /// grey placeholder on the destructive ground lands near 3.9:1 — under the
+  /// floor. Weight, not hue, is what keeps it reading as absent text.
+  Color placeholderInk(BuildContext context, {bool invalid = false}) {
+    final theme = MonokitTheme.of(context);
+    return invalid
+        ? theme.colors.destructiveText
+        : theme.colors.mutedForeground;
+  }
+
   static FontWeight _oneStepDown(FontWeight? weight) => switch (weight) {
     FontWeight.w700 => FontWeight.w600,
     FontWeight.w600 => FontWeight.w500,

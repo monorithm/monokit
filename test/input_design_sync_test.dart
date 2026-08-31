@@ -323,6 +323,30 @@ void main() {
           .style;
       expect(style.color, theme.colors.destructiveText);
     });
+
+    testWidgets('an invalid placeholder is not left in neutral grey', (
+      tester,
+    ) async {
+      final theme = MonokitThemeData.light();
+      await tester.pumpWidget(
+        monokitHost(
+          const SizedBox(
+            width: 300,
+            child: MonoInput(invalid: true, placeholder: 'Required'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // mutedForeground on destructiveSoft lands near 3.9:1. The Atlas sets
+      // the colour on the well's container, so the placeholder inherits it.
+      final hint = tester.widget<Text>(find.text('Required'));
+      expect(hint.style!.color, theme.colors.destructiveText);
+      expect(
+        hint.style!.fontWeight,
+        FontWeight.w400,
+        reason: 'weight, not hue, is what keeps it reading as absent text',
+      );
+    });
   });
 
   group('controlled and pending', () {

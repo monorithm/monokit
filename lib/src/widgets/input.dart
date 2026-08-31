@@ -522,7 +522,7 @@ class _MonoInputState extends State<MonoInput>
     ).copyWith(color: foreground);
     final TextStyle hintStyle = figures(
       widget.placeholderStyle ?? skin.placeholder,
-    );
+    ).copyWith(color: skin.placeholderInk(context, invalid: widget.invalid));
 
     final Widget editable = Stack(
       alignment: AlignmentDirectional.centerStart,
