@@ -2,6 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme/monokit_motion.dart';
+import '../primitives/mono_width_scope.dart';
+import '../theme/monokit_layout.dart';
 import '../theme/monokit_theme.dart';
 
 /// How near an item is to the viewport, for its own resource decisions.
@@ -208,6 +210,15 @@ class _MonoImmersiveFeedState extends State<MonoImmersiveFeed>
 
   @override
   Widget build(BuildContext context) {
+    // Compact is full bleed. At medium and up the column caps and centres —
+    // the letterboxing MonoRecomposition draws, and the reason
+    // `MonokitContainers.feed` exists: "the reason a post does not stretch to
+    // 1200px on a tablet". Width buys context around the subject, never a
+    // wider subject.
+    final bool letterboxed = MonoWidthScope.of(
+      context,
+    ).atLeast(MonoWidthClass.medium);
+
     return Semantics(
       container: true,
       label: widget.semanticLabel,
@@ -244,8 +255,27 @@ class _MonoImmersiveFeedState extends State<MonoImmersiveFeed>
             allowImplicitScrolling: !widget.dataSaver,
             itemCount: widget.itemCount,
             onPageChanged: _onPageChanged,
-            itemBuilder: (context, index) =>
-                widget.itemBuilder(context, index, _phaseFor(index)),
+            itemBuilder: (context, index) {
+              final Widget item = widget.itemBuilder(
+                context,
+                index,
+                _phaseFor(index),
+              );
+              if (!letterboxed) return item;
+              // Inside the column the item is compact again, whatever the
+              // window is: a 480 measure composes like a phone.
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: MonokitContainers.feed,
+                  ),
+                  child: MonoWidthScope(
+                    width: MonokitContainers.feed,
+                    child: item,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

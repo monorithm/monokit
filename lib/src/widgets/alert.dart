@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 
 import '../primitives/mono_heading.dart';
 import '../primitives/mono_overlay_layer.dart';
+import '../primitives/mono_width_scope.dart';
+import '../theme/monokit_layout.dart';
 import '../theme/monokit_theme.dart';
 
 enum MonoAlertVariant { defaultStyle, info, success, warning, destructive }
@@ -26,6 +28,17 @@ class MonoAlert extends StatelessWidget {
   final Widget? action;
   final Widget? child;
   final MonoAlertVariant variant;
+
+  static Widget _measure({required bool capped, required Widget child}) {
+    if (!capped) return child;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: MonokitContainers.content),
+        child: child,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,30 +92,41 @@ class MonoAlert extends StatelessWidget {
               ),
           ],
         );
+    // "At medium and up the alert caps at a text measure, never the window."
+    // An alert is a sentence to read, and a sentence stretched to 1400px is
+    // not more readable for the extra pixels — it is less. Unchanged by
+    // density: this is a width decision, not a metric one.
+    final bool capped = MonoWidthScope.of(
+      context,
+    ).atLeast(MonoWidthClass.medium);
+
     return Semantics(
       liveRegion:
           variant == MonoAlertVariant.destructive ||
           variant == MonoAlertVariant.warning,
       container: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(theme.radii.lg),
-          border: Border.all(color: border),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(theme.spacing.md),
-          child: DefaultTextStyle.merge(
-            style: theme.typography.bodyMedium.copyWith(color: foreground),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                ?icon,
-                if (icon != null) SizedBox(width: theme.spacing.sm),
-                Expanded(child: content),
-                if (action != null) SizedBox(width: theme.spacing.sm),
-                ?action,
-              ],
+      child: _measure(
+        capped: capped,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(theme.radii.lg),
+            border: Border.all(color: border),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(theme.spacing.md),
+            child: DefaultTextStyle.merge(
+              style: theme.typography.bodyMedium.copyWith(color: foreground),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ?icon,
+                  if (icon != null) SizedBox(width: theme.spacing.sm),
+                  Expanded(child: content),
+                  if (action != null) SizedBox(width: theme.spacing.sm),
+                  ?action,
+                ],
+              ),
             ),
           ),
         ),

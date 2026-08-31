@@ -235,4 +235,69 @@ void main() {
       );
     }
   });
+
+  group('width class composes real components', () {
+    testWidgets('an alert caps at a text measure at medium and up', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      Future<double> alertWidth(double scope) async {
+        await tester.pumpWidget(
+          monokitHost(
+            MonoWidthScope(
+              width: scope,
+              child: const SizedBox(
+                width: 1200,
+                child: MonoAlert(description: Text('You are offline.')),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        return tester.getSize(find.byType(DecoratedBox).first).width;
+      }
+
+      // Compact spans its container; medium and up stop at the measure.
+      expect(await alertWidth(390), 1200);
+      expect(await alertWidth(800), MonokitContainers.content);
+      expect(await alertWidth(1400), MonokitContainers.content);
+    });
+
+    testWidgets('the feed letterboxes rather than widening the subject', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      Future<double> itemWidth(double scope) async {
+        await tester.pumpWidget(
+          monokitHost(
+            MonoWidthScope(
+              width: scope,
+              child: SizedBox(
+                width: 1200,
+                height: 800,
+                child: MonoImmersiveFeed(
+                  itemCount: 3,
+                  itemBuilder: (context, index, phase) =>
+                      const SizedBox.expand(child: Text('post')),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        return tester.getSize(find.text('post').first).width;
+      }
+
+      expect(await itemWidth(390), 1200, reason: 'compact is full bleed');
+      expect(
+        await itemWidth(1000),
+        MonokitContainers.feed,
+        reason: 'the reason a post does not stretch to 1200px on a tablet',
+      );
+    });
+  });
 }

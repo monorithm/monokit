@@ -43,16 +43,37 @@ touch laptop is expanded and touch at once.
   `pageInset`, and `atLeast` - which reads the way the boards are written
   ("at medium and up the alert caps at a measure").
 
-- **`MonoPageInset`** - pads by whatever the surrounding scope resolved. The
-  first consumer, so the mechanism is not another vocabulary nothing reads.
+- **`MonoPageInset`** - pads by whatever the surrounding scope resolved.
+
+### Changed
+
+Two components now compose by width, so the mechanism above is not a third
+vocabulary nothing reads. `MonokitContainers` had **zero** consumers before
+this release.
+
+- **`MonoAlert` caps at the content measure at medium and up** - *"never the
+  window"*. An alert is a sentence, and a sentence stretched across 1400px is
+  not more readable for the pixels. Unchanged by density: a width decision,
+  not a metric one.
+
+- **`MonoImmersiveFeed` letterboxes above compact.** Compact is full bleed; at
+  medium and up the column caps at `MonokitContainers.feed` and centres, which
+  is what that token was written for - *"the reason a post does not stretch to
+  1200px on a tablet"*. Inside the column the item is composed as compact
+  again, whatever the window is: more pixels buy context around the subject,
+  never a wider subject.
 
 ### Notes
 
-- No visual change to any existing widget, and no golden moves: this release
-  adds the resolution and one consumer. Composing the components that change
-  shape with width - the alert's measure cap, the bottom bar handing its five
-  destinations to the drawer at expanded, the modal's panel cap - is the next
-  tranche.
+- **On a phone nothing changes.** Both new behaviours begin at medium (600),
+  so a compact app renders identically. What changes is tablet and desktop,
+  where an alert and a feed item previously spanned whatever they were given.
+- Three clauses could **not** be implemented, because the measure they name is
+  not a token: the textarea and step-progress "field measure" (420 in two
+  boards) and the command palette's 520 panel. Filed as monokit-spec#4 rather
+  than guessed - `content` and `dialogSm` are both close enough to look right
+  and wrong enough to be wrong. `MonoDialog`'s 480 default panel, which matches
+  none of the three dialog containers, is filed there too.
 - An earlier note claimed `MonokitGutter` was missing the 32 that expanded and
   wide use. That was a misread: the 32 is `MonokitPageInset.expanded`, which
   exists, and the contract's gutter group is base/medium/media only.
