@@ -200,9 +200,46 @@ void main() {
   });
 
   group('the focus ring', () {
+    /// The ring is bound to focus-visible, so a test that only calls
+    /// requestFocus exercises the pointer path and will never see it.
+    void highlight(FocusHighlightStrategy strategy) {
+      FocusManager.instance.highlightStrategy = strategy;
+      addTearDown(
+        () => FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.automatic,
+      );
+    }
+
+    double ringOpacity(WidgetTester tester) => tester
+        .widget<AnimatedOpacity>(
+          find
+              .descendant(
+                of: find.byType(MonoFocusRingOverlay),
+                matching: find.byType(AnimatedOpacity),
+              )
+              .first,
+        )
+        .opacity;
+
+    testWidgets('touch focus shows the caret and no ring', (tester) async {
+      highlight(FocusHighlightStrategy.alwaysTouch);
+      final focus = FocusNode();
+      await tester.pumpWidget(
+        monokitHost(SizedBox(width: 300, child: MonoInput(focusNode: focus))),
+      );
+      focus.requestFocus();
+      await tester.pumpAndSettle();
+      expect(
+        ringOpacity(tester),
+        0,
+        reason: 'a tapped field already announces itself with the caret',
+      );
+    });
+
     testWidgets('is painted outside the field and does not move it', (
       tester,
     ) async {
+      highlight(FocusHighlightStrategy.alwaysTraditional);
       final focus = FocusNode();
       await tester.pumpWidget(
         monokitHost(SizedBox(width: 300, child: MonoInput(focusNode: focus))),
@@ -224,13 +261,14 @@ void main() {
         matching: find.byType(DecoratedBox),
       );
       final ringRect = tester.getRect(ring.last);
-      // ringOffset 3 + ringWidth 2 on every side.
-      expect(ringRect.left, closeTo(before.left - 5, 0.01));
-      expect(ringRect.top, closeTo(before.top - 5, 0.01));
-      expect(ringRect.right, closeTo(before.right + 5, 0.01));
+      // ringOffset 2 + ringWidth 2 on every side.
+      expect(ringRect.left, closeTo(before.left - 4, 0.01));
+      expect(ringRect.top, closeTo(before.top - 4, 0.01));
+      expect(ringRect.right, closeTo(before.right + 4, 0.01));
     });
 
     testWidgets('is absent unfocused and solid when focused', (tester) async {
+      highlight(FocusHighlightStrategy.alwaysTraditional);
       final theme = MonokitThemeData.light();
       final focus = FocusNode();
       await tester.pumpWidget(
@@ -238,21 +276,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      double opacity() => tester
-          .widget<AnimatedOpacity>(
-            find
-                .descendant(
-                  of: find.byType(MonoFocusRingOverlay),
-                  matching: find.byType(AnimatedOpacity),
-                )
-                .first,
-          )
-          .opacity;
-
-      expect(opacity(), 0);
+      expect(ringOpacity(tester), 0);
       focus.requestFocus();
       await tester.pumpAndSettle();
-      expect(opacity(), 1);
+      expect(ringOpacity(tester), 1);
 
       final box = tester.widget<DecoratedBox>(
         find

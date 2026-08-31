@@ -53,7 +53,7 @@ void main() {
       // Dark: lifted charcoal, not the old near-black #090B0C.
       expect(dark.colors.background, const Color(0xFF161B1D));
       expect(dark.colors.card, const Color(0xFF22292B));
-      expect(dark.colors.ring, const Color(0xFF5A686C));
+      expect(dark.colors.ring, const Color(0xFF67787C));
       // tint and primary diverge in dark: text lightens, fill darkens.
       expect(dark.colors.primaryText, const Color(0xFF00BC7D));
       expect(dark.colors.primary, const Color(0xFF006045));

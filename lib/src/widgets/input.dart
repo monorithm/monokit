@@ -286,6 +286,8 @@ class _MonoInputState extends State<MonoInput>
 
   bool get _isEnabled => widget.enabled;
   bool get _isFocused => _statesController.contains(MonoState.focused);
+  bool get _isFocusVisible =>
+      _statesController.contains(MonoState.focusVisible);
   bool get _isHovered => _statesController.contains(MonoState.hovered);
 
   @override
@@ -396,9 +398,18 @@ class _MonoInputState extends State<MonoInput>
   }
 
   void _handleFocusChanged() {
-    _setState(MonoState.focused, _focusNode.hasFocus);
-    _setState(MonoState.focusVisible, _focusNode.hasFocus);
-    widget.onFocusChanged?.call(_focusNode.hasFocus);
+    final bool hasFocus = _focusNode.hasFocus;
+    _setState(MonoState.focused, hasFocus);
+    // focusVisible is keyboard focus, not any focus. The ring hangs off this
+    // one, and `contract/interaction.json` binds it to focus-visible only:
+    // a tapped field already announces itself with the caret, and a ring on
+    // top of that is a second answer to a question nobody asked.
+    _setState(
+      MonoState.focusVisible,
+      hasFocus &&
+          FocusManager.instance.highlightMode == FocusHighlightMode.traditional,
+    );
+    widget.onFocusChanged?.call(hasFocus);
   }
 
   void _syncFixedStates() {
@@ -648,7 +659,7 @@ class _MonoInputState extends State<MonoInput>
               // It also shows without focus, so an error found on submit is
               // visible on a field nobody is standing in.
               return MonoFocusRingOverlay(
-                focused: widget.invalid || _isFocused,
+                focused: widget.invalid || _isFocusVisible,
                 borderRadius: skin.radius,
                 color: widget.invalid ? theme.colors.destructive : null,
                 child: AnimatedContainer(

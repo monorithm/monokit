@@ -318,9 +318,6 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
     final skin = MonoFieldSkin.of(context, MonoInputSize.large);
     final double cellSize = widget.cellSize ?? skin.height;
     final double gap = widget.spacing ?? theme.spacing.sm;
-    final bool focusVisible = _statesController.contains(
-      MonoState.focusVisible,
-    );
     final bool dismissOnTapOutside =
         widget.dismissKeyboardOnTapOutside ??
         theme.focus.dismissKeyboardOnTapOutside;
@@ -346,10 +343,15 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
               cursor: _isEnabled
                   ? SystemMouseCursors.text
                   : SystemMouseCursors.forbidden,
+              // No focus ring on a code cell. The caret is already the whole
+              // signal - a brand-coloured bar in exactly one of six boxes -
+              // and ringing the cell as well says the same thing twice while
+              // making the row read as six controls rather than one. Invalid
+              // still rings, because that is a different message.
               child: MonoFocusRingOverlay(
-                focused: widget.invalid || (focused && focusVisible),
+                focused: widget.invalid,
                 borderRadius: skin.radius,
-                color: widget.invalid ? theme.colors.destructive : null,
+                color: theme.colors.destructive,
                 child: AnimatedContainer(
                   duration: theme.motion.duration,
                   curve: theme.motion.curve,

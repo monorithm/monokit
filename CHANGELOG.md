@@ -45,17 +45,32 @@ asserted shape.
   absent text rather than as a short value. `tabularFigures: true` opts a field
   into fixed-advance digits; the OTP takes them always.
 
-- **The focus ring is a real outline, offset from the control.** `ringWidth`
-  3 -> 2, `ringAlpha` 0.5 -> 1.0, `ringOffset` 2 -> 3, and `colors.ring` moves
-  to `#A9B4B7` / `#5A686C`. This is a **system-wide** change: every focusable
-  control wears this ring, not only fields.
+- **The focus ring finally does what the contract has always said.**
+  `contract/interaction.json` carries a `focusRing` group - width 2, offset 2,
+  *"painted OUTSIDE the control's bounds so it never shifts layout, and bound
+  to focus-visible only"* - and all three clauses were unimplemented. The width
+  was 3 at half alpha, the offset was applied by nothing, and every control
+  showed the ring on pointer focus.
 
-  `ringOffset` had never been applied to anything. It could not be: the ring
-  was a `BoxShadow`, and a shadow's spread starts at the border box, so the gap
-  the design specifies was unrepresentable and the ring read as a thicker
-  border. The new `MonoFocusRingOverlay` paints it outside the bounds, taking
-  no part in layout - a field no longer grows when it takes focus, so its
-  siblings stop shifting as the user tabs through.
+  The offset could not be applied: the ring was a `BoxShadow`, and a shadow's
+  spread starts at the border box, so a gap was unrepresentable and the ring
+  read as a thicker border. `MonoFocusRingOverlay` paints a real outline
+  outside the bounds, taking no part in layout - a field no longer grows when
+  it takes focus, so its siblings stop shifting as the user tabs through.
+
+  `ringWidth` 3 -> 2 and `ringAlpha` 0.5 -> 1.0. `ringOffset` stays 2 and
+  `colors.ring` does not move. This is **system-wide**: every focusable control
+  wears this ring, not only fields.
+
+- **The ring is keyboard-only now.** A tapped field already announces itself
+  with the caret; a ring on top of that is a second answer to a question nobody
+  asked. `MonoInput` was setting `focusVisible` to plain `hasFocus`, which is
+  the bug - `MonoTabs` and `MonoPressable` had it right all along.
+
+  **The OTP cell is the exception and wears no focus ring at all.** The brand
+  caret in one of six boxes is already the whole signal, and ringing the cell
+  as well makes the row read as six controls rather than one. It still rings
+  when invalid, because that is a different message.
 
 - **Invalid wears the ring without focus**, in `destructive`. An error found on
   submit is now visible on a field nobody is standing in.

@@ -8,12 +8,15 @@ import 'package:flutter/widgets.dart';
 /// ring's opacity so all three can be tuned by theme or density instead of
 /// being hardcoded per component.
 ///
-/// The Atlas draws the ring as `outline: 2px solid var(--ring)` at
-/// `outline-offset: 3px`, following the field's own radius - so [ringWidth]
-/// defaults to 2, [ringAlpha] to 1, and [ringOffset] to 3. It is an outline
-/// with a transparent gap, not a translucent band sitting on the edge: the
-/// gap is what separates the ring from the control it marks, and a ring that
-/// starts at the border box reads as a thicker border instead.
+/// `contract/interaction.json` has carried these numbers since it was written:
+/// a `focusRing` group of width 2 and offset 2, *"painted OUTSIDE the
+/// control's bounds so it never shifts layout, and bound to focus-visible
+/// only."* All three clauses went unimplemented - the width was 3, the offset
+/// was applied by nothing, and every control showed the ring on pointer focus.
+///
+/// It is an outline with a transparent gap, not a translucent band sitting on
+/// the edge: the gap is what separates the ring from the control it marks, and
+/// a ring that starts at the border box reads as a thicker border instead.
 ///
 /// [dismissKeyboardOnTapOutside] is the one behavioral token here. It lives
 /// alongside the ring on purpose: this group is the system's answer to "what
@@ -23,7 +26,7 @@ import 'package:flutter/widgets.dart';
 class MonokitFocus {
   const MonokitFocus({
     this.ringWidth = 2,
-    this.ringOffset = 3,
+    this.ringOffset = 2,
     this.ringAlpha = 1.0,
     this.dismissKeyboardOnTapOutside = true,
   }) : assert(ringAlpha >= 0 && ringAlpha <= 1);
