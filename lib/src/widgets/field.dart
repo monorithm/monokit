@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../theme/monokit_theme.dart';
+import 'spinner.dart';
 
 /// Arrangement for a [MonoField]'s label and control.
 enum MonoFieldLayout {
@@ -29,6 +30,7 @@ class MonoField extends StatelessWidget {
     this.layout = MonoFieldLayout.vertical,
     this.required = false,
     this.enabled = true,
+    this.pending = false,
     this.labelWidth = 144,
     this.responsiveBreakpoint = 600,
     this.spacing,
@@ -43,6 +45,15 @@ class MonoField extends StatelessWidget {
   final MonoFieldLayout layout;
   final bool required;
   final bool enabled;
+
+  /// Whether the field is waiting on asynchronous validation - a handle being
+  /// checked for collision, a code being verified.
+  ///
+  /// Deliberately not disabled, and deliberately not dimmed: the control stays
+  /// live and at full strength, and the wait is reported in the message slot
+  /// instead. A field that greys out while a network call runs reads as
+  /// "you may not edit this", which is the opposite of what is true.
+  final bool pending;
   final double labelWidth;
   final double responsiveBreakpoint;
   final double? spacing;
@@ -68,6 +79,9 @@ class MonoField extends StatelessWidget {
     final List<Widget> supporting = <Widget>[
       if (description != null)
         MonoFieldDescription(enabled: enabled, child: description!),
+      // Pending outranks the description and yields to a settled error: while
+      // validation is in flight there is not yet a verdict to show.
+      if (pending && error == null) const MonoFieldPending(),
       if (error != null) MonoFieldError(child: error!),
     ];
 
@@ -250,6 +264,46 @@ class MonoFieldError extends StatelessWidget {
           color: theme.colors.destructive,
         ),
         child: child,
+      ),
+    );
+  }
+}
+
+/// The message slot while asynchronous validation is running.
+///
+/// A live region, like [MonoFieldError], because the whole point is that a
+/// verdict arrives without the focus moving - and a spinner alone says nothing
+/// to a screen reader. Takes `mutedForeground` rather than a status colour:
+/// "still checking" is not yet good news or bad news.
+class MonoFieldPending extends StatelessWidget {
+  const MonoFieldPending({super.key, this.label});
+
+  /// Defaults to the theme's `loading` label rather than a hardcoded string.
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = MonokitTheme.of(context);
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          ExcludeSemantics(
+            child: MonoSpinner(
+              size: theme.typography.bodyMedium.fontSize,
+              color: theme.colors.mutedForeground,
+            ),
+          ),
+          SizedBox(width: theme.spacing.sm),
+          Text(
+            label ?? theme.labels.loading,
+            style: theme.typography.bodyMedium.copyWith(
+              color: theme.colors.mutedForeground,
+            ),
+          ),
+        ],
       ),
     );
   }

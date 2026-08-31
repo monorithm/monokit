@@ -60,6 +60,12 @@ asserted shape.
 - **Invalid wears the ring without focus**, in `destructive`. An error found on
   submit is now visible on a field nobody is standing in.
 
+- **`MonoField` carries a pending affordance**, which its contract has always
+  required and it has never had. It reports the wait in the message slot as a
+  live region and leaves the control at full strength - a field that greys out
+  while a network call runs reads as "you may not edit this", which is the
+  opposite of what is true.
+
 
 - **A selected `MonoChip` now takes the soft brand pair** - `primarySoft` under
   `primaryText` - instead of inverting to a solid foreground fill with
@@ -111,6 +117,10 @@ asserted shape.
 - Selection remains legible without colour: the label still thickens to
   `FontWeight.w500` and the node still reports `selected`, so neither a
   monochrome display nor a screen reader depends on the fill.
+- `MonoTextarea` extends `MonoInput`, so the skin had to learn the difference:
+  a multi-line field takes body leading rather than the label register's tighter
+  1.2, and gains vertical padding a centred single line does not need. Caught by
+  the golden diff - the textarea had shrunk 27px - and now pinned by a test.
 - Two Atlas values were not adopted literally. Horizontal padding is drawn at
   14, which is off the 4pt grid the whole system is built on, so fields use the
   neighbouring token (12) - a 2px difference, and no ungridded number in the

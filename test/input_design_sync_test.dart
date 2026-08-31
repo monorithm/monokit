@@ -389,4 +389,90 @@ void main() {
     );
     expect(radii.values.toSet().length, 1, reason: 'radii diverged: $radii');
   });
+
+  group('MonoField pending', () {
+    testWidgets('reports the wait without dimming the control', (tester) async {
+      await tester.pumpWidget(
+        monokitHost(
+          const SizedBox(
+            width: 320,
+            child: MonoField(
+              label: Text('Handle'),
+              pending: true,
+              child: MonoInput(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.byType(MonoFieldPending), findsOneWidget);
+      // Distinct from disabled, which is what the Field contract asks for: the
+      // control keeps full strength while validation runs.
+      final opacity = tester.widget<Opacity>(
+        find
+            .ancestor(
+              of: find.byType(MonoInput),
+              matching: find.byType(Opacity),
+            )
+            .first,
+      );
+      expect(opacity.opacity, 1);
+    });
+
+    testWidgets('a settled error replaces the wait', (tester) async {
+      await tester.pumpWidget(
+        monokitHost(
+          const SizedBox(
+            width: 320,
+            child: MonoField(
+              pending: true,
+              error: Text('That handle is taken'),
+              child: MonoInput(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byType(MonoFieldPending), findsNothing);
+      expect(find.text('That handle is taken'), findsOneWidget);
+    });
+  });
+
+  group('a textarea is not a tall single-line field', () {
+    testWidgets('takes prose leading and vertical padding', (tester) async {
+      await tester.pumpWidget(
+        monokitHost(const SizedBox(width: 320, child: MonoTextarea())),
+      );
+      await tester.pumpAndSettle();
+      final height = tester.getSize(find.byType(MonoTextarea)).height;
+
+      // minLines 3 at 14/1.45 is ~61, plus 8 top and bottom. If this collapses
+      // toward the single-line step (48) the textarea has picked up the label
+      // register's 1.2 leading, or lost its padding, or both - which is exactly
+      // what happened the first time the skin landed.
+      expect(height, greaterThan(70));
+
+      await tester.pumpWidget(
+        monokitHost(const SizedBox(width: 320, child: MonoInput())),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        height,
+        greaterThan(tester.getSize(find.byType(MonoInput)).height),
+        reason: 'a three-line field must be taller than a one-line one',
+      );
+
+      await tester.pumpWidget(
+        monokitHost(const SizedBox(width: 320, child: MonoTextarea())),
+      );
+      await tester.pumpAndSettle();
+
+      final style = tester
+          .widget<EditableText>(find.byType(EditableText))
+          .style;
+      expect(style.height, 1.45, reason: 'body leading, not label leading');
+      expect(style.fontSize, 14);
+    });
+  });
 }

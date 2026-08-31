@@ -37,13 +37,24 @@ class MonoFieldSkin {
   const MonoFieldSkin({
     required this.height,
     required this.padX,
+    required this.padY,
     required this.radius,
     required this.value,
     required this.placeholder,
   });
 
   /// Resolves the skin for [size] from the theme's density and type scale.
-  factory MonoFieldSkin.of(BuildContext context, MonoInputSize size) {
+  ///
+  /// [multiline] changes two things a single-line field does not need: the
+  /// value takes the body line height instead of the label one, and the box
+  /// gains vertical padding. A single-line field is centred inside a fixed
+  /// height, so it needs neither; a multi-line one is sized by its own text,
+  /// so without them the lines crowd each other and touch the edges.
+  factory MonoFieldSkin.of(
+    BuildContext context,
+    MonoInputSize size, {
+    bool multiline = false,
+  }) {
     final theme = MonokitTheme.of(context);
     final density = theme.density;
 
@@ -63,14 +74,22 @@ class MonoFieldSkin {
 
     // A value the user typed is the content of the screen, not chrome, so it
     // is set loud: 20/600 at large, 14/500 below it.
-    final TextStyle value = switch (size) {
+    final TextStyle base = switch (size) {
       MonoInputSize.large => theme.typography.headlineMedium,
       _ => theme.typography.labelLarge,
     };
 
+    // Both candidate tokens are chrome registers and carry a tight line
+    // height. That is right for one centred line and wrong for a paragraph,
+    // so prose takes the body leading at the same size and weight.
+    final TextStyle value = multiline
+        ? base.copyWith(height: theme.typography.bodyMedium.height)
+        : base;
+
     return MonoFieldSkin(
       height: height,
       padX: padX,
+      padY: multiline ? theme.spacing.sm : 0,
       radius: BorderRadius.circular(theme.radii.xl),
       value: value.copyWith(color: theme.colors.foreground),
       // One weight step down and muted: a placeholder has to read as absent
@@ -87,6 +106,10 @@ class MonoFieldSkin {
 
   /// Horizontal inset for the content.
   final double padX;
+
+  /// Vertical inset. Zero for a single-line field, which is centred inside
+  /// [height] instead.
+  final double padY;
 
   final BorderRadius radius;
 

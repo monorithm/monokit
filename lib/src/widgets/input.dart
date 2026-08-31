@@ -484,7 +484,13 @@ class _MonoInputState extends State<MonoInput>
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final skin = MonoFieldSkin.of(context, widget.size);
+    // A textarea is a MonoInput with minLines set, so the skin has to know
+    // which shape it is being asked for rather than assuming one line.
+    final skin = MonoFieldSkin.of(
+      context,
+      widget.size,
+      multiline: widget.maxLines != 1,
+    );
     final bool hasText = _controller.text.isNotEmpty;
     final Color foreground = _isEnabled
         ? theme.colors.foreground
@@ -492,7 +498,8 @@ class _MonoInputState extends State<MonoInput>
     final Color resolvedSelectionColor =
         widget.selectionColor ?? theme.colors.ring.withAlpha(80);
     final EdgeInsetsGeometry resolvedPadding =
-        widget.padding ?? EdgeInsets.symmetric(horizontal: skin.padX);
+        widget.padding ??
+        EdgeInsets.symmetric(horizontal: skin.padX, vertical: skin.padY);
 
     TextStyle figures(TextStyle base) =>
         widget.tabularFigures ? theme.typography.tabular(base) : base;
