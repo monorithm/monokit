@@ -8,11 +8,26 @@ import 'mono_icon.dart';
 
 /// A compact selectable capsule: filters, single-choice options, facets.
 ///
-/// Selection is expressed by inversion — the selected chip swaps to the
-/// foreground fill with page-coloured text — so the chosen option reads
-/// without relying on the brand colour (colour is information, and a chip
-/// row is selection, not intent). Unselected chips sit on the de-emphasis
-/// well and darken on hover/press like every other transient fill.
+/// Selection is expressed in the brand's soft/on-soft pair - `primarySoft`
+/// under `primaryText` - which is the grammar the colour standard assigns to
+/// exactly this job: "`primary`/`primarySoft` follow the same solid/soft
+/// grammar for brand emphasis (selected chips, active filters, highlighted
+/// rows)".
+///
+/// It used to invert instead, swapping to the foreground fill with
+/// page-coloured text, on the reasoning that a chip row is selection rather
+/// than intent and so should not spend the brand colour. That reasoning does
+/// not survive contact with the standard, which had already decided: soft
+/// brand emphasis IS how this system says "this one", and inversion is a
+/// weight the rest of the kit reserves for nothing else. A selected chip
+/// reading as a solid black pill also outranked the primary button beside
+/// it, which is the opposite of the intended hierarchy.
+///
+/// Selection stays legible without colour: the label thickens to
+/// [FontWeight.w500] and the chip carries `Semantics(selected: true)`, so
+/// neither a monochrome display nor a screen reader depends on the fill.
+/// Unselected chips sit on the de-emphasis well and darken on hover/press
+/// like every other transient fill.
 class MonoChip extends StatelessWidget {
   const MonoChip({
     super.key,
@@ -55,15 +70,15 @@ class MonoChip extends StatelessWidget {
           child: (context, states) {
             final hovered = states.contains(MonoState.hovered);
             final pressed = states.contains(MonoState.pressed);
-            var background = selected ? colors.foreground : colors.muted;
+            final ink = selected ? colors.primaryText : colors.foreground;
+            var background = selected ? colors.primarySoft : colors.muted;
             if (hovered || pressed) {
-              background = Color.lerp(
-                background,
-                selected ? colors.background : colors.foreground,
-                pressed ? 0.1 : 0.05,
-              )!;
+              // Both weights now darken toward their own ink, which is what
+              // every other transient fill in the kit does. While selection
+              // inverted, this had to lerp toward the background instead -
+              // the one place in the kit where a press LIGHTENED a surface.
+              background = Color.lerp(background, ink, pressed ? 0.1 : 0.05)!;
             }
-            final ink = selected ? colors.background : colors.foreground;
             return Opacity(
               opacity: enabled ? 1 : 0.5,
               child: Container(

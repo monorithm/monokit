@@ -8,6 +8,47 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.1.0
+
+One component brought back into line with the colour standard, and the tests
+that should have been holding it there.
+
+### Changed
+
+- **A selected `MonoChip` now takes the soft brand pair** - `primarySoft` under
+  `primaryText` - instead of inverting to a solid foreground fill with
+  page-coloured text. `02-color-and-surface.md` had already assigned this job:
+  "`primary`/`primarySoft` follow the same solid/soft grammar for brand emphasis
+  (selected chips, active filters, highlighted rows)". The chip was the only
+  component not honouring it.
+
+  The old reading was that a chip row is selection rather than intent, so it
+  should not spend the brand colour. The standard had decided otherwise, and the
+  result was a selected chip that read as a solid black pill - outranking the
+  primary button beside it, which inverts the intended hierarchy.
+
+  **This changes how selected chips look.** The API is untouched, so nothing
+  breaks at compile time; if you were relying on the inverted pill visually, this
+  is the release that moves it. No golden baseline shifts, because no golden
+  rendered a chip - which is part of how the drift went unnoticed.
+
+- **Press and hover now darken a chip toward its own ink**, both weights. While
+  selection inverted, the selected chip lerped toward `background` instead: the
+  one fill in the kit that got *lighter* under the finger.
+
+### Added
+
+- `MonoChip` has tests. It had none, in a package where every other component
+  does, which is why nothing caught the divergence. They pin the treatment to
+  the tokens rather than to literal colours, so a palette change moves them and
+  a grammar change breaks them.
+
+### Notes
+
+- Selection remains legible without colour: the label still thickens to
+  `FontWeight.w500` and the node still reports `selected`, so neither a
+  monochrome display nor a screen reader depends on the fill.
+
 ## 4.0.0
 
 The removals 3.2.0 announced. 3.2.0 published the specification's token names
