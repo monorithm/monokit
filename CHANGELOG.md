@@ -8,6 +8,55 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.4.0
+
+Width class resolves.
+
+`MonoWidthClass` has existed as an enum since 3.2.0 with nothing to compute it
+and nothing to provide it - the specification's own largest recorded gap, and
+the second half of the adaptive model 4.3.0 started reading. Density said what
+a control measures; width says how a screen composes. They are independent: a
+touch laptop is expanded and touch at once.
+
+### Added
+
+- **`MonokitBreakpoint`** - the three thresholds (600 / 960 / 1280) that cut
+  the width axis into four bands, and `classOf(width)`. Semantic, not device
+  names: a desktop window dragged narrow **is** compact and gets the compact
+  composition.
+
+- **`MonoWidthScope`** - resolves a class from the width of *its own region*
+  and hands it down. The contract says the page inset is *"resolved per layout
+  scope, never once per screen"*, and that is why this is a widget rather than
+  a function of the window: a screen split into a 280 sidebar and a 1120 pane
+  holds **two** classes at once, and asking the window would tell both of them
+  the same thing and compose the sidebar as though it had 1120px.
+
+  `MonokitApp` installs one at the root, so an app that never splits its layout
+  gets the right answer without doing anything. `of(context)` falls back to the
+  window when no scope is above; `maybeOf` tells a real scope from that
+  fallback. A scope whose width is unbounded - inside a `Row`, a horizontal
+  scroll view - defers to the window rather than resolving `wide` from
+  infinity.
+
+- **`MonoWidthClassLayout`** on the enum: `columns` (4 / 8 / 12 / 12),
+  `pageInset`, and `atLeast` - which reads the way the boards are written
+  ("at medium and up the alert caps at a measure").
+
+- **`MonoPageInset`** - pads by whatever the surrounding scope resolved. The
+  first consumer, so the mechanism is not another vocabulary nothing reads.
+
+### Notes
+
+- No visual change to any existing widget, and no golden moves: this release
+  adds the resolution and one consumer. Composing the components that change
+  shape with width - the alert's measure cap, the bottom bar handing its five
+  destinations to the drawer at expanded, the modal's panel cap - is the next
+  tranche.
+- An earlier note claimed `MonokitGutter` was missing the 32 that expanded and
+  wide use. That was a misread: the 32 is `MonokitPageInset.expanded`, which
+  exists, and the contract's gutter group is base/medium/media only.
+
 ## 4.3.0
 
 The adaptive system starts being read.

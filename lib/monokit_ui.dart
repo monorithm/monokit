@@ -83,6 +83,7 @@ export 'src/primitives/mono_placement.dart';
 export 'src/primitives/mono_pressable.dart';
 export 'src/primitives/mono_surfaces.dart';
 export 'src/primitives/mono_text_scale.dart';
+export 'src/primitives/mono_width_scope.dart';
 export 'src/primitives/mono_text_selection.dart';
 export 'src/states/mono_state.dart';
 export 'src/states/mono_phase.dart';

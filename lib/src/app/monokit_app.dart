@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../motion/monokit_scroll_behavior.dart';
 import '../theme/monokit_density.dart';
+import '../primitives/mono_width_scope.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -186,7 +187,12 @@ class MonokitApp extends StatelessWidget {
           style: effectiveTheme.typography.body.copyWith(
             color: effectiveTheme.colors.foreground,
           ),
-          child: child ?? const SizedBox.shrink(),
+          // The root width scope. An app that never splits its layout gets the
+          // right class without doing anything; a split pane wraps itself to
+          // get its own. Without this the fallback in MonoWidthScope.of would
+          // be the only answer, which is the window — wrong the moment a
+          // layout has two regions of different widths.
+          child: MonoWidthScope(child: child ?? const SizedBox.shrink()),
         ),
       ),
     );
