@@ -16,6 +16,56 @@ library;
 /// Width classes, as the specification names them.
 enum MonoWidthClass { compact, medium, expanded, wide }
 
+/// The three thresholds that cut the width axis into [MonoWidthClass]'s four
+/// bands.
+///
+/// Semantic, not device names. A desktop window dragged narrow **is** compact
+/// and gets the compact composition; a phone is not compact because it is a
+/// phone. And a tablet is whichever it measures — width comes from the layout
+/// scope, density from the input device, and the two are independent. A touch
+/// laptop is expanded and touch at once.
+abstract final class MonokitBreakpoint {
+  /// Below this, compact.
+  static const double compact = 600;
+
+  /// At or above [compact] and below this, medium.
+  static const double medium = 960;
+
+  /// At or above [medium] and below this, expanded. At or above it, wide.
+  static const double expanded = 1280;
+
+  /// The band [width] falls in.
+  static MonoWidthClass classOf(double width) {
+    if (width < compact) return MonoWidthClass.compact;
+    if (width < medium) return MonoWidthClass.medium;
+    if (width < expanded) return MonoWidthClass.expanded;
+    return MonoWidthClass.wide;
+  }
+}
+
+/// What a width class decides.
+///
+/// Composition only. Width never changes what a screen means or which
+/// destinations it offers — *"more pixels buy context — a rail, a pane — never
+/// a second subject of equal weight."*
+extension MonoWidthClassLayout on MonoWidthClass {
+  /// The layout grid's column count: 4, 8, 12, 12.
+  int get columns => switch (this) {
+    MonoWidthClass.compact => 4,
+    MonoWidthClass.medium => 8,
+    MonoWidthClass.expanded => 12,
+    MonoWidthClass.wide => 12,
+  };
+
+  /// The inset between content and the edge of this scope.
+  double get pageInset => MonokitPageInset.of(this);
+
+  /// Whether this class is at least [other] — `atLeast(medium)` reads better
+  /// than an index comparison at the call site, and the boards are written in
+  /// exactly those terms ("at medium and up the alert caps at a measure").
+  bool atLeast(MonoWidthClass other) => index >= other.index;
+}
+
 /// Content containers. A measure, not a box: these cap how wide a thing gets,
 /// they do not set how wide it is.
 abstract final class MonokitContainers {
