@@ -34,7 +34,14 @@ void main() {
     final taps = <int>[];
     await tester.pumpWidget(
       _host(
-        MonoBottomNav(items: _items, selectedIndex: 1, onSelected: taps.add),
+        // Icon-only is still a supported mode; since 4.3.0 it is no longer the
+        // default, because the Atlas draws the tab bar with labels always on.
+        MonoBottomNav(
+          items: _items,
+          selectedIndex: 1,
+          onSelected: taps.add,
+          showLabels: false,
+        ),
       ),
     );
 
@@ -58,6 +65,20 @@ void main() {
     // "re-tap resets the branch stack".
     await tester.tap(find.byType(MonoPressable).at(1));
     expect(taps, <int>[2, 1]);
+  });
+
+  testWidgets('labels are on by default', (tester) async {
+    await tester.pumpWidget(
+      _host(MonoBottomNav(items: _items, selectedIndex: 0, onSelected: (_) {})),
+    );
+    expect(
+      find.descendant(
+        of: find.byType(MonoBottomNav),
+        matching: find.byType(Text),
+      ),
+      findsNWidgets(_items.length),
+      reason: 'an icon-only destination is a glyph nobody taught the user',
+    );
   });
 
   testWidgets('announces label, button and selected state per destination', (

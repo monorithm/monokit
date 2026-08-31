@@ -4,6 +4,7 @@ import '../primitives/mono_pressable.dart';
 import '../states/mono_state.dart';
 import '../primitives/mono_text_scale.dart';
 import '../theme/monokit_motion.dart';
+import '../theme/monokit_layout.dart';
 import '../theme/monokit_theme.dart';
 import 'mono_icon.dart';
 
@@ -44,7 +45,7 @@ class MonoBottomNav extends StatelessWidget {
     required this.selectedIndex,
     this.onSelected,
     this.iconSize = 24,
-    this.showLabels = false,
+    this.showLabels = true,
     this.onMedia = false,
     this.semanticLabel = 'Primary navigation',
   });
@@ -55,6 +56,10 @@ class MonoBottomNav extends StatelessWidget {
   /// Renders each destination's label under its icon, at the label floor.
   /// The selected label goes semibold, so selection carries a second,
   /// non-colour signal.
+  ///
+  /// On by default: the Atlas draws the tab bar with "labels always on", and
+  /// an icon-only destination asks the user to recognise a glyph they have
+  /// never been taught. Turn it off only where the label is carried elsewhere.
   final bool showLabels;
 
   /// Composes the bar over media: translucent mist fill, hairline made of
@@ -132,7 +137,7 @@ class MonoBottomNav extends StatelessWidget {
               constraints: BoxConstraints(
                 minHeight: monoScaledExtent(
                   context,
-                  theme.density.minimumTarget,
+                  MonokitChrome.tabBarHeight,
                 ),
               ),
               child: Padding(

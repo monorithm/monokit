@@ -64,13 +64,10 @@ class MonoFieldSkin {
       MonoInputSize.large => density.controlHeightLarge,
     };
 
-    // The Atlas draws 14 here, which is off the 4pt grid the whole system is
-    // built on. 12 is the token next to it and the 2px is not load-bearing;
-    // putting a raw 14 in would be the first ungridded number in the kit.
-    final double padX = switch (size) {
-      MonoInputSize.large => theme.spacing.lg,
-      _ => theme.spacing.md,
-    };
+    // Density, not size: MonoField draws 16 at touch and 12 at pointer, and a
+    // field's inset belongs to the same axis as its height. Sizing it off the
+    // size axis instead is what left every field at touch inset on desktop.
+    final double padX = density.fieldInset;
 
     // A value the user typed is the content of the screen, not chrome, so it
     // is set loud: 20/600 at large, 14/500 below it.
@@ -87,9 +84,9 @@ class MonoFieldSkin {
         : base;
 
     return MonoFieldSkin(
-      height: height,
+      height: multiline ? density.textareaMin : height,
       padX: padX,
-      padY: multiline ? theme.spacing.sm : 0,
+      padY: multiline ? theme.spacing.md : 0,
       radius: BorderRadius.circular(theme.radii.xl),
       value: value.copyWith(color: theme.colors.foreground),
       // One weight step down and muted: a placeholder has to read as absent
@@ -131,8 +128,18 @@ class MonoFieldSkin {
     BuildContext context, {
     bool enabled = true,
     bool hovered = false,
+    bool invalid = false,
   }) {
     final theme = MonokitTheme.of(context);
+    // Invalid recolours the well itself - "no second border language". The
+    // field does not grow a destructive ring: a ring means focus, and only
+    // one of those belongs on screen at a time.
+    if (invalid) {
+      return BoxDecoration(
+        color: theme.colors.destructiveSoft,
+        borderRadius: radius,
+      );
+    }
     final Color base = theme.colors.muted;
     return BoxDecoration(
       // A disabled field keeps its shape and loses its weight, rather than
@@ -144,6 +151,26 @@ class MonoFieldSkin {
       },
       borderRadius: radius,
     );
+  }
+
+  /// The ink a value takes inside [well]. Invalid carries `destructiveText`,
+  /// so the message under the field and the value inside it agree.
+  Color ink(BuildContext context, {bool enabled = true, bool invalid = false}) {
+    final theme = MonokitTheme.of(context);
+    if (invalid) return theme.colors.destructiveText;
+    return enabled ? theme.colors.foreground : theme.colors.mutedForeground;
+  }
+
+  /// The ink a placeholder takes. On an invalid field this is
+  /// `destructiveText` too, not the neutral muted ink: the Atlas sets the
+  /// colour on the well's container so everything inside inherits it, and a
+  /// grey placeholder on the destructive ground lands near 3.9:1 — under the
+  /// floor. Weight, not hue, is what keeps it reading as absent text.
+  Color placeholderInk(BuildContext context, {bool invalid = false}) {
+    final theme = MonokitTheme.of(context);
+    return invalid
+        ? theme.colors.destructiveText
+        : theme.colors.mutedForeground;
   }
 
   static FontWeight _oneStepDown(FontWeight? weight) => switch (weight) {

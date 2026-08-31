@@ -46,7 +46,7 @@ class MonoCard extends StatelessWidget {
     final card = DecoratedBox(
       decoration: BoxDecoration(
         color: background ?? theme.colors.card,
-        borderRadius: BorderRadius.circular(theme.radii.xl),
+        borderRadius: BorderRadius.circular(theme.radii.lg),
         // Opt-in. Under the grouped surface model a card already separates
         // from the page by a luminance step, so a hairline on top of that
         // reads as double-drawing the same boundary. Set `showBorder: true`
@@ -61,7 +61,7 @@ class MonoCard extends StatelessWidget {
         boxShadow: theme.elevation.resolve(elevation),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(theme.radii.xl),
+        borderRadius: BorderRadius.circular(theme.radii.lg),
         child: DefaultTextStyle.merge(
           style: theme.typography.bodyMedium.copyWith(
             color: theme.colors.foreground,

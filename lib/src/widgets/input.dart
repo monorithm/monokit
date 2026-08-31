@@ -503,9 +503,11 @@ class _MonoInputState extends State<MonoInput>
       multiline: widget.maxLines != 1,
     );
     final bool hasText = _controller.text.isNotEmpty;
-    final Color foreground = _isEnabled
-        ? theme.colors.foreground
-        : theme.colors.mutedForeground;
+    final Color foreground = skin.ink(
+      context,
+      enabled: _isEnabled,
+      invalid: widget.invalid,
+    );
     final Color resolvedSelectionColor =
         widget.selectionColor ?? theme.colors.ring.withAlpha(80);
     final EdgeInsetsGeometry resolvedPadding =
@@ -520,7 +522,7 @@ class _MonoInputState extends State<MonoInput>
     ).copyWith(color: foreground);
     final TextStyle hintStyle = figures(
       widget.placeholderStyle ?? skin.placeholder,
-    );
+    ).copyWith(color: skin.placeholderInk(context, invalid: widget.invalid));
 
     final Widget editable = Stack(
       alignment: AlignmentDirectional.centerStart,
@@ -654,14 +656,12 @@ class _MonoInputState extends State<MonoInput>
               ),
             ),
             builder: (BuildContext context, Widget? child) {
-              // Invalid outranks focus: a field can be both, and the one the
-              // user has to act on is the one that should be wearing the ring.
-              // It also shows without focus, so an error found on submit is
-              // visible on a field nobody is standing in.
+              // The ring is focus and nothing else - invalidity is carried by
+              // the well's own colour, so the two never compete and only one
+              // ring is ever on screen.
               return MonoFocusRingOverlay(
-                focused: widget.invalid || _isFocusVisible,
+                focused: _isFocusVisible,
                 borderRadius: skin.radius,
-                color: widget.invalid ? theme.colors.destructive : null,
                 child: AnimatedContainer(
                   duration: theme.motion.duration,
                   curve: theme.motion.curve,
@@ -673,6 +673,7 @@ class _MonoInputState extends State<MonoInput>
                     context,
                     enabled: _isEnabled,
                     hovered: _isHovered && !_isFocused,
+                    invalid: widget.invalid,
                   ),
                   child: child,
                 ),
