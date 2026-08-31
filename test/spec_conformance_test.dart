@@ -488,6 +488,42 @@ void main() {
       expect(MonoIcons.refresh.semanticLabel, isNotNull);
       expect(MonoIcons.crop.semanticLabel, isNotNull);
     });
+
+    test('carries the account surface, which every product has on day one', () {
+      // Settings, a blocked list and a way out are not product-specific, but
+      // the catalogue had none of them - and a consumer cannot draw its own,
+      // because MonoIconData is ours to construct. That combination is what
+      // made these missing roles a wall rather than an inconvenience.
+      for (final MonoIconData role in <MonoIconData>[
+        MonoIcons.language,
+        MonoIcons.notificationOff,
+        MonoIcons.key,
+        MonoIcons.block,
+        MonoIcons.signOut,
+        MonoIcons.reminder,
+        MonoIcons.verified,
+      ]) {
+        expect(role.semanticLabel, isNotNull);
+      }
+    });
+
+    test(
+      'the new roles are distinct glyphs, not aliases of their neighbours',
+      () {
+        // Each of these pairs is one a product must be able to tell apart:
+        // silencing notifications is not muting audio, leaving a session is not
+        // deleting an account, and having passed a check is not the idea of
+        // protection.
+        expect(MonoIcons.notificationOff, isNot(MonoIcons.mute));
+        expect(MonoIcons.notificationOff, isNot(MonoIcons.notification));
+        expect(MonoIcons.signOut, isNot(MonoIcons.trash));
+        expect(MonoIcons.verified, isNot(MonoIcons.shield));
+        expect(MonoIcons.verified, isNot(MonoIcons.check));
+        expect(MonoIcons.reminder, isNot(MonoIcons.clock));
+        expect(MonoIcons.block, isNot(MonoIcons.flag));
+        expect(MonoIcons.block, isNot(MonoIcons.eyeOff));
+      },
+    );
   });
 
   group('copy', () {
