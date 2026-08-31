@@ -169,8 +169,10 @@ class ActionsPage extends StatelessWidget {
           title: 'Chips',
           widgetName: 'MonoChip',
           description:
-              'Selection by inversion — the chosen chip swaps to the '
-              'foreground fill, so the row reads without the brand colour.',
+              'Selection takes the soft brand pair - primarySoft under '
+              'primaryText - the grammar the colour standard assigns to a '
+              'selected chip. The label also thickens, so selection survives '
+              'without colour.',
           code: "MonoChip(label: 'Ended · 4', selected: true, onPressed: …)",
           child: _ChipRowDemo(),
         ),
