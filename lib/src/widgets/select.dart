@@ -9,6 +9,8 @@ import '../primitives/mono_overlay_fade.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../theme/monokit_elevation.dart';
+import '../primitives/mono_field_skin.dart';
+import '../primitives/mono_focus_ring.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 import 'mono_icon.dart';
@@ -35,6 +37,7 @@ class MonoSelectOption<T> {
   final T value;
   final Widget label;
   final Widget? description;
+
   final bool enabled;
   final String? semanticLabel;
 }
@@ -61,6 +64,7 @@ class MonoSelect<T> extends StatefulWidget {
     this.onOpenChange,
     this.placeholder,
     this.hint,
+    this.size = MonoInputSize.medium,
     this.enabled = true,
     this.invalid = false,
     this.controlled = false,
@@ -108,6 +112,11 @@ class MonoSelect<T> extends StatefulWidget {
   final ValueChanged<bool>? onOpenChange;
   final String? placeholder;
   final String? hint;
+
+  /// Which of the three field heights this control takes. Shared with
+  /// [MonoInput] so a select and an input in the same form line up.
+  final MonoInputSize size;
+
   final bool enabled;
   final bool invalid;
 
@@ -473,13 +482,7 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
       child: ListenableBuilder(
         listenable: _statesController,
         builder: (BuildContext context, Widget? _) {
-          final Color borderColor = widget.invalid
-              ? theme.colors.destructive
-              : _isFocused || _isOpen
-              ? theme.colors.ring
-              : _isHovered && _isEnabled
-              ? theme.colors.foreground
-              : theme.colors.border;
+          final skin = MonoFieldSkin.of(context, widget.size);
 
           return Semantics(
             container: true,
@@ -503,56 +506,46 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
                   ? () => _statesController.update(MonoState.pressed, false)
                   : null,
               onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-              child: AnimatedContainer(
-                duration: theme.motion.duration,
-                curve: theme.motion.curve,
-                constraints: BoxConstraints(minHeight: theme.spacing.huge),
-                padding: EdgeInsets.symmetric(
-                  horizontal: theme.spacing.md,
-                  vertical: theme.spacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: _isEnabled
-                      ? theme.colors.background.withAlpha(0)
-                      : theme.colors.muted.withAlpha(150),
-                  borderRadius: BorderRadius.circular(theme.radii.lg),
-                  border: Border.all(color: borderColor),
-                  boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(
-                          theme.colors.destructive,
-                          alpha: 0.2,
-                        )
-                      : _isFocusVisible || _isOpen
-                      ? theme.focus.ringShadow(theme.colors.ring)
-                      : null,
-                ),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: DefaultTextStyle.merge(
-                        style: theme.typography.bodyMedium.copyWith(
-                          color: foreground,
+              child: MonoFocusRingOverlay(
+                focused: widget.invalid || _isFocusVisible || _isOpen,
+                borderRadius: skin.radius,
+                color: widget.invalid ? theme.colors.destructive : null,
+                child: AnimatedContainer(
+                  duration: theme.motion.duration,
+                  curve: theme.motion.curve,
+                  constraints: BoxConstraints(minHeight: skin.height),
+                  padding: EdgeInsets.symmetric(horizontal: skin.padX),
+                  decoration: skin.well(
+                    context,
+                    enabled: _isEnabled,
+                    hovered: _isHovered && !_isFocused && !_isOpen,
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: DefaultTextStyle.merge(
+                          style: skin.value.copyWith(color: foreground),
+                          child: value,
                         ),
-                        child: value,
                       ),
-                    ),
-                    SizedBox(width: theme.spacing.sm),
-                    AnimatedRotation(
-                      turns: _isOpen ? 0.5 : 0,
-                      duration: theme.motion.duration,
-                      curve: theme.motion.curve,
-                      child: MonoIcon(
-                        MonoIcons.chevronDown,
-                        size: theme.spacing.lg,
-                        color: _isEnabled
-                            ? theme.colors.mutedForeground
-                            : theme.colors.mutedForeground.withAlpha(150),
-                        semanticLabel: _isOpen
-                            ? theme.labels.closeOptions
-                            : theme.labels.openOptions,
+                      SizedBox(width: theme.spacing.sm),
+                      AnimatedRotation(
+                        turns: _isOpen ? 0.5 : 0,
+                        duration: theme.motion.duration,
+                        curve: theme.motion.curve,
+                        child: MonoIcon(
+                          MonoIcons.chevronDown,
+                          size: theme.spacing.lg,
+                          color: _isEnabled
+                              ? theme.colors.mutedForeground
+                              : theme.colors.mutedForeground.withAlpha(150),
+                          semanticLabel: _isOpen
+                              ? theme.labels.closeOptions
+                              : theme.labels.openOptions,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

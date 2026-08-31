@@ -8,8 +8,12 @@ import 'package:flutter/widgets.dart';
 /// ring's opacity so all three can be tuned by theme or density instead of
 /// being hardcoded per component.
 ///
-/// The shadcn web reference paints its focus ring as a 3px band at 50% of the
-/// ring color (`ring/50`), so [ringWidth] defaults to 3 and [ringAlpha] to 0.5.
+/// The Atlas draws the ring as `outline: 2px solid var(--ring)` at
+/// `outline-offset: 3px`, following the field's own radius - so [ringWidth]
+/// defaults to 2, [ringAlpha] to 1, and [ringOffset] to 3. It is an outline
+/// with a transparent gap, not a translucent band sitting on the edge: the
+/// gap is what separates the ring from the control it marks, and a ring that
+/// starts at the border box reads as a thicker border instead.
 ///
 /// [dismissKeyboardOnTapOutside] is the one behavioral token here. It lives
 /// alongside the ring on purpose: this group is the system's answer to "what
@@ -18,9 +22,9 @@ import 'package:flutter/widgets.dart';
 @immutable
 class MonokitFocus {
   const MonokitFocus({
-    this.ringWidth = 3,
-    this.ringOffset = 2,
-    this.ringAlpha = 0.5,
+    this.ringWidth = 2,
+    this.ringOffset = 3,
+    this.ringAlpha = 1.0,
     this.dismissKeyboardOnTapOutside = true,
   }) : assert(ringAlpha >= 0 && ringAlpha <= 1);
 
@@ -57,6 +61,13 @@ class MonokitFocus {
   /// [color] is normally `MonokitColors.ring`; pass `MonokitColors.destructive`
   /// with [alpha] `0.2` for the invalid-state ring (the reference's
   /// `ring-destructive/20`). [alpha] defaults to [ringAlpha].
+  ///
+  /// **This form cannot honour [ringOffset].** A `BoxShadow`'s spread starts at
+  /// the border box, so the band always touches the control and the gap the
+  /// Atlas specifies is unrepresentable. Controls that need the gap wrap
+  /// themselves in `MonoFocusRingOverlay`, which paints outside the bounds
+  /// without taking part in layout. This stays for controls whose ring sits
+  /// flush, and so the token plumbing does not break underneath them.
   List<BoxShadow> ringShadow(Color color, {double? alpha}) => <BoxShadow>[
     BoxShadow(
       color: color.withValues(alpha: alpha ?? ringAlpha),

@@ -80,11 +80,13 @@ void main() {
   group('focus ring tokens', () {
     test('MonokitFocus exposes defaults and copyWith', () {
       const focus = MonokitFocus();
-      expect(focus.ringWidth, 3);
-      expect(focus.ringOffset, 2);
-      expect(focus.ringAlpha, 0.5);
+      // The Atlas draws `outline: 2px solid var(--ring)` at `outline-offset:
+      // 3px`, solid rather than a translucent band.
+      expect(focus.ringWidth, 2);
+      expect(focus.ringOffset, 3);
+      expect(focus.ringAlpha, 1.0);
       expect(focus.copyWith(ringWidth: 4).ringWidth, 4);
-      expect(focus.copyWith(ringWidth: 4).ringOffset, 2);
+      expect(focus.copyWith(ringWidth: 4).ringOffset, 3);
       expect(focus.copyWith(ringAlpha: 0.4).ringAlpha, 0.4);
     });
 

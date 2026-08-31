@@ -73,6 +73,7 @@ export 'src/primitives/mono_anchored_layout.dart';
 export 'src/motion/mono_spring_controller.dart';
 export 'src/motion/monokit_scroll_behavior.dart';
 export 'src/primitives/mono_announcer.dart';
+export 'src/primitives/mono_field_skin.dart';
 export 'src/primitives/mono_focus_ring.dart';
 export 'src/primitives/mono_focus_trap.dart';
 export 'src/primitives/mono_heading.dart';

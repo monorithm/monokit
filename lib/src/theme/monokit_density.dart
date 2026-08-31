@@ -41,6 +41,16 @@ final class MonokitDensity {
   /// The height of a standard control — a button, an input, a select.
   double get controlHeight => isTouch ? 44 : 36;
 
+  /// The height of a control that is the screen's whole purpose: the phone
+  /// number on the number screen, the handle on the handle screen.
+  ///
+  /// Not in `contract/space.json`, which stops at one control height. The
+  /// Atlas draws this size seven times across the entry screens and never
+  /// varies it, so it is a real step rather than a drawing accident — see
+  /// `record/AMENDMENTS.md` in monokit-spec. It sits between `row1` and
+  /// `row2` and keeps the touch:pointer ratio the rest of the ladder uses.
+  double get controlHeightLarge => isTouch ? 56 : 48;
+
   /// The gap between adjacent controls in a group.
   double get gap => isTouch ? 8 : 4;
 

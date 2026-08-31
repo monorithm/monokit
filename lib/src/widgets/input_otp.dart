@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_field_skin.dart';
+import '../primitives/mono_focus_ring.dart';
 import '../theme/monokit_theme.dart';
 
 /// A multi-cell one-time-password input built from [EditableText] controls.
@@ -313,8 +315,8 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final double cellSize =
-        widget.cellSize ?? theme.spacing.huge + theme.spacing.sm;
+    final skin = MonoFieldSkin.of(context, MonoInputSize.large);
+    final double cellSize = widget.cellSize ?? skin.height;
     final double gap = widget.spacing ?? theme.spacing.sm;
     final bool focusVisible = _statesController.contains(
       MonoState.focusVisible,
@@ -325,11 +327,6 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
     final List<Widget> fields = <Widget>[];
     for (int index = 0; index < _controllers.length; index++) {
       final bool focused = _focusNodes[index].hasFocus;
-      final Color borderColor = widget.invalid
-          ? theme.colors.destructive
-          : focused
-          ? theme.colors.ring
-          : theme.colors.border;
       fields.add(
         Focus(
           canRequestFocus: false,
@@ -349,64 +346,57 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
               cursor: _isEnabled
                   ? SystemMouseCursors.text
                   : SystemMouseCursors.forbidden,
-              child: AnimatedContainer(
-                duration: theme.motion.duration,
-                curve: theme.motion.curve,
-                width: cellSize,
-                height: cellSize,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: _isEnabled
-                      ? theme.colors.background.withAlpha(0)
-                      : theme.colors.muted.withAlpha(150),
-                  borderRadius: BorderRadius.circular(theme.radii.lg),
-                  border: Border.all(color: borderColor),
-                  boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(
-                          theme.colors.destructive,
-                          alpha: 0.2,
-                        )
-                      : focused && focusVisible
-                      ? theme.focus.ringShadow(theme.colors.ring)
-                      : null,
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: theme.spacing.xs),
-                  child: EditableText(
-                    controller: _controllers[index],
-                    focusNode: _focusNodes[index],
-                    readOnly: !_isEnabled,
-                    autofocus: widget.autofocus && index == 0,
-                    obscureText: widget.obscureText,
-                    obscuringCharacter: widget.obscuringCharacter,
-                    style: theme.typography.titleLarge.copyWith(
-                      color: _isEnabled
-                          ? theme.colors.foreground
-                          : theme.colors.mutedForeground,
+              child: MonoFocusRingOverlay(
+                focused: widget.invalid || (focused && focusVisible),
+                borderRadius: skin.radius,
+                color: widget.invalid ? theme.colors.destructive : null,
+                child: AnimatedContainer(
+                  duration: theme.motion.duration,
+                  curve: theme.motion.curve,
+                  width: cellSize,
+                  height: cellSize,
+                  alignment: Alignment.center,
+                  decoration: skin.well(context, enabled: _isEnabled),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: theme.spacing.xs),
+                    child: EditableText(
+                      controller: _controllers[index],
+                      focusNode: _focusNodes[index],
+                      readOnly: !_isEnabled,
+                      autofocus: widget.autofocus && index == 0,
+                      obscureText: widget.obscureText,
+                      obscuringCharacter: widget.obscuringCharacter,
+                      style: theme.typography
+                          .tabular(skin.value)
+                          .copyWith(
+                            color: _isEnabled
+                                ? theme.colors.foreground
+                                : theme.colors.mutedForeground,
+                          ),
+                      textAlign: TextAlign.center,
+                      cursorColor: theme.colors.foreground,
+                      backgroundCursorColor: theme.colors.foreground,
+                      selectionColor: theme.colors.ring.withAlpha(80),
+                      keyboardType: widget.keyboardType,
+                      textInputAction: index == _controllers.length - 1
+                          ? TextInputAction.done
+                          : widget.textInputAction,
+                      inputFormatters: _formatters(),
+                      maxLines: 1,
+                      onChanged: (String value) => _handleChanged(index, value),
+                      onSubmitted: (_) {
+                        if (index < _focusNodes.length - 1) {
+                          _focusNodes[index + 1].requestFocus();
+                        }
+                      },
+                      // Every cell defaults to the same tap region group, so
+                      // this only fires for a tap outside the whole code —
+                      // hopping between cells never reaches it.
+                      onTapOutside: dismissOnTapOutside
+                          ? (PointerDownEvent event) =>
+                                _focusNodes[index].unfocus()
+                          : null,
                     ),
-                    textAlign: TextAlign.center,
-                    cursorColor: theme.colors.foreground,
-                    backgroundCursorColor: theme.colors.foreground,
-                    selectionColor: theme.colors.ring.withAlpha(80),
-                    keyboardType: widget.keyboardType,
-                    textInputAction: index == _controllers.length - 1
-                        ? TextInputAction.done
-                        : widget.textInputAction,
-                    inputFormatters: _formatters(),
-                    maxLines: 1,
-                    onChanged: (String value) => _handleChanged(index, value),
-                    onSubmitted: (_) {
-                      if (index < _focusNodes.length - 1) {
-                        _focusNodes[index + 1].requestFocus();
-                      }
-                    },
-                    // Every cell defaults to the same tap region group, so
-                    // this only fires for a tap outside the whole code —
-                    // hopping between cells never reaches it.
-                    onTapOutside: dismissOnTapOutside
-                        ? (PointerDownEvent event) =>
-                              _focusNodes[index].unfocus()
-                        : null,
                   ),
                 ),
               ),

@@ -10,10 +10,56 @@ still the history of this API.
 
 ## 4.1.0
 
-One component brought back into line with the colour standard, and the tests
-that should have been holding it there.
+Two components brought back into line with what the design actually draws, and
+the tests that should have been holding them there.
+
+The larger half is the text field. An audit against the Monorithm Atlas found
+the input rendering as the exact inverse of its own specification: the contract
+opens with *"A well rather than a bordered box. The field recedes and the value
+the user typed is what reads"*, and the widget shipped a bordered box with a
+transparent fill, a 14px value at regular weight, and a 40px height on a touch
+product whose own `minTarget` token is 44. Seven measured differences, none of
+which any test was watching, because every test asserted colours and none
+asserted shape.
 
 ### Changed
+
+- **A text field is a well now, not a bordered box.** `MonoInput`,
+  `MonoInputOtp`, `MonoSelect` and `MonoCombobox` render as a filled recess at
+  `muted` with no border in any state, radius `xl` (14, was `lg`/10). The four
+  read their look from one new `MonoFieldSkin` rather than from four copies of
+  the same decoration - which is how they drifted from the design together and
+  then from each other.
+
+- **Field height resolves from density instead of `spacing.huge`.** The new
+  `MonoInputSize` picks one of three steps: `small` = `controlHeight` (44/36),
+  `medium` = `row1` (48/40), `large` = `controlHeightLarge` (56/48). Every step
+  clears the minimum touch target; the old fixed 40 did not.
+
+  **This is a visible change to every field**, and the default (`medium`, 48)
+  is 8px taller than what shipped in 4.0.0. Pass `size:` to choose another step.
+
+- **The value the user typed is set loud.** 20/600 at `large`, 14/500 below it,
+  where all four controls previously used `bodyMedium` (14/400). A placeholder
+  is the same style one weight lighter in `mutedForeground`, so it reads as
+  absent text rather than as a short value. `tabularFigures: true` opts a field
+  into fixed-advance digits; the OTP takes them always.
+
+- **The focus ring is a real outline, offset from the control.** `ringWidth`
+  3 -> 2, `ringAlpha` 0.5 -> 1.0, `ringOffset` 2 -> 3, and `colors.ring` moves
+  to `#A9B4B7` / `#5A686C`. This is a **system-wide** change: every focusable
+  control wears this ring, not only fields.
+
+  `ringOffset` had never been applied to anything. It could not be: the ring
+  was a `BoxShadow`, and a shadow's spread starts at the border box, so the gap
+  the design specifies was unrepresentable and the ring read as a thicker
+  border. The new `MonoFocusRingOverlay` paints it outside the bounds, taking
+  no part in layout - a field no longer grows when it takes focus, so its
+  siblings stop shifting as the user tabs through.
+
+- **Invalid wears the ring without focus**, in `destructive`. An error found on
+  submit is now visible on a field nobody is standing in.
+
 
 - **A selected `MonoChip` now takes the soft brand pair** - `primarySoft` under
   `primaryText` - instead of inverting to a solid foreground fill with
@@ -38,16 +84,41 @@ that should have been holding it there.
 
 ### Added
 
+- **`MonoInput` takes a controlled `value`** alongside `onChanged`, matching
+  every other stateful control in the kit. `controller` and `initialValue` still
+  work; the three are mutually exclusive and asserted.
+- **`MonoInput.pending`** - an affordance for asynchronous validation, distinct
+  from disabled as the Field contract requires. It shows a spinner and announces
+  itself, and deliberately does not block typing: taking the field away because
+  a network call is slow is how a form loses a keystroke.
+- `MonoFieldSkin` and `MonoInputSize`, exported, so a consumer composing its own
+  field can sit on the same ladder.
+- `MonoFocusRingOverlay`, for any control that needs the ring without the
+  layout shift.
+- `MonokitDensity.controlHeightLarge` (56/48). Not in `contract/space.json`,
+  which stops at one control height; filed as an amendment.
 - `MonoChip` has tests. It had none, in a package where every other component
   does, which is why nothing caught the divergence. They pin the treatment to
   the tokens rather than to literal colours, so a palette change moves them and
   a grammar change breaks them.
+- 14 structural tests for the field: is there a fill, is there a border, which
+  step of the ladder, is the ring outside the box, do all four controls still
+  agree. The cosmetic values were already guarded; the *shape* was not, which is
+  why it could invert without a single failure.
 
 ### Notes
 
 - Selection remains legible without colour: the label still thickens to
   `FontWeight.w500` and the node still reports `selected`, so neither a
   monochrome display nor a screen reader depends on the fill.
+- Two Atlas values were not adopted literally. Horizontal padding is drawn at
+  14, which is off the 4pt grid the whole system is built on, so fields use the
+  neighbouring token (12) - a 2px difference, and no ungridded number in the
+  kit. The ring extends `ringOffset + ringWidth` past the control, so an
+  ancestor that clips will trim it; this matches `outline-offset` on the web.
+- The Input contract still carries a MUST to *"colour its border with
+  destructive"*, which a well has no border to colour. Its own description asks
+  for the well. Both are filed for the system owner rather than settled here.
 
 ## 4.0.0
 
