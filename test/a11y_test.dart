@@ -80,9 +80,12 @@ void main() {
   group('focus ring tokens', () {
     test('MonokitFocus exposes defaults and copyWith', () {
       const focus = MonokitFocus();
-      expect(focus.ringWidth, 3);
+      // contract/interaction.json's focusRing group: width 2, offset 2,
+      // painted outside the bounds, focus-visible only. Solid rather than a
+      // translucent band, per the Atlas.
+      expect(focus.ringWidth, 2);
       expect(focus.ringOffset, 2);
-      expect(focus.ringAlpha, 0.5);
+      expect(focus.ringAlpha, 1.0);
       expect(focus.copyWith(ringWidth: 4).ringWidth, 4);
       expect(focus.copyWith(ringWidth: 4).ringOffset, 2);
       expect(focus.copyWith(ringAlpha: 0.4).ringAlpha, 0.4);

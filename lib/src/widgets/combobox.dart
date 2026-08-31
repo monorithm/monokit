@@ -9,6 +9,8 @@ import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
 import '../theme/monokit_motion.dart';
 import '../theme/monokit_elevation.dart';
+import '../primitives/mono_field_skin.dart';
+import '../primitives/mono_focus_ring.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
@@ -61,6 +63,7 @@ class MonoCombobox<T> extends StatefulWidget {
     this.onOpenChange,
     this.placeholder = 'Select an option',
     this.searchPlaceholder = 'Search options…',
+    this.size = MonoInputSize.medium,
     this.enabled = true,
     this.invalid = false,
     this.focusNode,
@@ -95,6 +98,11 @@ class MonoCombobox<T> extends StatefulWidget {
   final ValueChanged<bool>? onOpenChange;
   final String placeholder;
   final String searchPlaceholder;
+
+  /// Which of the three field heights this control takes. Shared with
+  /// [MonoInput] so a combobox and an input in the same form line up.
+  final MonoInputSize size;
+
   final bool enabled;
   final bool invalid;
   final FocusNode? focusNode;
@@ -426,13 +434,7 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
         builder: (BuildContext context, Widget? _) {
           final focused = _statesController.contains(MonoState.focused);
           final hovered = _statesController.contains(MonoState.hovered);
-          final borderColor = widget.invalid
-              ? theme.colors.destructive
-              : focused || _isOpen
-              ? theme.colors.ring
-              : hovered
-              ? theme.colors.foreground
-              : theme.colors.border;
+          final skin = MonoFieldSkin.of(context, widget.size);
           return Semantics(
             container: true,
             button: true,
@@ -454,46 +456,39 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
                   ? () => _statesController.update(MonoState.pressed, false)
                   : null,
               onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
-              child: AnimatedContainer(
-                duration: MonokitMotion.noAnimation(context)
-                    ? Duration.zero
-                    : theme.motion.duration,
-                curve: theme.motion.curve,
-                constraints: BoxConstraints(minHeight: theme.spacing.huge),
-                padding: EdgeInsets.symmetric(
-                  horizontal: theme.spacing.md,
-                  vertical: theme.spacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: _isEnabled
-                      ? theme.colors.background.withValues(alpha: 0)
-                      : theme.colors.muted.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(theme.radii.lg),
-                  border: Border.all(color: borderColor),
-                  boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(
-                          theme.colors.destructive,
-                          alpha: 0.2,
-                        )
-                      : _statesController.contains(MonoState.focusVisible)
-                      ? theme.focus.ringShadow(theme.colors.ring)
-                      : null,
-                ),
-                child: DefaultTextStyle.merge(
-                  style: theme.typography.bodyMedium.copyWith(
-                    color: foreground,
+              child: MonoFocusRingOverlay(
+                focused:
+                    widget.invalid ||
+                    _statesController.contains(MonoState.focusVisible) ||
+                    _isOpen,
+                borderRadius: skin.radius,
+                color: widget.invalid ? theme.colors.destructive : null,
+                child: AnimatedContainer(
+                  duration: MonokitMotion.noAnimation(context)
+                      ? Duration.zero
+                      : theme.motion.duration,
+                  curve: theme.motion.curve,
+                  constraints: BoxConstraints(minHeight: skin.height),
+                  padding: EdgeInsets.symmetric(horizontal: skin.padX),
+                  decoration: skin.well(
+                    context,
+                    enabled: _isEnabled,
+                    hovered: hovered && !focused && !_isOpen,
                   ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(child: display),
-                      SizedBox(width: theme.spacing.sm),
-                      Text(
-                        _isOpen ? '⌃' : '⌄',
-                        style: theme.typography.labelLarge.copyWith(
-                          color: theme.colors.mutedForeground,
+                  child: DefaultTextStyle.merge(
+                    style: skin.value.copyWith(color: foreground),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(child: display),
+                        SizedBox(width: theme.spacing.sm),
+                        Text(
+                          _isOpen ? '⌃' : '⌄',
+                          style: theme.typography.labelLarge.copyWith(
+                            color: theme.colors.mutedForeground,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

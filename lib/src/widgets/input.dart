@@ -4,23 +4,40 @@ import 'package:flutter/widgets.dart';
 
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
+import '../primitives/mono_field_skin.dart';
+import '../primitives/mono_focus_ring.dart';
 import '../primitives/mono_text_scale.dart';
 import '../primitives/mono_text_selection.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
+import 'spinner.dart';
 
-/// A compact, token-driven text input built directly on [EditableText].
+/// A token-driven text input built directly on [EditableText].
 ///
 /// This deliberately does not depend on Material's `TextField`, which makes it
-/// safe to use in a widgets-only [MonokitApp]. Supply a [controller] to own the
-/// field value, or omit it and use [initialValue] for an internally managed
-/// controller.
+/// safe to use in a widgets-only [MonokitApp].
+///
+/// It renders as a **well**: a filled recess at [MonoFieldSkin], with no
+/// border in any state. Focus and invalidity are carried by a ring *outside*
+/// the field, offset from it, so neither has to share pixels with the fill.
+///
+/// Three ways to own the value, in the order you should reach for them:
+///
+/// * [value] with [onChanged] — controlled, matching every other stateful
+///   control in the kit. Reach for this first.
+/// * [controller] — when you need selection, formatting or focus scripting.
+/// * [initialValue] — uncontrolled, for a field nobody reads back until
+///   submit.
 class MonoInput extends StatefulWidget {
   const MonoInput({
     super.key,
     this.controller,
     this.focusNode,
+    this.value,
     this.initialValue,
+    this.size = MonoInputSize.medium,
+    this.tabularFigures = false,
+    this.pending = false,
     this.placeholder,
     this.semanticLabel,
     this.enabled = true,
@@ -65,6 +82,11 @@ class MonoInput extends StatefulWidget {
          controller == null || initialValue == null,
          'Specify either controller or initialValue, not both.',
        ),
+       assert(
+         value == null || (controller == null && initialValue == null),
+         'A controlled value cannot share the field with a controller or an '
+         'initialValue: two owners means the value depends on build order.',
+       ),
        assert(maxLength == null || maxLength >= 0),
        assert(
          !expands || (minLines == null && maxLines == null),
@@ -81,8 +103,29 @@ class MonoInput extends StatefulWidget {
   /// Focus node for this field. If omitted, this widget owns a focus node.
   final FocusNode? focusNode;
 
+  /// The controlled value. Keep it in your own state and update it from
+  /// [onChanged], the way [MonoSwitch], [MonoSelect] and the rest work.
+  final String? value;
+
   /// Initial text for an internally managed [controller].
   final String? initialValue;
+
+  /// Which of the three heights this field takes.
+  final MonoInputSize size;
+
+  /// Renders digits at a fixed advance width, so a value that changes as the
+  /// user types does not reflow the ones already on screen. Correct for phone
+  /// numbers, codes, prices and quantities; wrong for prose.
+  final bool tabularFigures;
+
+  /// Whether the field is waiting on asynchronous validation.
+  ///
+  /// Deliberately distinct from disabled and rendered differently: a pending
+  /// field is still the user's to type in, and taking it away underneath them
+  /// because a network call is slow is how a form loses a keystroke. It shows
+  /// a spinner in the trailing slot and announces itself; it does not block
+  /// input.
+  final bool pending;
 
   /// Text shown while the input is empty.
   final String? placeholder;
@@ -243,16 +286,17 @@ class _MonoInputState extends State<MonoInput>
 
   bool get _isEnabled => widget.enabled;
   bool get _isFocused => _statesController.contains(MonoState.focused);
+  bool get _isFocusVisible =>
+      _statesController.contains(MonoState.focusVisible);
   bool get _isHovered => _statesController.contains(MonoState.hovered);
 
   @override
   void initState() {
     super.initState();
     if (widget.controller == null) {
+      final String? seed = widget.value ?? widget.initialValue;
       _createLocalController(
-        widget.initialValue == null
-            ? null
-            : TextEditingValue(text: widget.initialValue!),
+        seed == null ? null : TextEditingValue(text: seed),
       );
     } else {
       widget.controller!.addListener(_handleTextChanged);
@@ -286,6 +330,17 @@ class _MonoInputState extends State<MonoInput>
     } else if (widget.controller != oldWidget.controller) {
       oldWidget.controller?.removeListener(_handleTextChanged);
       widget.controller?.addListener(_handleTextChanged);
+    } else if (widget.value != null && oldWidget.value != widget.value) {
+      // Controlled: the parent is the source of truth, so pull its value in.
+      // Guarded on the text actually differing — echoing back the value that
+      // came from this field's own onChanged would collapse the selection to
+      // the end on every keystroke.
+      if (_controller.text != widget.value) {
+        _controller.value = TextEditingValue(
+          text: widget.value!,
+          selection: TextSelection.collapsed(offset: widget.value!.length),
+        );
+      }
     } else if (widget.controller == null &&
         oldWidget.initialValue != widget.initialValue) {
       _controller.value = _controller.value.copyWith(
@@ -343,9 +398,18 @@ class _MonoInputState extends State<MonoInput>
   }
 
   void _handleFocusChanged() {
-    _setState(MonoState.focused, _focusNode.hasFocus);
-    _setState(MonoState.focusVisible, _focusNode.hasFocus);
-    widget.onFocusChanged?.call(_focusNode.hasFocus);
+    final bool hasFocus = _focusNode.hasFocus;
+    _setState(MonoState.focused, hasFocus);
+    // focusVisible is keyboard focus, not any focus. The ring hangs off this
+    // one, and `contract/interaction.json` binds it to focus-visible only:
+    // a tapped field already announces itself with the caret, and a ring on
+    // top of that is a second answer to a question nobody asked.
+    _setState(
+      MonoState.focusVisible,
+      hasFocus &&
+          FocusManager.instance.highlightMode == FocusHighlightMode.traditional,
+    );
+    widget.onFocusChanged?.call(hasFocus);
   }
 
   void _syncFixedStates() {
@@ -431,27 +495,32 @@ class _MonoInputState extends State<MonoInput>
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
+    // A textarea is a MonoInput with minLines set, so the skin has to know
+    // which shape it is being asked for rather than assuming one line.
+    final skin = MonoFieldSkin.of(
+      context,
+      widget.size,
+      multiline: widget.maxLines != 1,
+    );
     final bool hasText = _controller.text.isNotEmpty;
     final Color foreground = _isEnabled
         ? theme.colors.foreground
         : theme.colors.mutedForeground;
-    final Color background = _isEnabled
-        ? theme.colors.background.withAlpha(0)
-        : theme.colors.muted.withAlpha(150);
     final Color resolvedSelectionColor =
         widget.selectionColor ?? theme.colors.ring.withAlpha(80);
     final EdgeInsetsGeometry resolvedPadding =
         widget.padding ??
-        EdgeInsets.symmetric(
-          horizontal: theme.spacing.md,
-          vertical: theme.spacing.sm,
-        );
-    final TextStyle inputStyle = (widget.style ?? theme.typography.bodyMedium)
-        .copyWith(color: foreground);
-    final TextStyle hintStyle =
-        (widget.placeholderStyle ?? theme.typography.bodyMedium).copyWith(
-          color: theme.colors.mutedForeground,
-        );
+        EdgeInsets.symmetric(horizontal: skin.padX, vertical: skin.padY);
+
+    TextStyle figures(TextStyle base) =>
+        widget.tabularFigures ? theme.typography.tabular(base) : base;
+
+    final TextStyle inputStyle = figures(
+      widget.style ?? skin.value,
+    ).copyWith(color: foreground);
+    final TextStyle hintStyle = figures(
+      widget.placeholderStyle ?? skin.placeholder,
+    );
 
     final Widget editable = Stack(
       alignment: AlignmentDirectional.centerStart,
@@ -529,6 +598,10 @@ class _MonoInputState extends State<MonoInput>
       enabled: _isEnabled,
       readOnly: widget.readOnly,
       label: widget.semanticLabel ?? widget.placeholder,
+      // Pending is announced rather than drawn-only: a spinner beside a field
+      // says nothing to a screen reader, and "still checking" is exactly the
+      // thing a user cannot infer from silence.
+      hint: widget.pending ? theme.labels.loading : null,
       maxValueLength: widget.maxLength,
       currentValueLength: currentLength,
       onTap: widget.readOnly ? null : _handleSemanticsTap,
@@ -568,37 +641,41 @@ class _MonoInputState extends State<MonoInput>
                       child: widget.suffix!,
                     ),
                   ],
+                  if (widget.pending) ...<Widget>[
+                    SizedBox(width: theme.spacing.sm),
+                    ExcludeSemantics(
+                      child: MonoSpinner(
+                        size: theme.density.iconChrome,
+                        color: theme.colors.mutedForeground,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
             builder: (BuildContext context, Widget? child) {
-              final Color borderColor = widget.invalid
-                  ? theme.colors.destructive
-                  : _isFocused
-                  ? theme.colors.ring
-                  : _isHovered && _isEnabled
-                  ? theme.colors.foreground
-                  : theme.colors.border;
-              return AnimatedContainer(
-                duration: theme.motion.duration,
-                curve: theme.motion.curve,
-                constraints: BoxConstraints(
-                  minHeight: monoScaledExtent(context, theme.spacing.huge),
+              // Invalid outranks focus: a field can be both, and the one the
+              // user has to act on is the one that should be wearing the ring.
+              // It also shows without focus, so an error found on submit is
+              // visible on a field nobody is standing in.
+              return MonoFocusRingOverlay(
+                focused: widget.invalid || _isFocusVisible,
+                borderRadius: skin.radius,
+                color: widget.invalid ? theme.colors.destructive : null,
+                child: AnimatedContainer(
+                  duration: theme.motion.duration,
+                  curve: theme.motion.curve,
+                  constraints: BoxConstraints(
+                    // Grows past this as text scales; never shrinks below it.
+                    minHeight: monoScaledExtent(context, skin.height),
+                  ),
+                  decoration: skin.well(
+                    context,
+                    enabled: _isEnabled,
+                    hovered: _isHovered && !_isFocused,
+                  ),
+                  child: child,
                 ),
-                decoration: BoxDecoration(
-                  color: background,
-                  borderRadius: BorderRadius.circular(theme.radii.lg),
-                  border: Border.all(color: borderColor),
-                  boxShadow: widget.invalid
-                      ? theme.focus.ringShadow(
-                          theme.colors.destructive,
-                          alpha: 0.2,
-                        )
-                      : _isFocused
-                      ? theme.focus.ringShadow(theme.colors.ring)
-                      : null,
-                ),
-                child: child,
               );
             },
           ),
