@@ -8,6 +8,37 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.2.0
+
+Seven roles the catalogue was missing, and the reason it mattered more than a
+missing icon usually does.
+
+### Added
+
+- **`MonoIcons` gains the account surface**: `language`, `notificationOff`,
+  `key`, `block`, `signOut`, `reminder` and `verified`. Same vendor family as
+  the rest, so the catalogue still reads as one hand.
+
+  These are not exotic. Settings, a blocked list, a way out and a "you are
+  verified" mark are what a product has on day one. The catalogue had none of
+  them, and since 4.0.0 made `MonoIconData` ours to construct, a consumer could
+  not draw its own either - not even to pass into `MonoListRow`, whose `icon` is
+  typed `MonoIconData?`. A missing role was therefore not an inconvenience but a
+  wall: the product either went without the row or forked it.
+
+  Each new role is pinned distinct from the neighbour it would otherwise be
+  mistaken for. Silencing notifications is not muting audio (`mute` stays the
+  audio one); leaving a session is not deleting an account; having passed a
+  check is not the idea of protection.
+
+### Notes
+
+- This does not reopen `MonoIconData` for construction, which stays closed on
+  purpose - the vendor leak 4.0.0 shut is worth keeping shut. It closes the gap
+  the other way, by carrying the roles. A genuinely product-specific mark still
+  has nowhere to live, and that remains an open question rather than a
+  settled one.
+
 ## 4.1.0
 
 Two components brought back into line with what the design actually draws, and

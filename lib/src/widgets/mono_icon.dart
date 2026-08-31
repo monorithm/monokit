@@ -209,6 +209,56 @@ abstract final class MonoIcons {
     HugeIcons.strokeRoundedLeftToRightListBullet,
     semanticLabel: 'List view',
   );
+
+  // The account surface's roles. A product built on this kit reaches Settings,
+  // a blocked list and a way out on day one, and until now had to draw those
+  // itself - which it could not, since MonoIconData is ours to construct. Same
+  // vendor family as everything above, so the catalogue stays one hand.
+  static const MonoIconData language = MonoIconData._(
+    HugeIcons.strokeRoundedGlobe02,
+    semanticLabel: 'Language',
+  );
+
+  /// Notifications silenced - NOT [mute], which is the audio one. A product
+  /// that offers both needs them to be different glyphs, because they are
+  /// different promises.
+  static const MonoIconData notificationOff = MonoIconData._(
+    HugeIcons.strokeRoundedNotificationOff03,
+    semanticLabel: 'Notifications off',
+  );
+
+  /// A credential: signing back in, a key to an account.
+  static const MonoIconData key = MonoIconData._(
+    HugeIcons.strokeRoundedKey01,
+    semanticLabel: 'Sign in',
+  );
+
+  /// Someone the viewer has blocked. Not [flag], which reports outward, and
+  /// not [eyeOff], which hides: this one is about a person.
+  static const MonoIconData block = MonoIconData._(
+    HugeIcons.strokeRoundedUserBlock01,
+    semanticLabel: 'Blocked',
+  );
+
+  /// Leaving the session, not the account. Deletion is [trash].
+  static const MonoIconData signOut = MonoIconData._(
+    HugeIcons.strokeRoundedLogout03,
+    semanticLabel: 'Sign out',
+  );
+
+  /// A nudge before something lapses. [clock] states a time; this one says
+  /// somebody will be told.
+  static const MonoIconData reminder = MonoIconData._(
+    HugeIcons.strokeRoundedAlarmClock,
+    semanticLabel: 'Reminder',
+  );
+
+  /// A credential that was checked. [shield] is the idea of protection;
+  /// this is the state of having passed.
+  static const MonoIconData verified = MonoIconData._(
+    HugeIcons.strokeRoundedCheckmarkBadge01,
+    semanticLabel: 'Verified',
+  );
   static const MonoIconData shield = MonoIconData._(
     HugeIcons.strokeRoundedShield01,
     semanticLabel: 'Verified',
