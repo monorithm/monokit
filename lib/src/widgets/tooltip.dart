@@ -64,6 +64,14 @@ class MonoTooltipContent extends StatelessWidget {
 /// while their visual overlay is hidden. Use [open] with [onOpenChange] to
 /// control visibility explicitly, or leave it unset for the default automatic
 /// hover, focus, and long-press behavior.
+///
+/// **The visual tooltip is pointer-density only.** A tooltip exists to answer
+/// a hovering cursor, and there is no cursor on a touch screen; touch reveals
+/// the same label through the platform's own long-press instead. At touch
+/// density this renders its child and the semantic tooltip and nothing else,
+/// so the label still reaches assistive technology at both densities.
+/// An explicitly [open] tooltip is honoured everywhere — that is a caller
+/// driving it, not an affordance the density decides.
 class MonoTooltip extends StatefulWidget {
   const MonoTooltip({
     super.key,
@@ -342,6 +350,11 @@ class _MonoTooltipState extends State<MonoTooltip> {
 
   @override
   Widget build(BuildContext context) {
+    // Touch has no hover to answer, so the overlay never arms. The semantics
+    // stay, because the label is the part a screen reader needs at any density.
+    if (MonokitTheme.of(context).density.isTouch && widget.open == null) {
+      return Semantics(tooltip: widget.message, child: widget.child);
+    }
     return Semantics(
       tooltip: widget.message,
       child: Focus(

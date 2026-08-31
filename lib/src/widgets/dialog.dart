@@ -391,7 +391,7 @@ class MonoDialogContent extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.colors.popover,
-          borderRadius: BorderRadius.circular(theme.radii.xl),
+          borderRadius: BorderRadius.circular(theme.radii.xxl),
           // No border: in the grouped model `elevated` already steps above the
           // card behind it, and the shadow carries the rest. The shadow colour
           // now tracks the theme instead of the hardcoded 0x2609090B, which was

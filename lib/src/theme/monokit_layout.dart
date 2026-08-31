@@ -41,6 +41,11 @@ abstract final class MonokitChrome {
   static const double headerHeight = 56;
 
   static const double headerHeightExpanded = 64;
+
+  /// The bottom tab bar. Chrome, like the header, and the same height as it —
+  /// not a control, so it does not shrink to `minimumTarget`. Five equal
+  /// columns with their labels always on.
+  static const double tabBarHeight = 56;
   static const double borderWidth = 1;
 }
 

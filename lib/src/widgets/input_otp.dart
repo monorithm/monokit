@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import '../states/mono_state.dart';
 import '../states/mono_states_controller.dart';
 import '../primitives/mono_field_skin.dart';
-import '../primitives/mono_focus_ring.dart';
 import '../theme/monokit_theme.dart';
 
 /// A multi-cell one-time-password input built from [EditableText] controls.
@@ -343,62 +342,60 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
               cursor: _isEnabled
                   ? SystemMouseCursors.text
                   : SystemMouseCursors.forbidden,
-              // No focus ring on a code cell. The caret is already the whole
-              // signal - a brand-coloured bar in exactly one of six boxes -
-              // and ringing the cell as well says the same thing twice while
-              // making the row read as six controls rather than one. Invalid
-              // still rings, because that is a different message.
-              child: MonoFocusRingOverlay(
-                focused: widget.invalid,
-                borderRadius: skin.radius,
-                color: theme.colors.destructive,
-                child: AnimatedContainer(
-                  duration: theme.motion.duration,
-                  curve: theme.motion.curve,
-                  width: cellSize,
-                  height: cellSize,
-                  alignment: Alignment.center,
-                  decoration: skin.well(context, enabled: _isEnabled),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: theme.spacing.xs),
-                    child: EditableText(
-                      controller: _controllers[index],
-                      focusNode: _focusNodes[index],
-                      readOnly: !_isEnabled,
-                      autofocus: widget.autofocus && index == 0,
-                      obscureText: widget.obscureText,
-                      obscuringCharacter: widget.obscuringCharacter,
-                      style: theme.typography
-                          .tabular(skin.value)
-                          .copyWith(
-                            color: _isEnabled
-                                ? theme.colors.foreground
-                                : theme.colors.mutedForeground,
-                          ),
-                      textAlign: TextAlign.center,
-                      cursorColor: theme.colors.foreground,
-                      backgroundCursorColor: theme.colors.foreground,
-                      selectionColor: theme.colors.ring.withAlpha(80),
-                      keyboardType: widget.keyboardType,
-                      textInputAction: index == _controllers.length - 1
-                          ? TextInputAction.done
-                          : widget.textInputAction,
-                      inputFormatters: _formatters(),
-                      maxLines: 1,
-                      onChanged: (String value) => _handleChanged(index, value),
-                      onSubmitted: (_) {
-                        if (index < _focusNodes.length - 1) {
-                          _focusNodes[index + 1].requestFocus();
-                        }
-                      },
-                      // Every cell defaults to the same tap region group, so
-                      // this only fires for a tap outside the whole code —
-                      // hopping between cells never reaches it.
-                      onTapOutside: dismissOnTapOutside
-                          ? (PointerDownEvent event) =>
-                                _focusNodes[index].unfocus()
-                          : null,
-                    ),
+              // No ring on a code cell in any state. The caret is already the
+              // whole signal - a brand-coloured bar in exactly one of six
+              // boxes - and invalidity recolours the cells themselves, the way
+              // it recolours any other well.
+              child: AnimatedContainer(
+                duration: theme.motion.duration,
+                curve: theme.motion.curve,
+                width: cellSize,
+                height: cellSize,
+                alignment: Alignment.center,
+                decoration: skin.well(
+                  context,
+                  enabled: _isEnabled,
+                  invalid: widget.invalid,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: theme.spacing.xs),
+                  child: EditableText(
+                    controller: _controllers[index],
+                    focusNode: _focusNodes[index],
+                    readOnly: !_isEnabled,
+                    autofocus: widget.autofocus && index == 0,
+                    obscureText: widget.obscureText,
+                    obscuringCharacter: widget.obscuringCharacter,
+                    style: theme.typography
+                        .tabular(skin.value)
+                        .copyWith(
+                          color: _isEnabled
+                              ? theme.colors.foreground
+                              : theme.colors.mutedForeground,
+                        ),
+                    textAlign: TextAlign.center,
+                    cursorColor: theme.colors.foreground,
+                    backgroundCursorColor: theme.colors.foreground,
+                    selectionColor: theme.colors.ring.withAlpha(80),
+                    keyboardType: widget.keyboardType,
+                    textInputAction: index == _controllers.length - 1
+                        ? TextInputAction.done
+                        : widget.textInputAction,
+                    inputFormatters: _formatters(),
+                    maxLines: 1,
+                    onChanged: (String value) => _handleChanged(index, value),
+                    onSubmitted: (_) {
+                      if (index < _focusNodes.length - 1) {
+                        _focusNodes[index + 1].requestFocus();
+                      }
+                    },
+                    // Every cell defaults to the same tap region group, so
+                    // this only fires for a tap outside the whole code —
+                    // hopping between cells never reaches it.
+                    onTapOutside: dismissOnTapOutside
+                        ? (PointerDownEvent event) =>
+                              _focusNodes[index].unfocus()
+                        : null,
                   ),
                 ),
               ),

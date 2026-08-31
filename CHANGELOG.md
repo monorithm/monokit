@@ -8,6 +8,76 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.3.0
+
+The adaptive system starts being read.
+
+A conformance pass against the Atlas's 43 component boards found that the
+density group shipped in 3.2.0 was almost entirely unconsumed: `row1`/`row2`/
+`row3`, `controlHeight` and `minTarget` had **zero** consumers across all 53
+widget files, and only five files referenced density at all. The package was a
+touch-only realization with an adaptive vocabulary attached as documentation.
+
+This release wires the first of it, and corrects three things 4.1.0 got wrong.
+
+### Changed
+
+- **`MonoListRow` rides the row ladder.** 48/64/88 at touch, 40/56/76 at
+  pointer. It previously derived its height from `spacing.giant` - a fixed 48
+  that never moved - so a list on a desktop rendered at touch metrics. This is
+  the change with the widest blast radius in the release: every list in every
+  host gets shorter at pointer density.
+
+- **Invalid recolours the well; it no longer draws a ring.** `destructiveSoft`
+  fill with `destructiveText` ink, across `MonoInput`, `MonoInputOtp`,
+  `MonoSelect` and `MonoCombobox`. 4.1.0 signalled invalid with a destructive
+  ring, which no board does - *"invalid recolours the well itself, no second
+  border language"*. It also settles a question 4.1.0 left open: the ring means
+  focus and only focus, so *one ring on screen at a time* holds.
+
+- **Field inset comes from density** - 16 at touch, 12 at pointer - rather than
+  from the size axis. 4.1.0 used a flat 12, which was the pointer value applied
+  everywhere.
+
+- **A textarea's resting height is `density.textareaMin`** (88/72), not a
+  line-height derivation. 4.1.0 computed 76 because this token did not exist.
+
+- **Radii corrected to the surfaces the boards name**: card `lg` (was `xl`),
+  the centred dialog and the sheet `xxl` (both were `xl`).
+
+- **The tab bar is chrome height** - `MonokitChrome.tabBarHeight`, 56 - rather
+  than `density.minimumTarget`, and **`showLabels` now defaults to true**. The
+  Atlas draws it with "labels always on"; an icon-only destination asks the
+  user to recognise a glyph nobody taught them. Icon-only remains available.
+
+- **`MonoTooltip` is a pointer affordance.** At touch density it renders its
+  child and its semantic label and builds no hover machinery at all - touch
+  reveals the same label through the platform's long-press. An explicitly
+  `open` tooltip is still honoured everywhere.
+
+### Added
+
+- `MonokitDensity.chip` (36/32), `menuRow` (44/36), `textareaMin` (88/72) and
+  `fieldInset` (16/12) - four metrics the boards use that the density group
+  did not carry.
+- `MonokitChrome.tabBarHeight` (56).
+- `MonoListRow.overline`, the third line the 88/76 rhythm exists for. The row
+  had two line counts and a ladder with three rungs.
+- `test/adaptive_conformance_test.dart` - eight tests that pump the *same*
+  widget at both densities and assert the heights differ. A widget that reads
+  no density token renders identically at both, which is invisible to a golden
+  (one density) and to every test that only pumps one.
+
+### Notes
+
+- The 14px field padding that earlier notes flagged as an off-grid problem was
+  a misread: those 14s were menu and list rows, not fields. `MonoField` draws
+  16 at touch and 12 at pointer, both on the 4pt grid, and the question
+  dissolves.
+- Still unread: `MonoWidthClass` has no scope and no consumer, which is the
+  specification's own largest recorded gap. `MonoMetaLine` and `MonoUploadSlot`
+  have no implementation. 26 of the 43 boards are unaudited.
+
 ## 4.2.0
 
 Seven roles the catalogue was missing, and the reason it mattered more than a

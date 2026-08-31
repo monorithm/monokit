@@ -458,11 +458,9 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
               onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
               child: MonoFocusRingOverlay(
                 focused:
-                    widget.invalid ||
                     _statesController.contains(MonoState.focusVisible) ||
                     _isOpen,
                 borderRadius: skin.radius,
-                color: widget.invalid ? theme.colors.destructive : null,
                 child: AnimatedContainer(
                   duration: MonokitMotion.noAnimation(context)
                       ? Duration.zero
@@ -474,6 +472,7 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
                     context,
                     enabled: _isEnabled,
                     hovered: hovered && !focused && !_isOpen,
+                    invalid: widget.invalid,
                   ),
                   child: DefaultTextStyle.merge(
                     style: skin.value.copyWith(color: foreground),

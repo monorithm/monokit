@@ -601,8 +601,10 @@ class _MonoSheetOverlayState extends State<_MonoSheetOverlay>
         : Alignment.topCenter;
     final Offset begin = Offset(0, isBottom ? 1 : -1);
     final BorderRadius radius = isBottom
-        ? BorderRadius.vertical(top: Radius.circular(widget.theme.radii.xl))
-        : BorderRadius.vertical(bottom: Radius.circular(widget.theme.radii.xl));
+        ? BorderRadius.vertical(top: Radius.circular(widget.theme.radii.xxl))
+        : BorderRadius.vertical(
+            bottom: Radius.circular(widget.theme.radii.xxl),
+          );
     // Cap the sheet to the area left above the keyboard so tall content
     // scrolls instead of overflowing, and forms stay visible while typing.
     final MediaQueryData media = MediaQuery.of(context);

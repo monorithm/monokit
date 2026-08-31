@@ -9,16 +9,22 @@ import 'mono_icon.dart';
 /// One row in a [MonoListGroup]: leading icon, title, optional subtitle,
 /// optional trailing control.
 ///
-/// Rows are wells between hairlines, not bordered boxes: a single-line row
-/// sits at the 48 rhythm, a two-line row at 64, and press/hover paint the
+/// Rows are wells between hairlines, not bordered boxes. The height comes off
+/// the density row ladder — 48/64/88 at touch, 40/56/76 at pointer — chosen by
+/// how many lines the row actually carries, and press/hover paint the
 /// transient fill. A [selected] row carries the brand-as-ink treatment on its
 /// title — pair it with a trailing check for a non-colour signal.
+///
+/// Before 4.3.0 the height was `spacing.giant`, a fixed 48 that never moved:
+/// a list on a desktop rendered at touch metrics, because nothing in the
+/// package read the ladder the density group had been publishing since 3.2.0.
 class MonoListRow extends StatelessWidget {
   const MonoListRow({
     super.key,
     this.icon,
     required this.title,
     this.subtitle,
+    this.overline,
     this.trailing,
     this.onPressed,
     this.selected = false,
@@ -29,6 +35,11 @@ class MonoListRow extends StatelessWidget {
   final MonoIconData? icon;
   final String title;
   final String? subtitle;
+
+  /// A third line above the title — a group, a date, a sender. Its presence is
+  /// what takes the row to the media rhythm (`row3`).
+  final String? overline;
+
   final Widget? trailing;
   final VoidCallback? onPressed;
   final bool selected;
@@ -40,9 +51,13 @@ class MonoListRow extends StatelessWidget {
     final theme = MonokitTheme.of(context);
     final colors = theme.colors;
     final twoLine = subtitle != null;
-    final minHeight = twoLine
-        ? theme.spacing.giant + theme.spacing.lg
-        : theme.spacing.giant;
+    final threeLine = overline != null;
+    final density = theme.density;
+    final minHeight = threeLine
+        ? density.row3
+        : twoLine
+        ? density.row2
+        : density.row1;
 
     Widget content(BuildContext context, Set<MonoState> states) {
       final transient =
@@ -76,6 +91,18 @@ class MonoListRow extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
+                      if (threeLine) ...<Widget>[
+                        // Above the title, and quieter than the subtitle
+                        // below it: the overline says which set this row
+                        // belongs to, not what it says.
+                        Text(
+                          overline!,
+                          style: theme.typography.labelMedium.copyWith(
+                            color: colors.mutedForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                      ],
                       Text(
                         title,
                         style: theme.typography.bodyMedium.copyWith(

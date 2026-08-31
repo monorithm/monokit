@@ -54,6 +54,24 @@ final class MonokitDensity {
   /// The gap between adjacent controls in a group.
   double get gap => isTouch ? 8 : 4;
 
+  /// A chip's capsule height. Shorter than a control: a chip is a filter or a
+  /// choice, not a commitment, and it sits in rows of its own.
+  double get chip => isTouch ? 36 : 32;
+
+  /// One row inside a menu, dropdown or picker. Shorter than [controlHeight]
+  /// at pointer because a menu is scanned, not aimed at.
+  double get menuRow => isTouch ? 44 : 36;
+
+  /// The resting height of a textarea before it grows with its content.
+  double get textareaMin => isTouch ? 88 : 72;
+
+  /// The horizontal inset inside a field well.
+  ///
+  /// Not [MonokitSpacing.lg] directly: it moves with density like every other
+  /// control metric, and reading it from the density group is what keeps a
+  /// field from staying at touch inset on a desktop.
+  double get fieldInset => isTouch ? 16 : 12;
+
   /// The three list-row heights. One line, two lines, and a media row.
   double get row1 => isTouch ? 48 : 40;
   double get row2 => isTouch ? 64 : 56;

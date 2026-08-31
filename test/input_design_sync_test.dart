@@ -295,9 +295,7 @@ void main() {
       expect(side.color.a, 1.0, reason: 'solid, not a translucent band');
     });
 
-    testWidgets('invalid wears the ring without focus, in destructive', (
-      tester,
-    ) async {
+    testWidgets('invalid recolours the well and grows no ring', (tester) async {
       final theme = MonokitThemeData.light();
       await tester.pumpWidget(
         monokitHost(
@@ -305,20 +303,25 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final box = tester.widget<DecoratedBox>(
-        find
-            .descendant(
-              of: find.byType(MonoFocusRingOverlay),
-              matching: find.byType(DecoratedBox),
-            )
-            .last,
-      );
+
+      // "Invalid recolours the well itself - no second border language."
+      final d = decorationOf(tester, MonoInput);
+      expect(d.color, theme.colors.destructiveSoft);
+      expect(d.border, isNull);
+
+      // And it grows no ring: a ring means focus, and the Atlas allows one
+      // ring on screen at a time.
       expect(
-        ((box.decoration as BoxDecoration).border! as Border).top.color,
-        theme.colors.destructive,
-        reason:
-            'an error found on submit must show on a field nobody is standing in',
+        ringOpacity(tester),
+        0,
+        reason: 'invalidity is carried by colour, not by the focus ring',
       );
+
+      // The value inside agrees with the message beneath it.
+      final style = tester
+          .widget<EditableText>(find.byType(EditableText))
+          .style;
+      expect(style.color, theme.colors.destructiveText);
     });
   });
 

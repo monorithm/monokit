@@ -507,9 +507,8 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
                   : null,
               onTap: _isEnabled ? () => _setOpen(!_isOpen) : null,
               child: MonoFocusRingOverlay(
-                focused: widget.invalid || _isFocusVisible || _isOpen,
+                focused: _isFocusVisible || _isOpen,
                 borderRadius: skin.radius,
-                color: widget.invalid ? theme.colors.destructive : null,
                 child: AnimatedContainer(
                   duration: theme.motion.duration,
                   curve: theme.motion.curve,
@@ -519,6 +518,7 @@ class _MonoSelectState<T> extends State<MonoSelect<T>> {
                     context,
                     enabled: _isEnabled,
                     hovered: _isHovered && !_isFocused && !_isOpen,
+                    invalid: widget.invalid,
                   ),
                   child: Row(
                     children: <Widget>[
