@@ -10,7 +10,42 @@ still the history of this API.
 
 ## 4.7.0
 
-The combobox changes shape with density, and stops drawing its icons as text.
+The combobox changes shape with density, the last unimplemented board becomes
+a component, and the kit stops drawing icons as text.
+
+### Added
+
+- **`MonoChromeScope` and `MonoChrome`** - chrome recede, the last board with
+  no implementation. Three policies chosen up front per screen, never per
+  component: `persistent` (live viewing, calls in grid), `resting` (the feed,
+  player, gallery, reader), `hidden` (camera pre-roll, screening, preview).
+
+  Four things are the component:
+
+  * **Hold to clear is a sustain, not a toggle.** The screen is clear only
+    while the finger is down and chrome is back on release, which keeps
+    long-press inside its two sanctioned meanings rather than inventing a
+    third.
+  * **One capability, three idioms.** Touch holds; pointer never learns a
+    gesture and rests ambiently, returning on movement; keyboard cannot hold at
+    all (a held key repeats), so while chrome is hidden the first key returns
+    it and is consumed.
+  * **A timed recede travels toward its edge; a held peek does not move.**
+    That is a recorded divergence - the specification gives recede a small
+    translation either way - because the finger is still on the glass and every
+    control must be where the thumb left it on release.
+  * **The clock belongs to the item.** A new subject resets the timer, and the
+    default delay is the ten seconds an immersive item holds, so a rest never
+    cuts an item short. `MonoMetaLine` depends on this: a rest at three seconds
+    would bury its second fact.
+
+  `subjectTruth: true` marks what never recedes - captions, the recording dot,
+  an active call timer, the live badge. And nothing auto-hides while assistive
+  technology is active, which the scope checks itself rather than trusting the
+  caller to.
+
+  **Carries a ruling that diverges from the specification:** the feed is
+  Resting, where the spec files feed browsing under Persistent.
 
 ### Changed
 

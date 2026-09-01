@@ -27,6 +27,7 @@ export 'src/widgets/bubble.dart';
 export 'src/widgets/button.dart';
 export 'src/widgets/card.dart';
 export 'src/widgets/checkbox.dart';
+export 'src/widgets/chrome_recede.dart';
 export 'src/widgets/chip.dart';
 export 'src/widgets/combobox.dart';
 export 'src/widgets/commerce.dart';
