@@ -14,6 +14,7 @@ import '../primitives/mono_field_skin.dart';
 import '../primitives/mono_focus_ring.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
+import 'mono_icon.dart';
 
 /// A searchable value declaration for [MonoCombobox].
 class MonoComboboxOption<T> {
@@ -481,10 +482,21 @@ class _MonoComboboxState<T> extends State<MonoCombobox<T>> {
                       children: <Widget>[
                         Expanded(child: display),
                         SizedBox(width: theme.spacing.sm),
-                        Text(
-                          _isOpen ? '⌃' : '⌄',
-                          style: theme.typography.labelLarge.copyWith(
+                        // An icon, not a Unicode character: U+2303/U+2304 are
+                        // not in the bundled Plex and rendered as tofu.
+                        AnimatedRotation(
+                          turns: _isOpen ? 0.5 : 0,
+                          duration: theme.motion.reduced(
+                            context,
+                            theme.motion.state,
+                          ),
+                          curve: theme.motion.standard,
+                          child: MonoIcon(
+                            MonoIcons.chevronDown,
                             color: theme.colors.mutedForeground,
+                            semanticLabel: _isOpen
+                                ? theme.labels.closeOptions
+                                : theme.labels.openOptions,
                           ),
                         ),
                       ],
@@ -766,7 +778,17 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       _handle(theme),
-                      Flexible(child: body),
+                      // A full-width sheet needs the inset an anchored panel
+                      // never did: at 320 the list hugging both edges reads as
+                      // unfinished rather than as edge-to-edge by intent.
+                      Flexible(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: theme.spacing.sm,
+                          ),
+                          child: body,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -925,12 +947,10 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
                       ),
                       if (selected) ...<Widget>[
                         SizedBox(width: theme.spacing.sm),
-                        Text(
-                          '✓',
-                          style: theme.typography.labelLarge.copyWith(
-                            color: foreground,
-                          ),
-                        ),
+                        // Also an icon: U+2713 is not in the bundled Plex
+                        // either, so "the pick carries the check" was carrying
+                        // a tofu box.
+                        MonoIcon(MonoIcons.check, color: foreground),
                       ],
                     ],
                   ),
