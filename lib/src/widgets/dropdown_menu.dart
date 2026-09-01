@@ -720,7 +720,10 @@ class _MonoDropdownItemTile<T> extends StatelessWidget {
           child: AnimatedContainer(
             duration: theme.motion.fast,
             curve: theme.motion.curve,
-            constraints: BoxConstraints(minHeight: theme.spacing.xxxl),
+            // Menu rows are 44 at touch and 36 at pointer. This was
+            // spacing.xxxl — a fixed 32, short of both, and short of the
+            // minimum target at touch.
+            constraints: BoxConstraints(minHeight: theme.density.menuRow),
             padding: EdgeInsets.symmetric(
               horizontal: theme.spacing.sm,
               vertical: theme.spacing.sm,

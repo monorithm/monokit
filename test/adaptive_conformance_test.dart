@@ -184,4 +184,55 @@ void main() {
     expect(r.lg, 10);
     expect(r.xxl, 18);
   });
+
+  group('menu rows ride the menu ladder', () {
+    /// The minHeight the option row is actually built with.
+    ///
+    /// One density per test on purpose: an already-inserted overlay does not
+    /// rebuild when the theme above it changes, so pumping both in one test
+    /// measures the first one twice.
+    Future<double> rowMinHeight(WidgetTester tester, MonoDensity mode) async {
+      await tester.pumpWidget(
+        monokitHost(
+          theme: MonokitThemeData.light().copyWith(
+            density: MonokitDensity(mode: mode),
+          ),
+          SizedBox(
+            width: 320,
+            child: MonoSelect<String>(
+              open: true,
+              options: const <MonoSelectOption<String>>[
+                MonoSelectOption<String>(value: 'a', label: Text('Starter')),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final boxes = tester.widgetList<AnimatedContainer>(
+        find.ancestor(
+          of: find.text('Starter'),
+          matching: find.byType(AnimatedContainer),
+        ),
+      );
+      return boxes
+          .map((AnimatedContainer c) => c.constraints?.minHeight ?? 0)
+          .fold<double>(0, (double a, double b) => a > b ? a : b);
+    }
+
+    testWidgets('44 at touch', (tester) async {
+      // Both select and dropdown_menu pinned this at spacing.xxxl — a fixed
+      // 32, short of both steps and under the minimum target at touch.
+      expect(await rowMinHeight(tester, MonoDensity.touch), 44);
+    });
+
+    testWidgets('36 at pointer', (tester) async {
+      expect(await rowMinHeight(tester, MonoDensity.pointer), 36);
+    });
+
+    test('a menu row clears the target a finger needs', () {
+      const touch = MonokitDensity(mode: MonoDensity.touch);
+      expect(touch.menuRow, greaterThanOrEqualTo(touch.minTarget));
+    });
+  });
 }

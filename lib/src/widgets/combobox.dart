@@ -812,6 +812,9 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
               ? Duration.zero
               : theme.motion.fast,
           curve: theme.motion.curve,
+          // Menu rows are 44 at touch and 36 at pointer — a menu is scanned
+          // rather than aimed at, so it tightens further than a control does.
+          constraints: BoxConstraints(minHeight: theme.density.menuRow),
           padding: EdgeInsets.symmetric(
             horizontal: theme.spacing.md,
             vertical: theme.spacing.sm,

@@ -11,6 +11,12 @@ import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
 
 /// A searchable action declaration for [MonoCommandPalette].
+/// **Pointer density only — on touch it does not exist.** Search is the
+/// palette on a phone. This is a keyboard-first surface: it opens on a chord,
+/// moves on arrows, runs on enter, and none of those exist under a thumb.
+///
+/// Nothing enforces this; the screen decides whether to offer it.
+///
 class MonoCommand {
   MonoCommand({
     required this.id,

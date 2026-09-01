@@ -17,6 +17,15 @@ import '../theme/monokit_elevation.dart';
 enum MonoDrawerSide { start, end }
 
 /// Makes drawer open/close actions available to descendants.
+/// **Expanded and pointer only.** The drawer is the web view's side
+/// navigation; on touch the tab bar carries the same five destinations in the
+/// same order — one information architecture, two densities. The two must
+/// never coexist: a screen showing both is showing its navigation twice.
+///
+/// Nothing enforces this, because the component that would is a navigation
+/// scaffold the package does not have — a screen still chooses between this
+/// and [MonoBottomNav] itself.
+///
 class MonoDrawerScope extends InheritedWidget {
   const MonoDrawerScope({
     super.key,

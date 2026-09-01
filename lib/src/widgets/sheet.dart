@@ -17,6 +17,14 @@ import '../theme/monokit_elevation.dart';
 enum MonoSheetSide { bottom, top }
 
 /// Makes sheet open/close actions available to triggers and content.
+/// **A touch surface.** At pointer density the sheet's jobs pass to
+/// [MonoModal] and the menus: a drag handle is a thumb affordance, and a
+/// surface that rises from the bottom edge of a 1400px window has risen from
+/// nowhere the cursor was.
+///
+/// Nothing enforces this — a gallery legitimately renders one at any density,
+/// and the choice belongs to the screen.
+///
 class MonoSheetScope extends InheritedWidget {
   const MonoSheetScope({
     super.key,
