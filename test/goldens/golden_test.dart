@@ -511,6 +511,35 @@ final List<_Scene> _scenes = <_Scene>[
 /// Overlay scenes — rendered open via each widget's `open: true` API and
 /// snapshotted across the whole surface (scrim + anchored content).
 final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
+  // The goldens run at touch density, so this is the sheet picker — and the
+  // combobox had no open-overlay scene at all until now, which is why its
+  // menu-row fix went uncaptured in 4.6.0.
+  _OverlayScene('combobox_open', (context) {
+    return SizedBox(
+      width: 320,
+      child: MonoCombobox<String>(
+        open: true,
+        placeholder: 'Choose a category',
+        options: const <MonoComboboxOption<String>>[
+          MonoComboboxOption<String>(
+            value: 'a',
+            label: Text('Shoes'),
+            searchText: 'shoes',
+          ),
+          MonoComboboxOption<String>(
+            value: 'b',
+            label: Text('Bags'),
+            searchText: 'bags',
+          ),
+          MonoComboboxOption<String>(
+            value: 'c',
+            label: Text('Fabric'),
+            searchText: 'fabric',
+          ),
+        ],
+      ),
+    );
+  }),
   _OverlayScene('dialog', (context) {
     return MonoDialog(
       open: true,

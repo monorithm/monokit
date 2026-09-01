@@ -7,6 +7,7 @@ import '../primitives/mono_anchored_layout.dart';
 import '../primitives/mono_overlay_fade.dart';
 import '../primitives/mono_overlay_focus.dart';
 import '../primitives/mono_placement.dart';
+import '../theme/monokit_layout.dart';
 import '../theme/monokit_motion.dart';
 import '../theme/monokit_elevation.dart';
 import '../primitives/mono_field_skin.dart';
@@ -677,59 +678,105 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
     // the divider or the padding is not a tap *outside* the search field —
     // otherwise picking an option would drop the query field's focus (and the
     // keyboard) out from under the selection that is still in flight.
-    final surface = TextFieldTapRegion(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colors.popover,
-          borderRadius: BorderRadius.circular(theme.radii.lg),
-          boxShadow: theme.elevation.resolve(MonoElevation.raised),
-        ),
-        child: FocusScope(
-          autofocus: true,
-          child: Focus(
-            onKeyEvent: _handleKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                _buildSearch(theme),
-                DecoratedBox(
-                  decoration: BoxDecoration(color: theme.colors.border),
-                  child: SizedBox(height: theme.spacing.xs / 4),
-                ),
-                // Flexible lets the list yield to the search field when the
-                // whole popup is height-capped by the anchored layout, so the
-                // search + divider + list total never exceeds available space.
-                Flexible(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: widget.maxHeight),
-                    child: options.isEmpty
-                        ? Padding(
-                            padding: EdgeInsets.all(theme.spacing.lg),
-                            child: DefaultTextStyle.merge(
-                              style: theme.typography.bodyMedium.copyWith(
-                                color: theme.colors.mutedForeground,
-                              ),
-                              child: const Text('No options found.'),
+    final Widget body = TextFieldTapRegion(
+      child: FocusScope(
+        autofocus: true,
+        child: Focus(
+          onKeyEvent: _handleKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildSearch(theme),
+              DecoratedBox(
+                decoration: BoxDecoration(color: theme.colors.border),
+                child: SizedBox(height: theme.spacing.xs / 4),
+              ),
+              // Flexible lets the list yield to the search field when the
+              // whole popup is height-capped by the anchored layout, so the
+              // search + divider + list total never exceeds available space.
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: widget.maxHeight),
+                  child: options.isEmpty
+                      ? Padding(
+                          padding: EdgeInsets.all(theme.spacing.lg),
+                          child: DefaultTextStyle.merge(
+                            style: theme.typography.bodyMedium.copyWith(
+                              color: theme.colors.mutedForeground,
                             ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            padding: EdgeInsets.all(theme.spacing.xs),
-                            itemCount: options.length,
-                            itemBuilder: (context, index) => _buildOption(
-                              theme,
-                              options[index],
-                              index == _highlightedIndex,
-                            ),
+                            child: const Text('No options found.'),
                           ),
-                  ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.all(theme.spacing.xs),
+                          itemCount: options.length,
+                          itemBuilder: (context, index) => _buildOption(
+                            theme,
+                            options[index],
+                            index == _highlightedIndex,
+                          ),
+                        ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
+
+    // "Shape follows density: touch summons the sheet picker; pointer floats
+    // the menu." A menu anchored to a field is a cursor's answer — it appears
+    // where the pointer already is. Under a thumb the same menu opens near the
+    // top of the screen, behind the keyboard, at whatever width the field
+    // happened to be. The sheet is the touch answer: full width, bottom edge,
+    // in the thumb's reach.
+    if (theme.density.isTouch) {
+      return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Semantics(
+            container: true,
+            button: true,
+            label: theme.labels.close,
+            onTap: widget.onDismiss,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onDismiss,
+              child: ColoredBox(color: theme.colors.overlayScrim),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: MonokitContainers.sheet),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colors.popover,
+                  // Radius at the top only: the sheet rises from the edge, and
+                  // rounding the bottom would float it off a screen it is
+                  // attached to.
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(theme.radii.xxl),
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      _handle(theme),
+                      Flexible(child: body),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
@@ -743,11 +790,34 @@ class _MonoComboboxOverlayState<T> extends State<_MonoComboboxOverlay<T>> {
           placement: MonoPlacement.bottomStart,
           gap: theme.spacing.xs,
           matchAnchorWidth: true,
-          child: surface,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colors.popover,
+              borderRadius: BorderRadius.circular(theme.radii.lg),
+              boxShadow: theme.elevation.resolve(MonoElevation.raised),
+            ),
+            child: body,
+          ),
         ),
       ],
     );
   }
+
+  /// The grab handle. Decorative — the sheet is dismissed by the scrim or by
+  /// picking, and the handle is what says "this came from the edge".
+  Widget _handle(MonokitThemeData theme) => Padding(
+    padding: EdgeInsets.only(top: theme.spacing.sm, bottom: theme.spacing.xs),
+    child: ExcludeSemantics(
+      child: Container(
+        width: theme.spacing.xxxl,
+        height: theme.spacing.xs,
+        decoration: BoxDecoration(
+          color: theme.colors.border,
+          borderRadius: theme.radii.borderRadiusFull,
+        ),
+      ),
+    ),
+  );
 
   Widget _buildSearch(MonokitThemeData theme) {
     return Padding(

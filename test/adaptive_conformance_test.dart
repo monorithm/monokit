@@ -235,4 +235,64 @@ void main() {
       expect(touch.menuRow, greaterThanOrEqualTo(touch.minTarget));
     });
   });
+
+  group('the combobox changes shape, not just metrics', () {
+    Future<void> openAt(WidgetTester tester, MonoDensity mode) async {
+      await tester.pumpWidget(
+        monokitHost(
+          theme: MonokitThemeData.light().copyWith(
+            density: MonokitDensity(mode: mode),
+          ),
+          SizedBox(
+            width: 320,
+            child: MonoCombobox<String>(
+              open: true,
+              options: const <MonoComboboxOption<String>>[
+                MonoComboboxOption<String>(
+                  value: 'a',
+                  label: Text('Starter'),
+                  searchText: 'starter',
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('pointer floats an anchored menu', (tester) async {
+      await openAt(tester, MonoDensity.pointer);
+      expect(
+        find.byType(MonoAnchoredOverlay),
+        findsOneWidget,
+        reason: 'a cursor gets its answer where the cursor already is',
+      );
+    });
+
+    testWidgets('touch does not anchor', (tester) async {
+      await openAt(tester, MonoDensity.touch);
+      expect(
+        find.byType(MonoAnchoredOverlay),
+        findsNothing,
+        reason: 'the sheet rises from the edge; it is not anchored to a field',
+      );
+      // And the options are still reachable, with type-ahead at both densities.
+      expect(find.text('Starter'), findsOneWidget);
+    });
+
+    testWidgets('the sheet reaches the bottom edge of the window', (
+      tester,
+    ) async {
+      await openAt(tester, MonoDensity.touch);
+      final double window =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final panel = tester.getRect(find.text('Starter'));
+      expect(
+        panel.bottom,
+        greaterThan(window / 2),
+        reason: 'a picker under a thumb belongs in the lower half',
+      );
+    });
+  });
 }
