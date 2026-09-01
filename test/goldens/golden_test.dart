@@ -252,6 +252,91 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  // Components changed in 4.1.0-4.7.0 that had no baseline at all. The chip's
+  // own 4.1.0 entry says it plainly: "No golden baseline shifts, because no
+  // golden rendered a chip."
+  _Scene('chip', 320, (context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: <Widget>[
+        MonoChip(label: 'Shoes', onPressed: () {}),
+        MonoChip(label: 'Bags', selected: true, onPressed: () {}),
+        const MonoChip(label: 'Fabric', enabled: false),
+      ],
+    );
+  }),
+  _Scene('list_row', 340, (context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        MonoListRow(
+          icon: MonoIcons.call,
+          title: 'Request a call',
+          onPressed: () {},
+        ),
+        MonoListRow(
+          icon: MonoIcons.store,
+          title: 'Kente slippers',
+          subtitle: 'Osu · 400m',
+          onPressed: () {},
+        ),
+        // The three-line rung, which the row could not produce before 4.3.0.
+        MonoListRow(
+          icon: MonoIcons.bookmark,
+          overline: 'Saved sellers',
+          title: 'Ama Serwaa',
+          subtitle: 'Osu · 400m',
+          onPressed: () {},
+        ),
+      ],
+    );
+  }),
+  _Scene('combobox_closed', 320, (context) {
+    // The chevron: an icon since 4.7.0, a tofu box before it.
+    return MonoCombobox<String>(
+      placeholder: 'Choose a category',
+      options: const <MonoComboboxOption<String>>[
+        MonoComboboxOption<String>(
+          value: 'a',
+          label: Text('Shoes'),
+          searchText: 'shoes',
+        ),
+      ],
+    );
+  }),
+  _Scene('trust_badge', 300, (context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        MonoTrustBadge(tier: 1, tierCount: 3, label: 'Street'),
+        SizedBox(height: 8),
+        MonoTrustBadge(tier: 3, tierCount: 3, label: 'Verified'),
+        SizedBox(height: 8),
+        MonoTrustBadge(tier: 2, tierCount: 3, label: 'Known', lapsed: true),
+      ],
+    );
+  }),
+  _Scene('step_progress', 300, (context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        MonoStepProgress(length: 3, value: 2),
+        SizedBox(height: 16),
+        MonoPageDots(count: 4, index: 1),
+      ],
+    );
+  }),
+  _Scene('empty_state', 320, (context) {
+    return MonoEmptyState(
+      icon: const MonoIcon(MonoIcons.store),
+      title: const Text('No posts yet'),
+      description: const Text('Your shop shows here once you post.'),
+      action: MonoButton(onPressed: () {}, child: const Text('Post something')),
+    );
+  }),
   _Scene('upload_slot', 320, (context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
