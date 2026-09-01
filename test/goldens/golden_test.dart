@@ -252,6 +252,47 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  _Scene('upload_slot', 320, (context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            MonoUploadSlot.filled(
+              position: 1,
+              onPressed: () {},
+              child: const ColoredBox(color: Color(0xFF3F5F52)),
+            ),
+            const SizedBox(width: 8),
+            MonoUploadSlot.empty(onPressed: () {}),
+            const SizedBox(width: 8),
+            MonoUploadSlot.empty(enabled: false, onPressed: () {}),
+          ],
+        ),
+        const SizedBox(height: 12),
+        MonoUploadSlot.document(
+          title: 'Add a photo or a PDF',
+          hint: 'All four corners visible',
+          onPressed: () {},
+        ),
+      ],
+    );
+  }),
+  _Scene('meta_line', 320, (context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        // Held still so the golden is deterministic — the rotation is covered
+        // by the widget tests, which can drive the clock.
+        MonoMetaLine(
+          running: false,
+          facts: <String>['2h ago · Osu, 400m · 1/3', 'Here since June'],
+        ),
+      ],
+    );
+  }),
   _Scene('badges', 320, (context) {
     return Wrap(
       spacing: 8,
