@@ -41,9 +41,20 @@ The combobox changes shape with density, and stops drawing its icons as text.
 - This shipped in every release the combobox has existed in, and no test could
   have caught it: nothing asserts that a glyph resolves. It surfaced the moment
   the component got its first open-overlay golden, added in this release.
-- The combobox still has **no closed-state golden**, so the chevron fix is only
-  half covered. More broadly, several overlay states across the kit have no
-  scene at all - which is where the last four render bugs have all been hiding.
+- **Golden coverage.** An audit of the 162 public widget classes against the
+  golden scenes found 69 with no baseline. Most are resolvers, scopes and
+  controllers that cannot render; six that could, and should, now do:
+  `MonoChip`, `MonoListRow`, the closed combobox, `MonoTrustBadge`,
+  `MonoStepProgress` with `MonoPageDots`, and `MonoEmptyState`.
+
+  Four of those were changed during this release series with nothing watching.
+  The chip's own 4.1.0 entry says it outright: *"No golden baseline shifts,
+  because no golden rendered a chip."* All five rendered correctly on
+  inspection - so the gap was a standing risk rather than a backlog of hidden
+  defects, which is the more reassuring of the two answers.
+
+  Still uncovered: the media, chat and commerce surfaces, and `MonoPager` and
+  `MonoModal`, both shipped in 3.2.0 without scenes.
 
 ## 4.6.0
 
