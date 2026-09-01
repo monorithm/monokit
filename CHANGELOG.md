@@ -8,6 +8,45 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.6.0
+
+Menu rows join the density ladder, and the three surfaces that belong to one
+density say so.
+
+### Fixed
+
+- **Menu rows are 44 at touch and 36 at pointer.** `MonoSelect` and
+  `MonoDropdownMenu` pinned theirs at `spacing.xxxl` - a fixed 32, short of
+  both steps **and under the 44 minimum touch target**, which makes it an
+  accessibility defect rather than a metric drift. `MonoCombobox`'s rows had no
+  height floor at all. All three now read `density.menuRow`, which had been
+  published since 4.3.0 with no consumer.
+
+### Changed
+
+- `MonoDrawer`, `MonoSheet` and `MonoCommandPalette` document the density they
+  belong to, in the boards' own terms: the drawer is expanded-and-pointer only
+  and *"the two never coexist"* with the tab bar; the sheet is a touch surface
+  whose jobs pass to modal and menu at pointer; the palette *"on touch does not
+  exist"*, because Search is the palette on a phone.
+
+  **Deliberately not enforced.** An assert would fail a gallery, which
+  legitimately renders every component at one density, and a predicate nothing
+  calls would be one more published-and-unread vocabulary - the thing the last
+  three releases have been correcting. The component that would consume this
+  is a navigation scaffold the package does not have; that is the real gap.
+
+### Notes
+
+- `MonoCombobox`'s remaining clause - *"touch summons the sheet picker; pointer
+  floats the menu"* - is a shape change rather than a metric, and is not in
+  this release. It routes the whole overlay through `MonoSheet` at touch, which
+  is a different interaction model, not a token swap.
+- Worth knowing while testing: an already-inserted overlay does not rebuild
+  when the theme above it changes, so a test that pumps two densities in one
+  body measures the first one twice. It does inherit the theme correctly on
+  first build.
+
 ## 4.5.0
 
 The two components the Atlas specifies and the package had never implemented,

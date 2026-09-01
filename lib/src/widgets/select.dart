@@ -905,7 +905,10 @@ class _MonoSelectOptionTile<T> extends StatelessWidget {
             horizontal: theme.spacing.sm,
             vertical: theme.spacing.sm,
           ),
-          constraints: BoxConstraints(minHeight: theme.spacing.xxxl),
+          // Menu rows are 44 at touch and 36 at pointer. This was
+          // spacing.xxxl — a fixed 32, short of both, and short of the
+          // minimum target at touch.
+          constraints: BoxConstraints(minHeight: theme.density.menuRow),
           decoration: BoxDecoration(
             color: background,
             borderRadius: BorderRadius.circular(theme.radii.md),
