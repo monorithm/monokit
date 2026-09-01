@@ -8,6 +8,43 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.7.0
+
+The combobox changes shape with density, and stops drawing its icons as text.
+
+### Changed
+
+- **Touch summons the sheet picker; pointer floats the menu.** A menu anchored
+  to a field is a cursor's answer - it appears where the pointer already is.
+  Under a thumb that same menu opens near the top of the screen, behind the
+  keyboard, at whatever width the field happened to be. At touch the panel now
+  rises from the bottom edge: full width to the sheet measure, radius `xxl` at
+  the top only, a handle, a labelled scrim, and `SafeArea` below. Type-ahead
+  stays at both densities.
+
+  The fork is at presentation only. The body - search, divider, option list -
+  is built once and each density supplies its own chrome, so there is one list
+  to keep correct rather than two.
+
+### Fixed
+
+- **The chevron and the check were literal Unicode characters.** `MonoCombobox`
+  drew its chevron as U+2303/U+2304 and its selected-option check as U+2713.
+  None of the three is in the bundled IBM Plex, so **the chevron rendered as a
+  tofu box** and *"the pick carries the check"* carried nothing. Both are now
+  `MonoIcon`, which the icon board asks for anyway - a 24 grid at 1.5 stroke,
+  never a glyph. The chevron rotates on the state role and carries its
+  open/close label, matching `MonoSelect`.
+
+### Notes
+
+- This shipped in every release the combobox has existed in, and no test could
+  have caught it: nothing asserts that a glyph resolves. It surfaced the moment
+  the component got its first open-overlay golden, added in this release.
+- The combobox still has **no closed-state golden**, so the chevron fix is only
+  half covered. More broadly, several overlay states across the kit have no
+  scene at all - which is where the last four render bugs have all been hiding.
+
 ## 4.6.0
 
 Menu rows join the density ladder, and the three surfaces that belong to one
