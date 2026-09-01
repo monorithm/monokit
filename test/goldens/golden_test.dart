@@ -330,11 +330,19 @@ final List<_Scene> _scenes = <_Scene>[
     );
   }),
   _Scene('empty_state', 320, (context) {
-    return MonoEmptyState(
-      icon: const MonoIcon(MonoIcons.store),
-      title: const Text('No posts yet'),
-      description: const Text('Your shop shows here once you post.'),
-      action: MonoButton(onPressed: () {}, child: const Text('Post something')),
+    // Bounded: MonoEmptyState centres itself in whatever region it is given,
+    // which in an unbounded scene is the whole 2400px surface.
+    return SizedBox(
+      height: 320,
+      child: MonoEmptyState(
+        icon: const MonoIcon(MonoIcons.store),
+        title: const Text('No posts yet'),
+        description: const Text('Your shop shows here once you post.'),
+        action: MonoButton(
+          onPressed: () {},
+          child: const Text('Post something'),
+        ),
+      ),
     );
   }),
   _Scene('upload_slot', 320, (context) {
