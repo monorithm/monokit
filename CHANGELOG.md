@@ -8,6 +8,64 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.5.0
+
+The two components the Atlas specifies and the package had never implemented,
+and a typeface bug that two releases shipped.
+
+### Added
+
+- **`MonoMetaLine`** - one fact at a time on the item's own ten-second clock,
+  completing the set exactly once. Every value the board names was already a
+  token: the exit is `motion.state` (100ms) on `accelerate`, the enter is
+  `motion.enter` (150ms) on `decelerate` - *"enters run one step longer than
+  exits"* - and the rise is `s4`.
+
+  Four clauses are the component. It **reserves the width of its longest
+  fact**, so the caption never reflows as facts trade. It is **not a live
+  region**: the whole set is one label read once, or a screen reader is
+  interrupted every five seconds. It **stops when the item stops** - pass the
+  item's playing state and a paused post has a still caption; reduced motion
+  holds the first fact and never starts. And it must **never carry what the
+  user has to act on** - a price, an error, a code hold still and always.
+
+- **`MonoUploadSlot`** - both forms. The media tile carries its position badge,
+  so the order the buyer sees is the order the seller arranged; the document
+  row sits on `row2` and says what a usable one looks like, which prevents
+  more re-takes than any error message after the upload.
+
+  The dashed ring is painted rather than approximated. Flutter's `Border`
+  cannot dash, and the dash is not decoration: it is the difference between "a
+  thing could go here" and "a thing is here". A solid ring reads as a bordered
+  box, which is the shape 4.3.0 spent its time removing.
+
+- **`MonokitTypography.figures`** - tabular figures with the family left alone.
+
+### Fixed
+
+- **Tabular figures are not the mono register.** `typography.tabular()`
+  switches the family to mono *as well as* setting the figures, which is right
+  for a reference or a URL and wrong for a distance on a caption, a phone
+  number being typed, a one-time code, or a position badge. The boards draw the
+  two as disjoint sets: **28 spans ask for `tabular-nums`, 51 ask for
+  `font-mono`, and none ask for both.**
+
+  Four call sites move to `figures()`. **Two of them shipped**: `MonoInput`'s
+  `tabularFigures` option and the OTP code have been setting digits in
+  monospace since 4.1.0. `tabular()` keeps its meaning for the genuine mono
+  register.
+
+### Notes
+
+- Found by looking at a golden, not by a test. The OTP scene rendered six
+  empty wells - no digit, no typeface - which is how this survived two
+  releases with a golden watching it. That scene now carries a code, and both
+  new components ship with baselines.
+- `MonoMetaLine`'s emptiness guard is in `initState` rather than the
+  constructor: `facts.length` is not const-evaluable, and asserting it there
+  would stop `const MonoMetaLine(...)` compiling in the feed item that builds
+  one per post. `MonoPager` has the same latent constraint.
+
 ## 4.4.0
 
 Width class resolves.

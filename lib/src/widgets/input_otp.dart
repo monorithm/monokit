@@ -367,7 +367,7 @@ class _MonoInputOtpState extends State<MonoInputOtp> {
                     obscureText: widget.obscureText,
                     obscuringCharacter: widget.obscuringCharacter,
                     style: theme.typography
-                        .tabular(skin.value)
+                        .figures(skin.value)
                         .copyWith(
                           color: _isEnabled
                               ? theme.colors.foreground
