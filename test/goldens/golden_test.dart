@@ -255,6 +255,53 @@ final List<_Scene> _scenes = <_Scene>[
   // Components changed in 4.1.0-4.7.0 that had no baseline at all. The chip's
   // own 4.1.0 entry says it plainly: "No golden baseline shifts, because no
   // golden rendered a chip."
+  _Scene('chrome_recede', 260, (context) {
+    // Persistent, so the scene is deterministic: a resting scope would fade on
+    // its own clock and the capture would race it. The held and timed states
+    // are covered by the widget tests, which can drive both.
+    return SizedBox(
+      height: 300,
+      child: MonoChromeScope(
+        policy: MonoChromePolicy.persistent,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: MonokitTheme.of(context).colors.mediaCanvas,
+            borderRadius: BorderRadius.circular(
+              MonokitTheme.of(context).radii.xl,
+            ),
+          ),
+          child: Stack(
+            children: <Widget>[
+              // Subject truth: never recedes, whatever the policy says.
+              PositionedDirectional(
+                top: 12,
+                start: 12,
+                child: MonoChrome(
+                  subjectTruth: true,
+                  child: MonoBadge(
+                    variant: MonoBadgeVariant.live,
+                    child: const Text('Active'),
+                  ),
+                ),
+              ),
+              // A guest on the media: this is what recedes.
+              PositionedDirectional(
+                bottom: 12,
+                start: 12,
+                end: 12,
+                child: MonoChrome(
+                  child: MonoButton(
+                    onPressed: () {},
+                    child: const Text('Call'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }),
   _Scene('chip', 320, (context) {
     return Wrap(
       spacing: 8,
