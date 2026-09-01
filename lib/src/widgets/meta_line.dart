@@ -137,7 +137,7 @@ class _MonoMetaLineState extends State<MonoMetaLine> {
         );
     // Facts are counts, distances and clock time. Tabular figures keep them
     // from jittering as they trade.
-    final TextStyle style = theme.typography.tabular(resolved);
+    final TextStyle style = theme.typography.figures(resolved);
 
     Widget fact(String text) =>
         Text(text, style: style, maxLines: 1, overflow: TextOverflow.ellipsis);

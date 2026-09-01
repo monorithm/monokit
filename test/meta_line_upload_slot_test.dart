@@ -183,4 +183,67 @@ void main() {
       );
     });
   });
+
+  group('tabular figures are not the mono register', () {
+    test('figures keeps the family; tabular changes it', () {
+      // The theme's typography, not a raw const: the families are resolved
+      // there, and on a bare MonokitTypography() they are still null.
+      final t = MonokitThemeData.light().typography;
+      final base = t.labelMedium;
+
+      // The boards draw these as disjoint sets: 28 spans ask for tabular
+      // figures, 51 ask for the mono family, and none ask for both.
+      expect(t.figures(base).fontFamily, base.fontFamily);
+      expect(t.figures(base).fontFeatures, isNotNull);
+      expect(t.tabular(base).fontFamily, isNot(base.fontFamily));
+    });
+
+    testWidgets('a rotating caption stays in the sans register', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        monokitHost(
+          const MonoMetaLine(running: false, facts: <String>['400m · 1/3']),
+        ),
+      );
+      final theme = MonokitThemeData.light();
+      final text = tester.widget<Text>(
+        find
+            .descendant(
+              of: find.byType(AnimatedSwitcher),
+              matching: find.byType(Text),
+            )
+            .first,
+      );
+      expect(
+        text.style!.fontFamily,
+        isNot(theme.typography.monoFamily),
+        reason: 'a distance on a caption is not a machine-shaped string',
+      );
+      expect(text.style!.fontFeatures, isNotNull);
+    });
+
+    testWidgets('a typed phone number stays in the sans register', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        monokitHost(
+          const SizedBox(
+            width: 300,
+            child: MonoInput(
+              tabularFigures: true,
+              size: MonoInputSize.large,
+              initialValue: '24 555 0192',
+            ),
+          ),
+        ),
+      );
+      final theme = MonokitThemeData.light();
+      final style = tester
+          .widget<EditableText>(find.byType(EditableText))
+          .style;
+      expect(style.fontFamily, isNot(theme.typography.monoFamily));
+      expect(style.fontFeatures, isNotNull);
+    });
+  });
 }

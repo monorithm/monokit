@@ -301,7 +301,7 @@ class _PositionBadge extends StatelessWidget {
       child: Text(
         '$position',
         style: theme.typography
-            .tabular(theme.typography.labelMedium)
+            .figures(theme.typography.labelMedium)
             .copyWith(
               color: theme.colors.primaryForeground,
               fontWeight: FontWeight.w600,

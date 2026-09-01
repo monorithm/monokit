@@ -515,7 +515,7 @@ class _MonoInputState extends State<MonoInput>
         EdgeInsets.symmetric(horizontal: skin.padX, vertical: skin.padY);
 
     TextStyle figures(TextStyle base) =>
-        widget.tabularFigures ? theme.typography.tabular(base) : base;
+        widget.tabularFigures ? theme.typography.figures(base) : base;
 
     final TextStyle inputStyle = figures(
       widget.style ?? skin.value,

@@ -128,10 +128,27 @@ class MonokitTypography {
   /// Alias used by [MonokitApp]'s default text style.
   TextStyle get body => bodyMedium;
 
-  /// Applies the mono/tabular register to any style — e.g. a price shown at
-  /// `titleLarge` size: `typography.tabular(typography.titleLarge)`.
+  /// Applies the **mono register** to any style — the machine-shaped strings a
+  /// user reads rather than types: a reference, a URL, a code fragment.
+  /// Changes the family as well as the figures.
+  ///
+  /// This is not the same thing as wanting digits to line up. For that see
+  /// [figures], and note the design draws the two as disjoint sets: across the
+  /// component boards, 28 spans ask for tabular figures, 51 ask for the mono
+  /// family, and **none ask for both**.
   TextStyle tabular(TextStyle base) => base.copyWith(
     fontFamily: monoFamily,
+    fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+  );
+
+  /// Fixed-advance digits, **family untouched** — the boards' `tabular-nums`.
+  ///
+  /// For a value in the sans register whose digits must not jitter as it
+  /// changes: a phone number being typed, a one-time code, a distance on a
+  /// caption that rotates, a position badge. Using [tabular] for these sets
+  /// them in the mono family, which is a different typeface for content that
+  /// is not machine-shaped.
+  TextStyle figures(TextStyle base) => base.copyWith(
     fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
   );
 
