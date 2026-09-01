@@ -410,7 +410,9 @@ final List<_Scene> _scenes = <_Scene>[
     );
   }),
   _Scene('otp', 300, (context) {
-    return MonoInputOtp(length: 6, onCompleted: (_) {});
+    // With a value: an empty OTP shows six wells and no typeface, which is
+    // how the code sat in the mono register for two releases unnoticed.
+    return MonoInputOtp(length: 6, defaultValue: '204815', onCompleted: (_) {});
   }),
   _Scene('avatar', 260, (context) {
     return const Row(
