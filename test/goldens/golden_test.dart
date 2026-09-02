@@ -252,6 +252,146 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  // Components changed in 4.1.0-4.7.0 that had no baseline at all. The chip's
+  // own 4.1.0 entry says it plainly: "No golden baseline shifts, because no
+  // golden rendered a chip."
+  _Scene('chrome_recede', 260, (context) {
+    // Persistent, so the scene is deterministic: a resting scope would fade on
+    // its own clock and the capture would race it. The held and timed states
+    // are covered by the widget tests, which can drive both.
+    return SizedBox(
+      height: 300,
+      child: MonoChromeScope(
+        policy: MonoChromePolicy.persistent,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: MonokitTheme.of(context).colors.mediaCanvas,
+            borderRadius: BorderRadius.circular(
+              MonokitTheme.of(context).radii.xl,
+            ),
+          ),
+          child: Stack(
+            children: <Widget>[
+              // Subject truth: never recedes, whatever the policy says.
+              PositionedDirectional(
+                top: 12,
+                start: 12,
+                child: MonoChrome(
+                  subjectTruth: true,
+                  child: MonoBadge(
+                    variant: MonoBadgeVariant.live,
+                    child: const Text('Active'),
+                  ),
+                ),
+              ),
+              // A guest on the media: this is what recedes.
+              PositionedDirectional(
+                bottom: 12,
+                start: 12,
+                end: 12,
+                child: MonoChrome(
+                  child: MonoButton(
+                    onPressed: () {},
+                    child: const Text('Call'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }),
+  _Scene('chip', 320, (context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: <Widget>[
+        MonoChip(label: 'Shoes', onPressed: () {}),
+        MonoChip(label: 'Bags', selected: true, onPressed: () {}),
+        const MonoChip(label: 'Fabric', enabled: false),
+      ],
+    );
+  }),
+  _Scene('list_row', 340, (context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        MonoListRow(
+          icon: MonoIcons.call,
+          title: 'Request a call',
+          onPressed: () {},
+        ),
+        MonoListRow(
+          icon: MonoIcons.store,
+          title: 'Kente slippers',
+          subtitle: 'Osu · 400m',
+          onPressed: () {},
+        ),
+        // The three-line rung, which the row could not produce before 4.3.0.
+        MonoListRow(
+          icon: MonoIcons.bookmark,
+          overline: 'Saved sellers',
+          title: 'Ama Serwaa',
+          subtitle: 'Osu · 400m',
+          onPressed: () {},
+        ),
+      ],
+    );
+  }),
+  _Scene('combobox_closed', 320, (context) {
+    // The chevron: an icon since 4.7.0, a tofu box before it.
+    return MonoCombobox<String>(
+      placeholder: 'Choose a category',
+      options: const <MonoComboboxOption<String>>[
+        MonoComboboxOption<String>(
+          value: 'a',
+          label: Text('Shoes'),
+          searchText: 'shoes',
+        ),
+      ],
+    );
+  }),
+  _Scene('trust_badge', 300, (context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        MonoTrustBadge(tier: 1, tierCount: 3, label: 'Street'),
+        SizedBox(height: 8),
+        MonoTrustBadge(tier: 3, tierCount: 3, label: 'Verified'),
+        SizedBox(height: 8),
+        MonoTrustBadge(tier: 2, tierCount: 3, label: 'Known', lapsed: true),
+      ],
+    );
+  }),
+  _Scene('step_progress', 300, (context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        MonoStepProgress(length: 3, value: 2),
+        SizedBox(height: 16),
+        MonoPageDots(count: 4, index: 1),
+      ],
+    );
+  }),
+  _Scene('empty_state', 320, (context) {
+    // Bounded: MonoEmptyState centres itself in whatever region it is given,
+    // which in an unbounded scene is the whole 2400px surface.
+    return SizedBox(
+      height: 320,
+      child: MonoEmptyState(
+        icon: const MonoIcon(MonoIcons.store),
+        title: const Text('No posts yet'),
+        description: const Text('Your shop shows here once you post.'),
+        action: MonoButton(
+          onPressed: () {},
+          child: const Text('Post something'),
+        ),
+      ),
+    );
+  }),
   _Scene('upload_slot', 320, (context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -511,6 +651,35 @@ final List<_Scene> _scenes = <_Scene>[
 /// Overlay scenes — rendered open via each widget's `open: true` API and
 /// snapshotted across the whole surface (scrim + anchored content).
 final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
+  // The goldens run at touch density, so this is the sheet picker — and the
+  // combobox had no open-overlay scene at all until now, which is why its
+  // menu-row fix went uncaptured in 4.6.0.
+  _OverlayScene('combobox_open', (context) {
+    return SizedBox(
+      width: 320,
+      child: MonoCombobox<String>(
+        open: true,
+        placeholder: 'Choose a category',
+        options: const <MonoComboboxOption<String>>[
+          MonoComboboxOption<String>(
+            value: 'a',
+            label: Text('Shoes'),
+            searchText: 'shoes',
+          ),
+          MonoComboboxOption<String>(
+            value: 'b',
+            label: Text('Bags'),
+            searchText: 'bags',
+          ),
+          MonoComboboxOption<String>(
+            value: 'c',
+            label: Text('Fabric'),
+            searchText: 'fabric',
+          ),
+        ],
+      ),
+    );
+  }),
   _OverlayScene('dialog', (context) {
     return MonoDialog(
       open: true,

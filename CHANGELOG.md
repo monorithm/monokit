@@ -8,6 +8,89 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.7.0
+
+The combobox changes shape with density, the last unimplemented board becomes
+a component, and the kit stops drawing icons as text.
+
+### Added
+
+- **`MonoChromeScope` and `MonoChrome`** - chrome recede, the last board with
+  no implementation. Three policies chosen up front per screen, never per
+  component: `persistent` (live viewing, calls in grid), `resting` (the feed,
+  player, gallery, reader), `hidden` (camera pre-roll, screening, preview).
+
+  Four things are the component:
+
+  * **Hold to clear is a sustain, not a toggle.** The screen is clear only
+    while the finger is down and chrome is back on release, which keeps
+    long-press inside its two sanctioned meanings rather than inventing a
+    third.
+  * **One capability, three idioms.** Touch holds; pointer never learns a
+    gesture and rests ambiently, returning on movement; keyboard cannot hold at
+    all (a held key repeats), so while chrome is hidden the first key returns
+    it and is consumed.
+  * **A timed recede travels toward its edge; a held peek does not move.**
+    That is a recorded divergence - the specification gives recede a small
+    translation either way - because the finger is still on the glass and every
+    control must be where the thumb left it on release.
+  * **The clock belongs to the item.** A new subject resets the timer, and the
+    default delay is the ten seconds an immersive item holds, so a rest never
+    cuts an item short. `MonoMetaLine` depends on this: a rest at three seconds
+    would bury its second fact.
+
+  `subjectTruth: true` marks what never recedes - captions, the recording dot,
+  an active call timer, the live badge. And nothing auto-hides while assistive
+  technology is active, which the scope checks itself rather than trusting the
+  caller to.
+
+  **Carries a ruling that diverges from the specification:** the feed is
+  Resting, where the spec files feed browsing under Persistent.
+
+### Changed
+
+- **Touch summons the sheet picker; pointer floats the menu.** A menu anchored
+  to a field is a cursor's answer - it appears where the pointer already is.
+  Under a thumb that same menu opens near the top of the screen, behind the
+  keyboard, at whatever width the field happened to be. At touch the panel now
+  rises from the bottom edge: full width to the sheet measure, radius `xxl` at
+  the top only, a handle, a labelled scrim, and `SafeArea` below. Type-ahead
+  stays at both densities.
+
+  The fork is at presentation only. The body - search, divider, option list -
+  is built once and each density supplies its own chrome, so there is one list
+  to keep correct rather than two.
+
+### Fixed
+
+- **The chevron and the check were literal Unicode characters.** `MonoCombobox`
+  drew its chevron as U+2303/U+2304 and its selected-option check as U+2713.
+  None of the three is in the bundled IBM Plex, so **the chevron rendered as a
+  tofu box** and *"the pick carries the check"* carried nothing. Both are now
+  `MonoIcon`, which the icon board asks for anyway - a 24 grid at 1.5 stroke,
+  never a glyph. The chevron rotates on the state role and carries its
+  open/close label, matching `MonoSelect`.
+
+### Notes
+
+- This shipped in every release the combobox has existed in, and no test could
+  have caught it: nothing asserts that a glyph resolves. It surfaced the moment
+  the component got its first open-overlay golden, added in this release.
+- **Golden coverage.** An audit of the 162 public widget classes against the
+  golden scenes found 69 with no baseline. Most are resolvers, scopes and
+  controllers that cannot render; six that could, and should, now do:
+  `MonoChip`, `MonoListRow`, the closed combobox, `MonoTrustBadge`,
+  `MonoStepProgress` with `MonoPageDots`, and `MonoEmptyState`.
+
+  Four of those were changed during this release series with nothing watching.
+  The chip's own 4.1.0 entry says it outright: *"No golden baseline shifts,
+  because no golden rendered a chip."* All five rendered correctly on
+  inspection - so the gap was a standing risk rather than a backlog of hidden
+  defects, which is the more reassuring of the two answers.
+
+  Still uncovered: the media, chat and commerce surfaces, and `MonoPager` and
+  `MonoModal`, both shipped in 3.2.0 without scenes.
+
 ## 4.6.0
 
 Menu rows join the density ladder, and the three surfaces that belong to one
