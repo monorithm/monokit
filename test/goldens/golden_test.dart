@@ -336,6 +336,13 @@ final List<_Scene> _scenes = <_Scene>[
           subtitle: 'Osu · 400m',
           onPressed: () {},
         ),
+        // Selected: the wash plus the ink, neither alone.
+        MonoListRow(
+          icon: MonoIcons.home,
+          title: 'Play',
+          selected: true,
+          onPressed: () {},
+        ),
       ],
     );
   }),
@@ -484,6 +491,25 @@ final List<_Scene> _scenes = <_Scene>[
           ),
         ],
       ),
+    );
+  }),
+  _Scene('tabs_segmented', 360, (context) {
+    // The line variant is covered by 'tabs'. This is the segmented one, whose
+    // capsule the 'tabs' scene never rendered.
+    return MonoTabs(
+      variant: MonoTabsVariant.segmented,
+      tabs: <MonoTab>[
+        MonoTab.text(
+          value: 'live',
+          label: 'Live',
+          content: const Text('Two posts.'),
+        ),
+        MonoTab.text(
+          value: 'ended',
+          label: 'Ended',
+          content: const Text('One buyer.'),
+        ),
+      ],
     );
   }),
   _Scene('tabs', 360, (context) {
@@ -678,6 +704,16 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
           ),
         ],
       ),
+    );
+  }),
+  _OverlayScene('command_palette', (context) {
+    return MonoCommandPalette(
+      open: true,
+      commands: <MonoCommand>[
+        MonoCommand(id: 'post', label: const Text('New post')),
+        MonoCommand(id: 'shop', label: const Text('Go to your shop')),
+        MonoCommand(id: 'calls', label: const Text('Callbacks')),
+      ],
     );
   }),
   _OverlayScene('dialog', (context) {
