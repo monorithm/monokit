@@ -1,0 +1,89 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:monokit_ui/monokit_ui.dart';
+
+import '_support/host.dart';
+
+/// Findings from reading the remaining component boards against their widgets.
+void main() {
+  testWidgets('a segmented control is a capsule, track and pill', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      monokitHost(
+        MonoTabs(
+          variant: MonoTabsVariant.segmented,
+          value: 'a',
+          onChanged: (_) {},
+          tabs: <MonoTab>[
+            MonoTab(
+              value: 'a',
+              label: const Text('Live'),
+              child: const SizedBox(),
+            ),
+            MonoTab(
+              value: 'b',
+              label: const Text('Ended'),
+              child: const SizedBox(),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final radii = tester
+        .widgetList<Container>(find.byType(Container))
+        .map((c) => c.decoration)
+        .whereType<BoxDecoration>()
+        .map((d) => d.borderRadius)
+        .whereType<BorderRadius>()
+        .map((b) => b.topLeft.x)
+        .toSet();
+    expect(
+      radii.any((r) => r >= 999),
+      isTrue,
+      reason: 'the pick should read as sliding in a groove, not as buttons',
+    );
+  });
+
+  testWidgets('a selected list row wears the wash, not just the ink', (
+    tester,
+  ) async {
+    final theme = MonokitThemeData.light();
+    await tester.pumpWidget(
+      monokitHost(
+        const SizedBox(
+          width: 320,
+          child: MonoListRow(title: 'Play', selected: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final box = tester.widget<ColoredBox>(
+      find
+          .descendant(
+            of: find.byType(MonoListRow),
+            matching: find.byType(ColoredBox),
+          )
+          .first,
+    );
+    expect(
+      box.color,
+      theme.colors.muted,
+      reason:
+          'both the list-row and drawer boards draw the current row on '
+          'muted; ink alone left it looking like its neighbours',
+    );
+  });
+
+  test('the button says pending, like everything else in the kit', () {
+    // MonoPhase.pending, MonoInput.pending, MonoField.pending — the button
+    // was the one control calling it something else.
+    const button = MonoButton(pending: true, child: Text('Save'));
+    expect(button.pending, isTrue);
+    // The old name still constructs, deprecated, until 5.0.0.
+    // ignore: deprecated_member_use_from_same_package
+    expect(const MonoButton(isLoading: true, child: Text('x')).pending, isTrue);
+  });
+}

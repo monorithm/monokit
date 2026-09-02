@@ -508,7 +508,10 @@ class _MonoTabsState extends State<MonoTabs> {
     }
     return BoxDecoration(
       color: theme.colors.muted,
-      borderRadius: BorderRadius.circular(theme.radii.lg),
+      // A capsule, not a rounded rect: the board draws the segmented track and
+      // its raised pill at full radius, which is what makes the pick read as
+      // sliding within a groove rather than as three adjacent buttons.
+      borderRadius: theme.radii.borderRadiusFull,
     );
   }
 
@@ -708,7 +711,7 @@ class _MonoTabsTriggerStyle {
             ? theme.colors.muted
             : const Color(0x00000000),
         border: focused ? Border.all(color: theme.colors.ring, width: 2) : null,
-        borderRadius: BorderRadius.circular(theme.radii.md),
+        borderRadius: theme.radii.borderRadiusFull,
         // Reference active tab carries a subtle shadow-sm lift.
         boxShadow: selected
             ? <BoxShadow>[

@@ -116,7 +116,7 @@ class _CreatorStudioScenarioState extends State<CreatorStudioScenario> {
       ),
       bottom: MonoButton(
         onPressed: _state == _PostState.draft ? _publish : null,
-        isLoading: _state == _PostState.publishing,
+        pending: _state == _PostState.publishing,
         leading: _state == _PostState.posted
             ? const MonoIcon(MonoIcons.check, size: 16)
             : const MonoIcon(MonoIcons.send, size: 16),

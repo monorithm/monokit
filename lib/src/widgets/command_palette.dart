@@ -456,7 +456,7 @@ class _MonoCommandPaletteOverlayState
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: theme.colors.popover,
-            borderRadius: BorderRadius.circular(theme.radii.xl),
+            borderRadius: BorderRadius.circular(theme.radii.xxl),
             boxShadow: theme.elevation.resolve(MonoElevation.floating),
           ),
           child: MonoFocusTrap(

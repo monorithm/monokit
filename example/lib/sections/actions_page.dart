@@ -76,7 +76,7 @@ class ActionsPage extends StatelessWidget {
               ),
               const DemoTile(
                 label: 'loading',
-                child: MonoButton(isLoading: true, child: Text('Save')),
+                child: MonoButton(pending: true, child: Text('Save')),
               ),
             ],
           ),

@@ -203,12 +203,13 @@ class MonoButton extends StatefulWidget {
     this.trailing,
     this.variant = MonoButtonVariant.filled,
     this.size = MonoButtonSize.md,
-    this.isLoading = false,
+    bool pending = false,
+    @Deprecated('Renamed to pending. Removed in 5.0.0.') bool? isLoading,
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
     this.iconOnly = false,
-  });
+  }) : pending = isLoading ?? pending;
 
   /// Convenience constructor for an icon followed by an optional label.
   ///
@@ -222,11 +223,13 @@ class MonoButton extends StatefulWidget {
     this.onPressed,
     this.variant = MonoButtonVariant.filled,
     this.size = MonoButtonSize.md,
-    this.isLoading = false,
+    bool pending = false,
+    @Deprecated('Renamed to pending. Removed in 5.0.0.') bool? isLoading,
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
-  }) : child = label ?? icon,
+  }) : pending = isLoading ?? pending,
+       child = label ?? icon,
        leading = label == null ? null : icon,
        trailing = null,
        iconOnly = label == null;
@@ -241,7 +244,18 @@ class MonoButton extends StatefulWidget {
   /// Renders square with no horizontal padding. Set automatically by
   /// [MonoButton.icon] when no label is supplied.
   final bool iconOnly;
-  final bool isLoading;
+
+  /// Whether the action is in flight.
+  ///
+  /// The system's word is **pending**, not "loading" — `MonoPhase.pending`,
+  /// `MonoInput.pending`, `MonoField.pending`, and the board's own *"pending
+  /// never claims done"*. The button was the one control saying something
+  /// else, and a consumer should not have to remember which is which.
+  final bool pending;
+
+  /// The former name for [pending].
+  @Deprecated('Renamed to pending for consistency. Removed in 5.0.0.')
+  bool get isLoading => pending;
   final FocusNode? focusNode;
   final bool autofocus;
   final String? semanticLabel;
@@ -258,7 +272,7 @@ class MonoButton extends StatefulWidget {
       ..add(
         FlagProperty('enabled', value: onPressed != null, ifFalse: 'disabled'),
       )
-      ..add(FlagProperty('isLoading', value: isLoading, ifTrue: 'loading'))
+      ..add(FlagProperty('pending', value: pending, ifTrue: 'pending'))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
@@ -274,7 +288,7 @@ class _MonoButtonState extends State<MonoButton> {
 
   FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
 
-  bool get _isEnabled => widget.onPressed != null && !widget.isLoading;
+  bool get _isEnabled => widget.onPressed != null && !widget.pending;
 
   @override
   void initState() {
@@ -356,7 +370,7 @@ class _MonoButtonState extends State<MonoButton> {
     Duration motionDuration,
   ) {
     Widget contents;
-    if (widget.isLoading) {
+    if (widget.pending) {
       contents = SizedBox(
         width: style.iconSize,
         height: style.iconSize,
@@ -466,10 +480,10 @@ class _MonoButtonState extends State<MonoButton> {
     return Semantics(
       button: true,
       enabled: _isEnabled,
-      label: widget.isLoading
+      label: widget.pending
           ? '${widget.semanticLabel ?? 'Button'} loading'
           : widget.semanticLabel,
-      liveRegion: widget.isLoading,
+      liveRegion: widget.pending,
       child: FocusableActionDetector(
         focusNode: _focusNode,
         autofocus: widget.autofocus,
