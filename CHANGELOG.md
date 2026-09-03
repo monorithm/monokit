@@ -8,6 +8,45 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.9.0
+
+The swipe grammar, which `MonokitList.swipeActionCell` has been describing to
+nobody since 3.2.0.
+
+### Added
+
+- **`MonoListRowSwipe` and `MonoListRowAction`.** *"Leading is constructive,
+  trailing destructive with hold-to-confirm"* — the grammar the list-row board
+  specifies and the package had no trace of. `swipeActionCell` (72) had exactly
+  one consumer before this: its own definition.
+
+  **A destructive action is held, not tapped.** `holdToConfirm` is 800ms and
+  the label says `Hold…` while the finger is down. A swipe is already a coarse
+  gesture; pairing it with a single tap to destroy something puts a mis-swipe
+  and a mis-tap one motion apart, and the hold is what separates them.
+
+  **Touch swipes; pointer hovers.** The same actions, two idioms — at pointer
+  density the cells appear on hover and the row does not drag at all, because
+  a pointer never learns a gesture.
+
+  The grammar is asserted rather than documented: a destructive action on the
+  leading edge, or a third action on either side, fails in debug. Two per side
+  is what one gesture can reach.
+
+- **`MonokitLabels.holding`** (`Hold…`), so the confirm copy localises with
+  everything else rather than sitting hardcoded in a widget.
+
+### Notes
+
+- Every threshold came from `contract/interaction.json` rather than being
+  chosen: `holdToConfirm` 800ms, `dismissFraction` 0.30, `dismissVelocity`
+  700px/s, `rubberBand` 0.55.
+
+- The hold is a raw pointer listener, not a long-press recogniser. A sustain
+  begins when the finger lands and ends when it lifts; `onLongPressUp` only
+  fires once a long press has been *recognised*, so a release at 300ms went
+  unheard entirely and the action fired anyway.
+
 ## 4.8.0
 
 Findings from reading the remaining component boards against their widgets.

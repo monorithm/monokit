@@ -43,6 +43,7 @@ export 'src/widgets/input.dart';
 export 'src/widgets/input_otp.dart';
 export 'src/widgets/kbd.dart';
 export 'src/widgets/list_row.dart';
+export 'src/widgets/list_row_swipe.dart';
 export 'src/widgets/media_card.dart';
 export 'src/widgets/meta_line.dart';
 export 'src/widgets/message.dart';

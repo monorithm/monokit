@@ -313,6 +313,28 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  _Scene('list_row_swipe', 340, (context) {
+    // Held open so the grammar is visible: leading constructive, trailing
+    // destructive. The goldens run at touch density, which is the swipe form.
+    return MonoListRowSwipe(
+      leading: <MonoListRowAction>[
+        MonoListRowAction(
+          icon: MonoIcons.bookmark,
+          label: 'Save',
+          onPressed: () {},
+        ),
+      ],
+      trailing: <MonoListRowAction>[
+        MonoListRowAction(
+          icon: MonoIcons.trash,
+          label: 'Take down',
+          destructive: true,
+          onPressed: () {},
+        ),
+      ],
+      child: const MonoListRow(title: 'Kente slippers', subtitle: 'Osu · 400m'),
+    );
+  }),
   _Scene('list_row', 340, (context) {
     return Column(
       mainAxisSize: MainAxisSize.min,

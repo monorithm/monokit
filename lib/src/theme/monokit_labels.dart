@@ -18,6 +18,7 @@ class MonokitLabels {
     this.next = 'Next',
     this.dismiss = 'Dismiss',
     this.loading = 'Loading',
+    this.holding = 'Hold…',
     this.dialog = 'Dialog',
     this.closeDialog = 'Close dialog',
     this.sheet = 'Sheet',
@@ -46,6 +47,11 @@ class MonokitLabels {
   final String next;
   final String dismiss;
   final String loading;
+
+  /// Shown on a destructive swipe action while the finger is down. It replaces
+  /// the action's own label for the duration of the hold, so the word says
+  /// what is happening rather than a second progress element saying it.
+  final String holding;
   final String dialog;
   final String closeDialog;
   final String sheet;
@@ -78,6 +84,7 @@ class MonokitLabels {
     String? next,
     String? dismiss,
     String? loading,
+    String? holding,
     String? dialog,
     String? closeDialog,
     String? sheet,
@@ -103,6 +110,7 @@ class MonokitLabels {
       next: next ?? this.next,
       dismiss: dismiss ?? this.dismiss,
       loading: loading ?? this.loading,
+      holding: holding ?? this.holding,
       dialog: dialog ?? this.dialog,
       closeDialog: closeDialog ?? this.closeDialog,
       sheet: sheet ?? this.sheet,
