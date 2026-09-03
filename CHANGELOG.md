@@ -31,6 +31,16 @@ Findings from reading the remaining component boards against their widgets.
 - **The palette's search mark was U+2315**, which the bundled IBM Plex Sans
   does not carry — it rendered as a tofu box. Now `MonoIcons.search`.
 
+### Added
+
+- **`MonoProgress.onMedia`.** Twelve boards compose components over media;
+  five widgets had an `onMedia` mode. Progress was the clearest gap — its board
+  draws the fed bar in on-media ink and says *"the hairline exists only in the
+  feed"*, while the widget only ever resolved brand-on-muted. Emerald over
+  media disappears into what is behind it, and the default track (`muted`, a
+  5% ink) vanishes entirely. `color` and `trackColor` still win where a caller
+  sets them.
+
 ### Changed
 
 - **`MonoButton.pending`** replaces `isLoading`, matching `MonoPhase.pending`,
@@ -60,6 +70,12 @@ Findings from reading the remaining component boards against their widgets.
 
 - The palette's panel is 560 wide (`dialogMd`) where the board says 520 — one
   of the three "measure that is not a token" cases already filed.
+
+- Other components whose boards use on-media inks and whose widgets have no
+  `onMedia` mode: `MonoMediaCard` (`scrimStrong`, `glassBorder`), `MonoAvatar`,
+  `MonoListRow`, `MonoUploadSlot`, `MonoCard`. Some of those may be composition
+  rather than a widget mode — the drawer's nav rows turned out that way — so
+  each needs checking rather than assuming.
 
 ## 4.7.0
 
