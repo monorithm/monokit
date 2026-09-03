@@ -49,15 +49,27 @@ class MonoListRowAction {
 /// At most two cells per side, each [MonokitList.swipeActionCell] wide — 72,
 /// deliberately wider than the 44 minimum, because a cell is aimed at while
 /// the finger is already moving.
+///
+/// **The moving layer is opaque, and that is load-bearing.** The cells are not
+/// revealed by appearing; they are always there, and the row slides off them.
+/// [MonoListRow] paints a fully transparent ground at rest, so a swipe row
+/// composed without [ground] shows a green and a red stripe down every row in
+/// the list, permanently. The first render of this component did exactly that.
 class MonoListRowSwipe extends StatefulWidget {
   const MonoListRowSwipe({
     super.key,
     required this.child,
     this.leading = const <MonoListRowAction>[],
     this.trailing = const <MonoListRowAction>[],
+    this.ground,
   });
 
   final Widget child;
+
+  /// What the row slides over, painted under [child]. Defaults to the page
+  /// ground; pass `colors.card` for a row inside a card, so the cells stay
+  /// hidden against the surface the row actually sits on.
+  final Color? ground;
 
   /// Constructive actions, revealed by swiping from the leading edge.
   final List<MonoListRowAction> leading;
@@ -154,25 +166,32 @@ class _MonoListRowSwipeState extends State<MonoListRowSwipe> {
       );
     }
 
-    final Widget row = Stack(
-      children: <Widget>[
-        PositionedDirectional(
-          top: 0,
-          bottom: 0,
-          start: 0,
-          child: cells(widget.leading, true),
-        ),
-        PositionedDirectional(
-          top: 0,
-          bottom: 0,
-          end: 0,
-          child: cells(widget.trailing, false),
-        ),
-        Transform.translate(
-          offset: Offset(rtl ? -revealed : revealed, 0),
-          child: widget.child,
-        ),
-      ],
+    final Widget row = ClipRect(
+      // A row dragged past its stops would otherwise paint over its
+      // neighbours.
+      child: Stack(
+        children: <Widget>[
+          PositionedDirectional(
+            top: 0,
+            bottom: 0,
+            start: 0,
+            child: cells(widget.leading, true),
+          ),
+          PositionedDirectional(
+            top: 0,
+            bottom: 0,
+            end: 0,
+            child: cells(widget.trailing, false),
+          ),
+          Transform.translate(
+            offset: Offset(rtl ? -revealed : revealed, 0),
+            child: ColoredBox(
+              color: widget.ground ?? theme.colors.background,
+              child: widget.child,
+            ),
+          ),
+        ],
+      ),
     );
 
     if (!isTouch) {
@@ -184,7 +203,10 @@ class _MonoListRowSwipeState extends State<MonoListRowSwipe> {
     }
 
     return GestureDetector(
-      behavior: HitTestBehavior.deferToChild,
+      // Opaque: the whole row answers the finger. deferToChild would mean a
+      // swipe that started on the gap between the title and the chevron
+      // reached nothing.
+      behavior: HitTestBehavior.opaque,
       onHorizontalDragUpdate: _onUpdate,
       onHorizontalDragEnd: _onEnd,
       child: row,

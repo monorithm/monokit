@@ -130,4 +130,40 @@ void main() {
     await tester.pumpWidget(row(leading: <MonoListRowAction>[remove()]));
     expect(tester.takeException(), isAssertionError);
   });
+
+  testWidgets('a resting row slides over its cells, not beside them', (
+    tester,
+  ) async {
+    // The cells are always there; the row is what moves. A transparent moving
+    // layer therefore shows a green and a red stripe down every row in the
+    // list, which is exactly what the first render did — MonoListRow paints
+    // `background` at alpha 0 when it is neither hovered nor selected.
+    await tester.pumpWidget(
+      row(
+        leading: <MonoListRowAction>[save()],
+        trailing: <MonoListRowAction>[remove()],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final ColoredBox ground = tester.widget<ColoredBox>(
+      find
+          .ancestor(
+            of: find.byType(MonoListRow),
+            matching: find.byType(ColoredBox),
+          )
+          .last,
+    );
+    expect(ground.color.a, 1.0, reason: 'the moving layer must be opaque');
+
+    // And it is clipped, so a row dragged past its stops does not paint over
+    // its neighbours.
+    expect(
+      find.descendant(
+        of: find.byType(MonoListRowSwipe),
+        matching: find.byType(ClipRect),
+      ),
+      findsOneWidget,
+    );
+  });
 }

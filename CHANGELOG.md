@@ -36,6 +36,27 @@ nobody since 3.2.0.
 - **`MonokitLabels.holding`** (`Hold…`), so the confirm copy localises with
   everything else rather than sitting hardcoded in a widget.
 
+- **An `interact` hook on the golden harness**, which drives a scene into a
+  non-resting state before the snapshot. Every defect this suite has caught
+  since 4.4.0 lived in a state that had no baseline, and resting is the state
+  a scene gets for free. The swipe scene now renders one row held open on each
+  side and one at rest.
+
+### Fixed
+
+- **The moving layer is opaque.** The cells are not revealed by appearing —
+  they are always there, and the row slides off them. `MonoListRow` paints its
+  ground at alpha 0 unless it is hovered or selected, so the first render of
+  this component put a green stripe and a red stripe down every row in the
+  list, permanently, and the tests were green through all of it. The first
+  golden showed it in one frame. The row now paints `background` (or a caller's
+  `ground`, for a row on a card) under itself and clips, so a row dragged past
+  its stops no longer paints over its neighbours.
+
+- **The whole row answers the finger.** The drag detector deferred to its
+  child, so a swipe that started on the gap between the title and the chevron
+  reached nothing.
+
 ### Notes
 
 - Every threshold came from `contract/interaction.json` rather than being
@@ -46,6 +67,12 @@ nobody since 3.2.0.
   begins when the finger lands and ends when it lifts; `onLongPressUp` only
   fires once a long press has been *recognised*, so a release at 300ms went
   unheard entirely and the action fired anyway.
+
+- `MonoListRow` fills the height it is given when that height is bounded and
+  loose — 2400px in a golden surface. Every real caller puts rows in a `Column`
+  or a `ListView`, both of which pass unbounded height, so nothing is wrong
+  today. Recorded because it is the same shape as the checkbox defect fixed in
+  4.4.0, and the next caller that lands one in a `Stack` will meet it.
 
 ## 4.8.0
 
