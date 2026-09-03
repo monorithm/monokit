@@ -61,10 +61,16 @@ void main() {
 const Key _sceneKey = ValueKey<String>('golden-scene');
 
 class _Scene {
-  const _Scene(this.name, this.width, this.build);
+  const _Scene(this.name, this.width, this.build, {this.interact});
   final String name;
   final double width;
   final WidgetBuilder build;
+
+  /// Drives the scene into a non-resting state before the snapshot — a row
+  /// swiped open, a control held down. Every defect this suite has caught since
+  /// 4.4.0 lived in a state no baseline covered, and resting states are the
+  /// ones that get a scene by default.
+  final Future<void> Function(WidgetTester tester)? interact;
 }
 
 Future<void> _pumpScene(
@@ -103,6 +109,12 @@ Future<void> _pumpScene(
   // Settle implicit entrance animations without risking an infinite pump.
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
+
+  if (scene.interact != null) {
+    await scene.interact!(tester);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+  }
 }
 
 /// A scene whose subject renders in the app's [Overlay] layer (dialog, sheet,
@@ -313,6 +325,81 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  _Scene(
+    'list_row_swipe',
+    340,
+    (context) {
+      // Three rungs of the grammar in one frame: a row held open on the
+      // constructive side, one held open on the destructive side, and one at
+      // rest — the resting row is the assertion, because it must show no cell
+      // at all.
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          MonoListRowSwipe(
+            key: const ValueKey<String>('swipe-leading'),
+            leading: <MonoListRowAction>[
+              MonoListRowAction(
+                icon: MonoIcons.bookmark,
+                label: 'Save',
+                onPressed: () {},
+              ),
+            ],
+            child: const MonoListRow(
+              title: 'Kente slippers',
+              subtitle: 'Osu · 400m',
+            ),
+          ),
+          MonoListRowSwipe(
+            key: const ValueKey<String>('swipe-trailing'),
+            trailing: <MonoListRowAction>[
+              MonoListRowAction(
+                icon: MonoIcons.trash,
+                label: 'Take down',
+                destructive: true,
+                onPressed: () {},
+              ),
+            ],
+            child: const MonoListRow(
+              title: 'Adinkra stool',
+              subtitle: 'Madina · 2.1km',
+            ),
+          ),
+          MonoListRowSwipe(
+            leading: <MonoListRowAction>[
+              MonoListRowAction(
+                icon: MonoIcons.bookmark,
+                label: 'Save',
+                onPressed: () {},
+              ),
+            ],
+            trailing: <MonoListRowAction>[
+              MonoListRowAction(
+                icon: MonoIcons.trash,
+                label: 'Take down',
+                destructive: true,
+                onPressed: () {},
+              ),
+            ],
+            child: const MonoListRow(
+              title: 'Waakye bowls',
+              subtitle: 'Nima · 900m',
+            ),
+          ),
+        ],
+      );
+    },
+    interact: (WidgetTester tester) async {
+      await tester.drag(
+        find.byKey(const ValueKey<String>('swipe-leading')),
+        const Offset(MonokitList.swipeActionCell, 0),
+      );
+      await tester.drag(
+        find.byKey(const ValueKey<String>('swipe-trailing')),
+        const Offset(-MonokitList.swipeActionCell, 0),
+      );
+    },
+  ),
   _Scene('list_row', 340, (context) {
     return Column(
       mainAxisSize: MainAxisSize.min,

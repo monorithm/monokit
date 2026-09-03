@@ -8,6 +8,90 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.9.0
+
+The swipe grammar, which `MonokitList.swipeActionCell` has been describing to
+nobody since 3.2.0.
+
+### Added
+
+- **`MonoListRowSwipe` and `MonoListRowAction`.** *"Leading is constructive,
+  trailing destructive with hold-to-confirm"* — the grammar the list-row board
+  specifies and the package had no trace of. `swipeActionCell` (72) had exactly
+  one consumer before this: its own definition.
+
+  **A destructive action is held, not tapped.** `holdToConfirm` is 800ms and
+  the label says `Hold…` while the finger is down. A swipe is already a coarse
+  gesture; pairing it with a single tap to destroy something puts a mis-swipe
+  and a mis-tap one motion apart, and the hold is what separates them.
+
+  **Touch swipes; pointer hovers.** The same actions, two idioms — at pointer
+  density the cells appear on hover and the row does not drag at all, because
+  a pointer never learns a gesture.
+
+  The grammar is asserted rather than documented: a destructive action on the
+  leading edge, or a third action on either side, fails in debug. Two per side
+  is what one gesture can reach.
+
+- **`MonokitLabels.holding`** (`Hold…`), so the confirm copy localises with
+  everything else rather than sitting hardcoded in a widget.
+
+- **An `interact` hook on the golden harness**, which drives a scene into a
+  non-resting state before the snapshot. Every defect this suite has caught
+  since 4.4.0 lived in a state that had no baseline, and resting is the state
+  a scene gets for free. The swipe scene now renders one row held open on each
+  side and one at rest.
+
+### Fixed
+
+- **The moving layer is opaque.** The cells are not revealed by appearing —
+  they are always there, and the row slides off them. `MonoListRow` paints its
+  ground at alpha 0 unless it is hovered or selected, so the first render of
+  this component put a green stripe and a red stripe down every row in the
+  list, permanently, and the tests were green through all of it. The first
+  golden showed it in one frame. The row now paints `background` (or a caller's
+  `ground`, for a row on a card) under itself and clips, so a row dragged past
+  its stops no longer paints over its neighbours.
+
+- **The whole row answers the finger.** The drag detector deferred to its
+  child, so a swipe that started on the gap between the title and the chevron
+  reached nothing.
+
+- **The screen edges are left to the platform.** `interaction.notes` is
+  explicit — *"monokit NEVER claims edge swipes — they belong to system and OS
+  navigation"* — and a full-width row with a horizontal drag detector claims
+  precisely those. A drag beginning within 20 of either screen edge is now
+  declined for its whole duration, so the back gesture and the drawer reach the
+  OS. Declining on *start* rather than clamping is the point: a row that
+  answers the first few pixels and then lets go has already eaten the gesture.
+
+### Notes
+
+- Every threshold came from `contract/interaction.json` rather than being
+  chosen: `holdToConfirm` 800ms, `dismissFraction` 0.30, `dismissVelocity`
+  700px/s, `rubberBand` 0.55.
+
+- **The swipe has no keyboard idiom, and that is filed rather than invented.**
+  Touch swipes and pointer hovers are both specified and both implemented; a
+  keyboard user can do neither. Read across from the media-chrome rule — a hold
+  is *"an accelerator for a control that already exists, never the only path"* —
+  the swipe is an accelerator for actions that must also live in the row's own
+  menu, and the component documents that rather than asserting it, because no
+  component can verify its caller built the other path. Whether the contract
+  should say so, and what activation means for a held action under a keyboard,
+  are recorded in `monokit-spec/record/AMENDMENTS.md`.
+
+- The hold is a raw pointer listener, not a long-press recogniser. A sustain
+  begins when the finger lands and ends when it lifts; `onLongPressUp` only
+  fires once a long press has been *recognised*, so a release at 300ms went
+  unheard entirely and the action fired anyway.
+
+- `MonoListRow` fills the height it is given when that height is bounded and
+  loose — 2400px in a golden surface. Every real caller puts rows in a `Column`
+  or a `ListView`, both of which pass unbounded height, so nothing is wrong
+  today. Recorded because it is the same shape as the checkbox defect fixed in
+  4.4.0, and the next caller that lands one in a `Stack` will meet it.
+
 ## 4.8.0
 
 Findings from reading the remaining component boards against their widgets.
