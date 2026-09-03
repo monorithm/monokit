@@ -47,6 +47,12 @@ Findings from reading the remaining component boards against their widgets.
   thing that says a panel is opening, so it takes the longer beat and the body
   follows it.
 
+- **The selection controls were 20px tall.** `MonoCheckbox`, `MonoSwitch` and
+  `MonoRadioGroup` all rendered a 20px-high hit area — under half the 44 a
+  finger needs, and the checkbox board says plainly *"in a row the whole 44px
+  row is the target (Pressable inflates the hit area)"*. The visual box is
+  unchanged; only the hit area grew.
+
 - **An avatar announces a person, not an image.** It carried `image: true`,
   which makes a screen reader say "image, Ama Serwaa" for something the user
   thinks of as a person. The photo is how the person is drawn, not what is
@@ -81,6 +87,14 @@ Findings from reading the remaining component boards against their widgets.
 
 - The palette's panel is 560 wide (`dialogMd`) where the board says 520 — one
   of the three "measure that is not a token" cases already filed.
+
+- **`MonoListRow` has no swipe actions at all**, and `MonokitList.swipeActionCell`
+  (72) has exactly one consumer: its own definition. The board specifies a
+  whole grammar — *"leading is constructive, trailing destructive with
+  hold-to-confirm"*, becoming hover-revealed actions at pointer — and none of
+  it exists. That is the fifth token group found published and unread, and it
+  is a feature rather than a fix, so it is recorded here rather than rushed
+  into this release.
 
 - Swept and correct, pinned because nothing was watching them: `MonoPageDots`
   and `MonoStepProgress` both announce position and size, and `MonoTrustBadge`

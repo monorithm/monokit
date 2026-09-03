@@ -464,7 +464,22 @@ class _MonoRadioState<T> extends State<MonoRadio<T>>
               child: AnimatedOpacity(
                 duration: theme.motion.fast,
                 opacity: _isEnabled ? 1 : 0.55,
-                child: content,
+                // The visual box stays its own size; the hit area does not.
+                // "In a row the whole 44px row is the target" — and these were
+                // 20px tall, under half the minimum a finger needs.
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: theme.density.minTarget,
+                  ),
+                  // heightFactor as well as widthFactor: an Align without
+                  // both shrink-wraps in one axis and fills in the other.
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: 1,
+                    heightFactor: 1,
+                    child: content,
+                  ),
+                ),
               ),
             ),
           );

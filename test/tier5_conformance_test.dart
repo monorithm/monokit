@@ -144,4 +144,34 @@ void main() {
       expect(step.length, 3);
     });
   });
+
+  group('a finger can actually hit these', () {
+    testWidgets('the selection controls clear the minimum target', (
+      tester,
+    ) async {
+      const touch = MonokitDensity(mode: MonoDensity.touch);
+      for (final (String name, Widget w, Type t) in <(String, Widget, Type)>[
+        (
+          'checkbox',
+          MonoCheckbox(value: false, onChanged: _ignoreNullable),
+          MonoCheckbox,
+        ),
+        ('switch', MonoSwitch(value: false, onChanged: _ignore), MonoSwitch),
+      ]) {
+        await tester.pumpWidget(monokitHost(w));
+        await tester.pumpAndSettle();
+        // They were 20px tall — under half what a finger needs. The visual box
+        // is still 20; only the hit area grew.
+        expect(
+          tester.getSize(find.byType(t)).height,
+          greaterThanOrEqualTo(touch.minTarget),
+          reason: '$name must be reachable, not merely visible',
+        );
+      }
+    });
+  });
 }
+
+void _ignore(bool _) {}
+
+void _ignoreNullable(bool? _) {}
