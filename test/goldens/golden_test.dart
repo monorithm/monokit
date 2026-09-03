@@ -440,6 +440,24 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  _Scene('progress_on_media', 320, (context) {
+    // Brand green over media disappears into whatever is behind it. The board
+    // draws the fed bar in on-media ink; nothing rendered this before.
+    return ColoredBox(
+      color: const Color(0xFF1A1A1A),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const <Widget>[
+            MonoProgress(value: 0.4, onMedia: true),
+            SizedBox(height: 16),
+            MonoProgress(value: 0.4),
+          ],
+        ),
+      ),
+    );
+  }),
   _Scene('badges', 320, (context) {
     return Wrap(
       spacing: 8,
