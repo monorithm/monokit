@@ -8,6 +8,59 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.8.0
+
+Findings from reading the remaining component boards against their widgets.
+
+### Fixed
+
+- **The segmented control is a capsule**, track and raised pill both. The board
+  draws them at full radius, which is what makes the pick read as sliding
+  within a groove; the widget used `lg` and `md`, so it read as three adjacent
+  buttons. The `line` variant is untouched.
+
+- **A selected list row wears the muted wash**, not just the brand ink. Both
+  the list-row and drawer boards draw the current row on `muted`. Selection
+  rested on the title colour alone, which left the selected row looking like
+  its neighbours.
+
+- **The command palette sits in the top third of the window**, not centred. A
+  palette centred vertically reads as a dialog. Its panel is `xxl` on e2, not
+  `xl`.
+
+- **The palette's search mark was U+2315**, which the bundled IBM Plex Sans
+  does not carry — it rendered as a tofu box. Now `MonoIcons.search`.
+
+### Changed
+
+- **`MonoButton.pending`** replaces `isLoading`, matching `MonoPhase.pending`,
+  `MonoInput.pending`, `MonoField.pending` and the board's own *"pending never
+  claims done"*. The button was the one control calling it something else.
+  `isLoading` still constructs, deprecated, until 5.0.0.
+
+### Notes
+
+- **A correction to 4.7.0.** That release said the combobox's check "carried
+  nothing" because U+2713 was not in the bundled font. Verified against the
+  font's character map since: **U+2713 is present and rendered fine.** Only the
+  chevrons (U+2303/U+2304) were tofu. Moving the check to an icon was still
+  right — the icon board asks for stroke glyphs on a 24 grid, never a text
+  character — but the stated reason was wrong.
+
+  The same check clears the rest of the kit: the guillemets in `MonoPagination`,
+  the chevrons in `MonoAccordion`, the ellipsis in `MonoBreadcrumb` and the
+  minus in `MonoQuantityStepper` are all present in the font and render. They
+  remain text characters where the icon board asks for icons, which is a
+  consistency question rather than a rendering defect, and is not fixed here.
+
+- The boards draw button labels at 13px and tab labels at 15px. Neither is on
+  the type ramp, and the package matches `contract/typography.json`'s 14px, so
+  this is the board fighting the contract rather than the package drifting.
+  Filed rather than followed.
+
+- The palette's panel is 560 wide (`dialogMd`) where the board says 520 — one
+  of the three "measure that is not a token" cases already filed.
+
 ## 4.7.0
 
 The combobox changes shape with density, the last unimplemented board becomes
