@@ -86,6 +86,9 @@ class _MonoListRowSwipeState extends State<MonoListRowSwipe> {
   double _offset = 0;
   bool _hovered = false;
 
+  /// True for the whole of a gesture that began in a system edge band.
+  bool _declined = false;
+
   @override
   void initState() {
     super.initState();
@@ -106,7 +109,26 @@ class _MonoListRowSwipeState extends State<MonoListRowSwipe> {
   double get _trailingExtent =>
       widget.trailing.length * MonokitList.swipeActionCell;
 
+  /// The band at each screen edge the platform owns — the back gesture, the
+  /// drawer, the OS navigation bar. Flutter's own drawer uses the same 20.
+  ///
+  /// `interaction.notes`: *"monokit NEVER claims edge swipes — they belong to
+  /// system and OS navigation."* A full-width row with a horizontal drag
+  /// detector claims precisely those unless it refuses them, so a drag that
+  /// begins inside the band is declined for its whole duration and the row
+  /// does not move at all. Refusing on *start* rather than clamping matters: a
+  /// row that answers the first few pixels and then lets go has already eaten
+  /// the gesture.
+  static const double _systemEdge = 20;
+
+  void _onStart(DragStartDetails d) {
+    final double width = MediaQuery.sizeOf(context).width;
+    final double x = d.globalPosition.dx;
+    _declined = x <= _systemEdge || x >= width - _systemEdge;
+  }
+
   void _onUpdate(DragUpdateDetails d) {
+    if (_declined) return;
     final double next = _offset + d.delta.dx;
     // Rubber-band past the end stops rather than hard-clamping: the row still
     // answers the finger, it just stops promising more than it has.
@@ -123,6 +145,10 @@ class _MonoListRowSwipeState extends State<MonoListRowSwipe> {
   static const double _commitVelocity = 700;
 
   void _onEnd(DragEndDetails d) {
+    if (_declined) {
+      _declined = false;
+      return;
+    }
     final double v = d.velocity.pixelsPerSecond.dx;
     final double extent = _offset > 0 ? _leadingExtent : _trailingExtent;
     if (extent == 0) {
@@ -207,6 +233,7 @@ class _MonoListRowSwipeState extends State<MonoListRowSwipe> {
       // swipe that started on the gap between the title and the chevron
       // reached nothing.
       behavior: HitTestBehavior.opaque,
+      onHorizontalDragStart: _onStart,
       onHorizontalDragUpdate: _onUpdate,
       onHorizontalDragEnd: _onEnd,
       child: row,

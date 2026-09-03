@@ -57,6 +57,14 @@ nobody since 3.2.0.
   child, so a swipe that started on the gap between the title and the chevron
   reached nothing.
 
+- **The screen edges are left to the platform.** `interaction.notes` is
+  explicit — *"monokit NEVER claims edge swipes — they belong to system and OS
+  navigation"* — and a full-width row with a horizontal drag detector claims
+  precisely those. A drag beginning within 20 of either screen edge is now
+  declined for its whole duration, so the back gesture and the drawer reach the
+  OS. Declining on *start* rather than clamping is the point: a row that
+  answers the first few pixels and then lets go has already eaten the gesture.
+
 ### Notes
 
 - Every threshold came from `contract/interaction.json` rather than being

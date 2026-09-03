@@ -166,4 +166,40 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a drag that begins at a screen edge belongs to the system', (
+    tester,
+  ) async {
+    // `interaction.notes`: "monokit NEVER claims edge swipes — they belong to
+    // system and OS navigation." A full-width row with a horizontal drag
+    // detector claims precisely those unless it refuses them. The band is in
+    // screen coordinates, so the row has to actually reach the edge for the
+    // test to mean anything.
+    await tester.pumpWidget(
+      monokitHost(
+        MonoListRowSwipe(
+          leading: <MonoListRowAction>[save()],
+          child: const MonoListRow(title: 'Kente slippers'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final Rect box = tester.getRect(find.byType(MonoListRowSwipe));
+    expect(box.left, 0, reason: 'the row must reach the edge to be tested');
+    final double y = box.center.dy;
+    double travel() =>
+        tester.getTopLeft(find.byType(MonoListRow)).dx - box.left;
+
+    // Inside the left band: the platform owns this one, and the row does not
+    // move at all.
+    await tester.dragFrom(Offset(4, y), const Offset(120, 0));
+    await tester.pumpAndSettle();
+    expect(travel(), 0, reason: 'the row answered a gesture the platform owns');
+
+    // The same drag, started clear of the band, opens it.
+    await tester.dragFrom(Offset(60, y), const Offset(120, 0));
+    await tester.pumpAndSettle();
+    expect(travel(), MonokitList.swipeActionCell);
+  });
 }
