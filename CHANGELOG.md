@@ -41,6 +41,17 @@ Findings from reading the remaining component boards against their widgets.
   5% ink) vanishes entirely. `color` and `trackColor` still win where a caller
   sets them.
 
+- **The accordion chevron takes the emphasis beat.** The board names two
+  roles - *"chevron rotates on the emphasis role · body reveals with enter"* -
+  and both were on `motion.duration`, which is `enter`. The chevron is the
+  thing that says a panel is opening, so it takes the longer beat and the body
+  follows it.
+
+- **An avatar announces a person, not an image.** It carried `image: true`,
+  which makes a screen reader say "image, Ama Serwaa" for something the user
+  thinks of as a person. The photo is how the person is drawn, not what is
+  being announced.
+
 ### Changed
 
 - **`MonoButton.pending`** replaces `isLoading`, matching `MonoPhase.pending`,
@@ -70,6 +81,13 @@ Findings from reading the remaining component boards against their widgets.
 
 - The palette's panel is 560 wide (`dialogMd`) where the board says 520 — one
   of the three "measure that is not a token" cases already filed.
+
+- Swept and correct, pinned because nothing was watching them: `MonoPageDots`
+  and `MonoStepProgress` both announce position and size, and `MonoTrustBadge`
+  carries its tier as a spoken label. `MonoSkeleton`, `MonoProgress`,
+  `MonoSpinner`, `MonoButton`, `MonoImmersiveFeed` and `MonoMetaLine` all
+  honour reduced motion. `MonoToast` and `MonoBanner` do not consult it - and
+  do not animate either, so there is nothing there to reduce.
 
 - Other components whose boards use on-media inks and whose widgets have no
   `onMedia` mode: `MonoMediaCard` (`scrimStrong`, `glassBorder`), `MonoAvatar`,

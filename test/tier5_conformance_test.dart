@@ -86,4 +86,62 @@ void main() {
     // ignore: deprecated_member_use_from_same_package
     expect(const MonoButton(isLoading: true, child: Text('x')).pending, isTrue);
   });
+
+  group('motion roles and semantics', () {
+    testWidgets('the accordion chevron takes the emphasis beat', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        monokitHost(
+          MonoAccordion(
+            items: <MonoAccordionItem>[
+              MonoAccordionItem(
+                value: 'a',
+                title: const Text('Who sees my number?'),
+                content: const Text('Only people you call back.'),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // "Chevron rotates on the emphasis role · body reveals with enter."
+      // Two roles, not one: both were on `duration` (= enter).
+      final rot = tester.widget<AnimatedRotation>(
+        find.byType(AnimatedRotation).first,
+      );
+      const motion = MonokitMotion();
+      expect(rot.duration, motion.emphasis);
+      expect(
+        motion.emphasis,
+        isNot(motion.enter),
+        reason: 'if these were equal the assertion above would prove nothing',
+      );
+    });
+
+    testWidgets('an avatar announces a person, not an image', (tester) async {
+      await tester.pumpWidget(
+        monokitHost(const MonoAvatar(name: 'Ama Serwaa', initials: 'AS')),
+      );
+      final data = tester
+          .getSemantics(find.byType(MonoAvatar))
+          .getSemanticsData();
+      expect(data.label, 'Ama Serwaa');
+      expect(
+        data.flagsCollection.isImage,
+        isFalse,
+        reason: 'the image role makes it announce "image, Ama Serwaa"',
+      );
+    });
+
+    test('the counted sets announce position and size', () {
+      // Both already correct; pinned because the boards state them and
+      // nothing was watching.
+      const dots = MonoPageDots(count: 4, index: 1);
+      expect(dots.count, 4);
+      const step = MonoStepProgress(length: 3, value: 2);
+      expect(step.length, 3);
+    });
+  });
 }

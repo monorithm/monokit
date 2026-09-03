@@ -650,7 +650,15 @@ class _MonoAccordionState extends State<MonoAccordion>
                                 textStyle: theme.typography.labelLarge.copyWith(
                                   color: style.foreground,
                                 ),
-                                duration: duration,
+                                // "Chevron rotates on the emphasis role · body
+                                // reveals with enter." Two roles, not one: the
+                                // chevron is the thing that says a panel is
+                                // opening, so it takes the longer beat and the
+                                // body follows it.
+                                duration: theme.motion.reduced(
+                                  context,
+                                  theme.motion.emphasis,
+                                ),
                                 curve: curve,
                               ),
                         ],
