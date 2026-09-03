@@ -50,6 +50,14 @@ class MonoListRowAction {
 /// deliberately wider than the 44 minimum, because a cell is aimed at while
 /// the finger is already moving.
 ///
+/// **An accelerator, never the only path.** A keyboard user can neither swipe
+/// nor hover, so every action offered here must also live in the row's own
+/// menu. The component cannot check that and does not assert it; the
+/// obligation is the caller's. Whether the specification should say so in a
+/// clause — and what activation means for a *held* action under a keyboard,
+/// which the system has already ruled has no keyboard shape — is recorded in
+/// `monokit-spec/record/AMENDMENTS.md` for the system owner.
+///
 /// **The moving layer is opaque, and that is load-bearing.** The cells are not
 /// revealed by appearing; they are always there, and the row slides off them.
 /// [MonoListRow] paints a fully transparent ground at rest, so a swipe row

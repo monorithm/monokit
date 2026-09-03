@@ -71,6 +71,16 @@ nobody since 3.2.0.
   chosen: `holdToConfirm` 800ms, `dismissFraction` 0.30, `dismissVelocity`
   700px/s, `rubberBand` 0.55.
 
+- **The swipe has no keyboard idiom, and that is filed rather than invented.**
+  Touch swipes and pointer hovers are both specified and both implemented; a
+  keyboard user can do neither. Read across from the media-chrome rule — a hold
+  is *"an accelerator for a control that already exists, never the only path"* —
+  the swipe is an accelerator for actions that must also live in the row's own
+  menu, and the component documents that rather than asserting it, because no
+  component can verify its caller built the other path. Whether the contract
+  should say so, and what activation means for a held action under a keyboard,
+  are recorded in `monokit-spec/record/AMENDMENTS.md`.
+
 - The hold is a raw pointer listener, not a long-press recogniser. A sustain
   begins when the finger lands and ends when it lifts; `onLongPressUp` only
   fires once a long press has been *recognised*, so a release at 300ms went
