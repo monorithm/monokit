@@ -17,6 +17,7 @@ class MonoProgress extends StatefulWidget {
     this.height,
     this.color,
     this.trackColor,
+    this.onMedia = false,
     this.strokeWidth,
     this.semanticLabel = 'Progress',
   }) : assert(value == null || (value >= 0 && value <= 1));
@@ -28,6 +29,10 @@ class MonoProgress extends StatefulWidget {
   final double? height;
   final Color? color;
   final Color? trackColor;
+
+  /// Composes over media: the on-media inks rather than brand-on-muted.
+  /// [color] and [trackColor] still win where a caller sets them.
+  final bool onMedia;
   final double? strokeWidth;
   final String? semanticLabel;
 
@@ -83,8 +88,15 @@ class _MonoProgressState extends State<MonoProgress>
   @override
   Widget build(BuildContext context) {
     final theme = MonokitTheme.of(context);
-    final foreground = widget.color ?? theme.colors.primary;
-    final background = widget.trackColor ?? theme.colors.muted;
+    // Over media the brand green disappears into whatever is behind it, so
+    // the bar takes the on-media inks the rest of the kit uses there — the
+    // board's "the hairline exists only in the feed" form.
+    final foreground =
+        widget.color ??
+        (widget.onMedia ? theme.colors.onMedia : theme.colors.primary);
+    final background =
+        widget.trackColor ??
+        (widget.onMedia ? theme.colors.onMediaMuted : theme.colors.muted);
     final value = widget.value;
     final excluded = widget.semanticLabel == null;
     final indicator = switch (widget.type) {

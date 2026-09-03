@@ -336,6 +336,13 @@ final List<_Scene> _scenes = <_Scene>[
           subtitle: 'Osu · 400m',
           onPressed: () {},
         ),
+        // Selected: the wash plus the ink, neither alone.
+        MonoListRow(
+          icon: MonoIcons.home,
+          title: 'Play',
+          selected: true,
+          onPressed: () {},
+        ),
       ],
     );
   }),
@@ -433,6 +440,24 @@ final List<_Scene> _scenes = <_Scene>[
       ],
     );
   }),
+  _Scene('progress_on_media', 320, (context) {
+    // Brand green over media disappears into whatever is behind it. The board
+    // draws the fed bar in on-media ink; nothing rendered this before.
+    return ColoredBox(
+      color: const Color(0xFF1A1A1A),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const <Widget>[
+            MonoProgress(value: 0.4, onMedia: true),
+            SizedBox(height: 16),
+            MonoProgress(value: 0.4),
+          ],
+        ),
+      ),
+    );
+  }),
   _Scene('badges', 320, (context) {
     return Wrap(
       spacing: 8,
@@ -484,6 +509,25 @@ final List<_Scene> _scenes = <_Scene>[
           ),
         ],
       ),
+    );
+  }),
+  _Scene('tabs_segmented', 360, (context) {
+    // The line variant is covered by 'tabs'. This is the segmented one, whose
+    // capsule the 'tabs' scene never rendered.
+    return MonoTabs(
+      variant: MonoTabsVariant.segmented,
+      tabs: <MonoTab>[
+        MonoTab.text(
+          value: 'live',
+          label: 'Live',
+          content: const Text('Two posts.'),
+        ),
+        MonoTab.text(
+          value: 'ended',
+          label: 'Ended',
+          content: const Text('One buyer.'),
+        ),
+      ],
     );
   }),
   _Scene('tabs', 360, (context) {
@@ -678,6 +722,16 @@ final List<_OverlayScene> _overlayScenes = <_OverlayScene>[
           ),
         ],
       ),
+    );
+  }),
+  _OverlayScene('command_palette', (context) {
+    return MonoCommandPalette(
+      open: true,
+      commands: <MonoCommand>[
+        MonoCommand(id: 'post', label: const Text('New post')),
+        MonoCommand(id: 'shop', label: const Text('Go to your shop')),
+        MonoCommand(id: 'calls', label: const Text('Callbacks')),
+      ],
     );
   }),
   _OverlayScene('dialog', (context) {

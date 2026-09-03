@@ -9,6 +9,7 @@ import '../theme/monokit_motion.dart';
 import '../theme/monokit_elevation.dart';
 import '../theme/monokit_theme.dart';
 import '../theme/monokit_theme_data.dart';
+import 'mono_icon.dart';
 
 /// A searchable action declaration for [MonoCommandPalette].
 /// **Pointer density only — on touch it does not exist.** Search is the
@@ -456,7 +457,7 @@ class _MonoCommandPaletteOverlayState
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: theme.colors.popover,
-            borderRadius: BorderRadius.circular(theme.radii.xl),
+            borderRadius: BorderRadius.circular(theme.radii.xxl),
             boxShadow: theme.elevation.resolve(MonoElevation.floating),
           ),
           child: MonoFocusTrap(
@@ -523,7 +524,11 @@ class _MonoCommandPaletteOverlayState
           )
         else
           ColoredBox(color: theme.colors.scrim),
-        Center(
+        Align(
+          // "Top-third of the window" — a palette centred vertically reads as
+          // a dialog, and puts the list under the hands rather than under the
+          // eyes. -0.33 places the panel's centre a third of the way down.
+          alignment: const Alignment(0, -0.33),
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(
               begin: widget.disableAnimations ? 1 : 0.96,
@@ -547,12 +552,9 @@ class _MonoCommandPaletteOverlayState
       padding: EdgeInsets.all(theme.spacing.md),
       child: Row(
         children: <Widget>[
-          Text(
-            '⌕',
-            style: theme.typography.titleMedium.copyWith(
-              color: theme.colors.mutedForeground,
-            ),
-          ),
+          // An icon, not U+2315: the bundled Plex does not carry it, so the
+          // search mark rendered as a tofu box.
+          MonoIcon(MonoIcons.search, color: theme.colors.mutedForeground),
           SizedBox(width: theme.spacing.sm),
           Expanded(
             child: Stack(

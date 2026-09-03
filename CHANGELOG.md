@@ -8,6 +8,107 @@ follows [semantic versioning](https://semver.org/spec/v2.0.0.html).
 released privately, and is kept here because what changed in those versions is
 still the history of this API.
 
+## 4.8.0
+
+Findings from reading the remaining component boards against their widgets.
+
+### Fixed
+
+- **The segmented control is a capsule**, track and raised pill both. The board
+  draws them at full radius, which is what makes the pick read as sliding
+  within a groove; the widget used `lg` and `md`, so it read as three adjacent
+  buttons. The `line` variant is untouched.
+
+- **A selected list row wears the muted wash**, not just the brand ink. Both
+  the list-row and drawer boards draw the current row on `muted`. Selection
+  rested on the title colour alone, which left the selected row looking like
+  its neighbours.
+
+- **The command palette sits in the top third of the window**, not centred. A
+  palette centred vertically reads as a dialog. Its panel is `xxl` on e2, not
+  `xl`.
+
+- **The palette's search mark was U+2315**, which the bundled IBM Plex Sans
+  does not carry — it rendered as a tofu box. Now `MonoIcons.search`.
+
+### Added
+
+- **`MonoProgress.onMedia`.** Twelve boards compose components over media;
+  five widgets had an `onMedia` mode. Progress was the clearest gap — its board
+  draws the fed bar in on-media ink and says *"the hairline exists only in the
+  feed"*, while the widget only ever resolved brand-on-muted. Emerald over
+  media disappears into what is behind it, and the default track (`muted`, a
+  5% ink) vanishes entirely. `color` and `trackColor` still win where a caller
+  sets them.
+
+- **The accordion chevron takes the emphasis beat.** The board names two
+  roles - *"chevron rotates on the emphasis role · body reveals with enter"* -
+  and both were on `motion.duration`, which is `enter`. The chevron is the
+  thing that says a panel is opening, so it takes the longer beat and the body
+  follows it.
+
+- **The selection controls were 20px tall.** `MonoCheckbox`, `MonoSwitch` and
+  `MonoRadioGroup` all rendered a 20px-high hit area — under half the 44 a
+  finger needs, and the checkbox board says plainly *"in a row the whole 44px
+  row is the target (Pressable inflates the hit area)"*. The visual box is
+  unchanged; only the hit area grew.
+
+- **An avatar announces a person, not an image.** It carried `image: true`,
+  which makes a screen reader say "image, Ama Serwaa" for something the user
+  thinks of as a person. The photo is how the person is drawn, not what is
+  being announced.
+
+### Changed
+
+- **`MonoButton.pending`** replaces `isLoading`, matching `MonoPhase.pending`,
+  `MonoInput.pending`, `MonoField.pending` and the board's own *"pending never
+  claims done"*. The button was the one control calling it something else.
+  `isLoading` still constructs, deprecated, until 5.0.0.
+
+### Notes
+
+- **A correction to 4.7.0.** That release said the combobox's check "carried
+  nothing" because U+2713 was not in the bundled font. Verified against the
+  font's character map since: **U+2713 is present and rendered fine.** Only the
+  chevrons (U+2303/U+2304) were tofu. Moving the check to an icon was still
+  right — the icon board asks for stroke glyphs on a 24 grid, never a text
+  character — but the stated reason was wrong.
+
+  The same check clears the rest of the kit: the guillemets in `MonoPagination`,
+  the chevrons in `MonoAccordion`, the ellipsis in `MonoBreadcrumb` and the
+  minus in `MonoQuantityStepper` are all present in the font and render. They
+  remain text characters where the icon board asks for icons, which is a
+  consistency question rather than a rendering defect, and is not fixed here.
+
+- The boards draw button labels at 13px and tab labels at 15px. Neither is on
+  the type ramp, and the package matches `contract/typography.json`'s 14px, so
+  this is the board fighting the contract rather than the package drifting.
+  Filed rather than followed.
+
+- The palette's panel is 560 wide (`dialogMd`) where the board says 520 — one
+  of the three "measure that is not a token" cases already filed.
+
+- **`MonoListRow` has no swipe actions at all**, and `MonokitList.swipeActionCell`
+  (72) has exactly one consumer: its own definition. The board specifies a
+  whole grammar — *"leading is constructive, trailing destructive with
+  hold-to-confirm"*, becoming hover-revealed actions at pointer — and none of
+  it exists. That is the fifth token group found published and unread, and it
+  is a feature rather than a fix, so it is recorded here rather than rushed
+  into this release.
+
+- Swept and correct, pinned because nothing was watching them: `MonoPageDots`
+  and `MonoStepProgress` both announce position and size, and `MonoTrustBadge`
+  carries its tier as a spoken label. `MonoSkeleton`, `MonoProgress`,
+  `MonoSpinner`, `MonoButton`, `MonoImmersiveFeed` and `MonoMetaLine` all
+  honour reduced motion. `MonoToast` and `MonoBanner` do not consult it - and
+  do not animate either, so there is nothing there to reduce.
+
+- Other components whose boards use on-media inks and whose widgets have no
+  `onMedia` mode: `MonoMediaCard` (`scrimStrong`, `glassBorder`), `MonoAvatar`,
+  `MonoListRow`, `MonoUploadSlot`, `MonoCard`. Some of those may be composition
+  rather than a widget mode — the drawer's nav rows turned out that way — so
+  each needs checking rather than assuming.
+
 ## 4.7.0
 
 The combobox changes shape with density, the last unimplemented board becomes

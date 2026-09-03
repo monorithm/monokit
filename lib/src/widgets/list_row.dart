@@ -12,8 +12,9 @@ import 'mono_icon.dart';
 /// Rows are wells between hairlines, not bordered boxes. The height comes off
 /// the density row ladder — 48/64/88 at touch, 40/56/76 at pointer — chosen by
 /// how many lines the row actually carries, and press/hover paint the
-/// transient fill. A [selected] row carries the brand-as-ink treatment on its
-/// title — pair it with a trailing check for a non-colour signal.
+/// transient fill. A [selected] row carries the muted wash **and** the
+/// brand-as-ink treatment on its title, so selection never rests on colour
+/// alone — the weight steps up with it.
 ///
 /// Before 4.3.0 the height was `spacing.giant`, a fixed 48 that never moved:
 /// a list on a desktop rendered at touch metrics, because nothing in the
@@ -63,8 +64,12 @@ class MonoListRow extends StatelessWidget {
       final transient =
           states.contains(MonoState.hovered) ||
           states.contains(MonoState.pressed);
+      // A selected row wears the wash, not just the ink. Both the list-row and
+      // drawer boards draw the current row on `muted`; before 4.8.0 selection
+      // was carried by the title colour alone, and the row it was in looked
+      // exactly like its neighbours.
       return ColoredBox(
-        color: transient
+        color: transient || selected
             ? colors.muted
             : colors.background.withValues(alpha: 0),
         child: ConstrainedBox(

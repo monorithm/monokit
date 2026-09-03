@@ -166,7 +166,10 @@ class MonoAvatar extends StatelessWidget {
     );
 
     return Semantics(
-      image: true,
+      // Not `image: true`. The board is explicit — an avatar "announces as a
+      // person, not an image" — and the image role makes a screen reader say
+      // "image, Ama Serwaa" for something the user thinks of as a person. The
+      // photo is how the person is drawn, not what is being announced.
       label: semanticLabel ?? name ?? initials ?? 'Avatar',
       child: ExcludeSemantics(child: avatar),
     );
